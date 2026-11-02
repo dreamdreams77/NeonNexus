@@ -550,5 +550,5 @@ test('arcade visitors have individualized sculpted props and readable nameplates
 
 test('prize rarity styling follows the catalogue and quest claims retain their success message after re-render',()=>{
  assert.match(game,/card\.dataset\.rarity=item\.rarity/);
- assert.match(game,/openService\('npc',null,npc\);serviceStatus\.textContent='Quest complete!'/);
+ assert.match(game,/openService\('npc',null,npc\);serviceStatus\.textContent='Quest complete! '/);
 });
