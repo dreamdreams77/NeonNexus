@@ -61,7 +61,22 @@
       </div>
     </section>
 
-    <section class="feature-band" id="arcade">
+
+    <section class="district-world-section" id="district-worlds">
+      <div class="world-heading"><div><div class="eyebrow">FIVE NEW PLACES TO DISCOVER</div><h2>Pick a district. <span class="gradient-text">Make a memory.</span></h2><p>Each district is its own explorable space, with original scenery, points of interest and activities.</p></div><div class="world-controls"><span>WASD / ARROWS MOVE</span><span>E INTERACT</span><span>MOBILE JOYSTICK</span></div></div>
+      <div class="district-world-tabs" role="group" aria-label="Choose a district">
+        <button class="district-tab active" data-world="combat">⌖ Combat</button><button class="district-tab" data-world="velocity">➤ Velocity</button><button class="district-tab" data-world="arcade">▦ Classic Arcade</button><button class="district-tab" data-world="social">◒ Food & Social</button><button class="district-tab" data-world="vault">◇ Prize Vault</button>
+      </div>
+      <div class="district-world-info"><div><div class="eyebrow" id="district-world-kicker">02 / ACTION TRAINING</div><h3 id="district-world-title">Combat District</h3><p id="district-world-copy">Enter the neon training range, line up your shots and activate the glowing targets.</p></div><div class="district-world-objective" id="district-world-objective">OBJECTIVE · HIT THE TRAINING TARGETS</div></div>
+      <div class="world-frame district-world-frame" id="district-world">
+        <div class="world-hud"><span class="world-live"><i></i> DISTRICT LIVE</span><span id="district-world-label">COMBAT DISTRICT · ZONE 02</span></div>
+        <div class="machine-prompt" id="district-world-prompt">WASD / ARROWS TO MOVE · E TO INTERACT</div>
+        <div class="touch-pad" id="district-touch-pad" aria-label="Touch movement joystick"><div class="joystick-knob" id="district-joystick-knob"></div></div>
+        <button class="interact-machine" id="district-interact" hidden>INTERACT ↗</button>
+        <div class="world-tip" id="district-world-tip">Explore the range and approach a target</div>
+      </div>
+    </section>
+\n    <section class="feature-band" id="arcade">
       <div class="feature-copy"><div class="eyebrow">QUICK PLAY / NO QUEUE</div><h2>Got a minute?<br><span class="gradient-text">Make it count.</span></h2><p>Take a shot at Neon Hoops. Sink as many baskets as you can before the buzzer and earn tokens for the vault.</p><button class="primary-btn" id="play-btn">PLAY NEON HOOPS <span>↗</span></button></div>
       <div class="game-preview"><div class="game-top"><span>NEON HOOPS</span><span class="live-dot">● LIVE</span></div><div class="hoop-scene"><div class="score-glow">+250 <small>HIGH SCORE</small></div><div class="hoop-backboard"></div><div class="hoop-ring"></div><div class="hoop-net"></div><div class="basketball">●</div><div class="court-line"></div></div><div class="game-bottom"><span>30 SEC CHALLENGE</span><span>BEST: <b id="best-score">0</b></span></div></div>
     </section>
@@ -75,6 +90,6 @@
 
   <div class="modal-backdrop" id="modal" aria-hidden="true"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><button class="modal-close" id="modal-close" aria-label="Close">×</button><div class="eyebrow" id="modal-kicker">WELCOME TO THE NEXUS</div><h2 id="modal-title">Your night starts here.</h2><p id="modal-copy">Pick a district and make it yours.</p><div id="modal-content"></div><button class="primary-btn modal-action" id="modal-action">LET'S GO <span>↗</span></button></section></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="./app.js"></script>\n  <script type="module" src="./world.js"></script>
+  <script src="./app.js"></script>\n  <script type="module" src="./world.js"></script>\n  <script type="module" src="./district-world.js"></script>
 </body>
 </html>
