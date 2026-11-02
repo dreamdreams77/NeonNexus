@@ -406,7 +406,7 @@ test('players can browse prize categories and review their own prize haul and re
 });
 test('Kitchen Rush also awards separate prize tickets while preserving the token economy',()=>{
  assert.match(immersive,/const ticketNode=document\.querySelector\('#arcade-tickets'\)/);
- assert.match(immersive,/ticketsEarned=Math\.max\(2,Math\.floor\(score\/9\)/);
+ assert.match(immersive,/ticketsEarned=Math\.max\(2,Math\.round\(\(Math\.floor\(eff\/9\)/);
  assert.match(immersive,/saved\.tickets=\(Number\(saved\.tickets\)\|\|0\)\+ticketsEarned/);
  assert.match(immersive,/ticketNode\.textContent=saved\.tickets/);
 });
@@ -478,7 +478,7 @@ test('mastery perks alter Pulse Runner, Barrelstorm, Moonshard, Sushi, Meteor an
 test('higher mastery raises arcade challenge pacing while preserving earned counterplay',()=>{
  assert.match(game,/Math\.max\(\.34,\.58-\(p\.masteryLevel\|\|0\)\*\.025\)/);
  assert.match(game,/const mastery=1\+Math\.min\(\.1,\(p\.masteryLevel\|\|0\)\*\.015\)/);
- assert.match(game,/Math\.max\(\.25,\.38-\(p\.masteryLevel\|\|0\)\*\.012\)/);
+ assert.match(game,/Math\.max\(\.3,\.78-d\*\.42-\(p\.masteryLevel\|\|0\)\*\.01\)/);
  assert.match(game,/Math\.max\(\.38,\.75-\(p\.masteryLevel\|\|0\)\*\.035\)/);
 });
 test('canvas arcade scenes receive a layered painterly practical-light pass',()=>{
@@ -771,4 +771,20 @@ test('north end: illustrated welcome desk and a composed back wall replace the s
  const spr=await readFile(new URL('../lobby-sprites.js',import.meta.url),'utf8');
  assert.match(spr,/function drawWelcomeDesk\(/);assert.match(spr,/function paintBackWall\(/);assert.match(spr,/win\(420\);win\(W-420\)/);
  assert.match(world,/for\(const ch of prizeGroup\.children\)ch\.visible=false/);assert.match(world,/paintBackWall\(\)/);assert.match(world,/findPlane\(24,5\.7\)/);
+});
+
+test('retired sculpted geometry is detached from the scene; named regulars keep stored rig references',async()=>{
+ assert.match(world,/Prune retired geometry/);assert.match(world,/roots\.forEach\(o=>\{o\.removeFromParent\(\)/);assert.match(world,/protect=new Set\(cabinets\.map\(c=>c\.userData\.discoveryRing\)\)/);
+ assert.match(world,/v\.rig=\[v\.group\.children\[0\],v\.group\.children\[1\]\]/);assert.match(world,/visitor\.rig\[0\]\.rotation\.z/);assert.doesNotMatch(world,/g\.children\[0\]\.rotation\.z/);
+});
+test('crowd watchdog snaps a wedged visitor to the nearest walkable cell before re-planning',async()=>{
+ const crowd=await readFile(new URL('../lobby-crowd.js',import.meta.url),'utf8');
+ assert.match(crowd,/const\[sx,sz\]=nearestOpen\(p\.x,p\.z\);p\.x=GX0\+\(sx\+\.5\)\*CELL/);
+});
+test('meteor mayhem has hearts, invulnerability frames, a difficulty ramp and survival points',()=>{
+ const i=game.indexOf("if(game==='meteor'){const el=");assert.ok(i>=0);const seg=game.slice(i,i+1800);
+ assert.match(seg,/p\.hearts--/);assert.match(seg,/p\.invuln=1\.1/);assert.match(seg,/d\*75/);assert.match(seg,/score\+=2/);
+});
+test('kitchen rush uses the shared diminishing-returns payout and refreshes the HUD before finishing',()=>{
+ assert.match(immersive,/eff=Math\.round\(300\*\(1-Math\.exp\(-score\/300\)\)\)/);assert.match(immersive,/updateHud\(\);finish\(true\)/);assert.match(immersive,/window\.__kitchen=/);
 });
