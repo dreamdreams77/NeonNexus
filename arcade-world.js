@@ -25,6 +25,8 @@ if(mount){
  }
  const grain=clayMaps();
  function clayMat(color,rough=.9){return new THREE.MeshStandardMaterial({color,roughness:rough,metalness:0,bumpMap:grain,bumpScale:.055});}
+ function feltTexture(base){const c=document.createElement('canvas');c.width=512;c.height=256;const x=c.getContext('2d');x.fillStyle=base;x.fillRect(0,0,512,256);for(let i=0;i<2100;i++){x.fillStyle=i%2?'rgba(255,244,218,.055)':'rgba(25,45,38,.065)';x.fillRect((i*97)%512,(i*53)%256,1+(i%3),1);}for(let i=0;i<48;i++){x.strokeStyle='rgba(240,224,190,.055)';x.lineWidth=1;x.beginPath();x.moveTo((i*83)%512,(i*37)%256);x.quadraticCurveTo((i*83)%512+18,(i*37)%256-4,(i*83)%512+34,(i*37)%256+2);x.stroke();}const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;}
+ const airFelt=feltTexture('#b8d9ce'),poolFelt=feltTexture('#356e59');
  const box=(w,h,d,x,y,z,m,parent=scene,round=0)=>{const geo=round?new RoundedBoxGeometry(w,h,d,3,round):new THREE.BoxGeometry(w,h,d);const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o;};
  const sphere=(r,x,y,z,m,parent=scene,sx=1,sy=1,sz=1)=>{const o=new THREE.Mesh(new THREE.SphereGeometry(r,18,14),m);o.position.set(x,y,z);o.scale.set(sx,sy,sz);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o;};
  const cyl=(r1,r2,h,x,y,z,m,parent=scene)=>{const o=new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,h,18),m);o.position.set(x,y,z);o.castShadow=true;parent.add(o);return o;};
@@ -35,7 +37,9 @@ if(mount){
  }
  // Floor and walls are a tiny physical theatre, not a flat gradient.
  const floor=box(25,.5,50,0,-.34,-1,clayMat(0x54404b),scene,.22);
- for(let z=-25;z<=23;z+=2){for(let x=-11;x<=11;x+=2){const tile=box(1.92,.035,1.92,x,-.055,z,mat(((x+z)/2)%2===0?0x725363:0x604756,.96),scene,.035);tile.receiveShadow=true;}}
+ const tilePositions=[];for(let z=-25;z<=23;z+=2)for(let x=-11;x<=11;x+=2)tilePositions.push([x,z]);
+ const floorTiles=new THREE.InstancedMesh(new RoundedBoxGeometry(1.92,.035,1.92,2,.035),clayMat(0xffffff,.96),tilePositions.length),tileTransform=new THREE.Object3D();
+ tilePositions.forEach(([x,z],i)=>{tileTransform.position.set(x,-.055,z);tileTransform.updateMatrix();floorTiles.setMatrixAt(i,tileTransform.matrix);floorTiles.setColorAt(i,new THREE.Color(((x+z)/2)%2===0?0x725363:0x604756));});floorTiles.instanceMatrix.needsUpdate=true;floorTiles.castShadow=false;floorTiles.receiveShadow=true;scene.add(floorTiles);
  box(.6,6,50,-12.2,2.7,-1,clayMat(0x463447),scene,.18);box(.6,6,50,12.2,2.7,-1,clayMat(0x463447),scene,.18);
  box(24,.5,.6,0,5.7,-26,clayMat(0x594052),scene,.18);
  // Repeated timber-like ceiling ribs and hand-painted wall panels.
@@ -279,7 +283,7 @@ if(mount){
   const g=new THREE.Group();g.position.set(-2.35,0,-2.1);scene.add(g);
   box(3.55,.34,2.08,0,.69,0,clayMat(0x604653),g,.2);
   box(3.38,.12,1.91,0,.91,0,mat(0x8bc9c3,.34,.08),g,.12);
-  box(3.18,.045,1.71,0,.995,0,mat(0xb8d9ce,.42),g,.08);
+  box(3.18,.045,1.71,0,.995,0,new THREE.MeshStandardMaterial({map:airFelt,roughness:.72,bumpMap:grain,bumpScale:.025}),g,.08);
   for(const z of [-.91,.91])box(3.45,.19,.12,0,1.08,z,clayMat(0xe1b17e),g,.06);
   for(const x of [-1.69,1.69])box(.12,.19,1.78,x,1.08,0,clayMat(0xd69b78),g,.06);
   box(.07,.012,1.55,0,1.025,0,mat(0xf8ead0,.4),g,.02);
@@ -295,7 +299,7 @@ if(mount){
   const g=new THREE.Group();g.position.set(2.35,0,-2.1);scene.add(g);
   box(3.55,.4,2.12,0,.68,0,clayMat(0x65474a),g,.2);
   box(3.38,.15,1.96,0,.93,0,clayMat(0x95665a),g,.13);
-  box(3.12,.055,1.7,0,1.035,0,mat(0x356e5b,.82),g,.06);
+  box(3.12,.055,1.7,0,1.035,0,new THREE.MeshStandardMaterial({map:poolFelt,roughness:.88,bumpMap:grain,bumpScale:.04}),g,.06);
   for(const z of [-.91,.91])box(3.32,.16,.14,0,1.09,z,clayMat(0x9b6a55),g,.06);
   for(const x of [-1.64,1.64])box(.14,.16,1.72,x,1.09,0,clayMat(0x9b6a55),g,.06);
   const pocketMat=mat(0x241f31,.62);
@@ -403,7 +407,7 @@ if(mount){
   const inputEase=1-Math.exp(-dt*22);touch.x+=(touch.targetX-touch.x)*inputEase;touch.y+=(touch.targetY-touch.y)*inputEase;
   let x=((keys.has('d')||keys.has('arrowright'))?1:0)-((keys.has('a')||keys.has('arrowleft'))?1:0)+touch.x;
   let z=((keys.has('s')||keys.has('arrowdown'))?1:0)-((keys.has('w')||keys.has('arrowup'))?1:0)+touch.y;
-  const len=Math.hypot(x,z);if(len>1){x/=len;z/=len;}const response=1-Math.exp(-dt*(len>.06?19:14));motion.x+=(x*5.1-motion.x)*response;motion.z+=(z*5.1-motion.z)*response;const speed=Math.hypot(motion.x,motion.z);if(speed>.018){player.position.x=clamp(player.position.x+motion.x*dt,-9.7,9.7);player.position.z=clamp(player.position.z+motion.z*dt,-23.5,22);player.rotation.y=Math.atan2(motion.x,motion.z);walk+=dt*(6+speed*1.15);torso.position.y=1.02+Math.abs(Math.sin(walk))*.035;arms.forEach((arm,i)=>{arm.rotation.x=Math.sin(walk+i*Math.PI)*.34;arm.rotation.z=(i===0?-.08:.08)+Math.sin(walk+i*Math.PI)*.045;});legs.forEach((leg,i)=>leg.rotation.x=Math.sin(walk+i*Math.PI)*.48);}else{motion.x=motion.z=0;torso.position.y=1.02+Math.sin(t*2.1)*.012;torso.rotation.z=Math.sin(t*.9)*.012;arms.forEach((arm,i)=>{arm.rotation.x=Math.sin(t*1.7+i*1.2)*.035;arm.rotation.z=(i===0?-.08:.08)+Math.sin(t*1.3+i)*.018;});legs.forEach(leg=>leg.rotation.x*=.82);}
+  const len=Math.hypot(x,z);if(len>1){x/=len;z/=len;}const response=1-Math.exp(-dt*(len>.06?19:14));motion.x+=(x*5.1-motion.x)*response;motion.z+=(z*5.1-motion.z)*response;const speed=Math.hypot(motion.x,motion.z);if(speed>.018){const nextX=clamp(player.position.x+motion.x*dt,-9.7,9.7),nextZ=clamp(player.position.z+motion.z*dt,-23.5,22);const blockedX=gameTables.some(table=>Math.abs(nextX-table.position.x)<2.16&&Math.abs(player.position.z-table.position.z)<1.43),blockedZ=gameTables.some(table=>Math.abs(player.position.x-table.position.x)<2.16&&Math.abs(nextZ-table.position.z)<1.43);if(!blockedX)player.position.x=nextX;if(!blockedZ)player.position.z=nextZ;player.rotation.y=Math.atan2(motion.x,motion.z);walk+=dt*(6+speed*1.15);torso.position.y=1.02+Math.abs(Math.sin(walk))*.035;arms.forEach((arm,i)=>{arm.rotation.x=Math.sin(walk+i*Math.PI)*.34;arm.rotation.z=(i===0?-.08:.08)+Math.sin(walk+i*Math.PI)*.045;});legs.forEach((leg,i)=>leg.rotation.x=Math.sin(walk+i*Math.PI)*.48);}else{motion.x=motion.z=0;torso.position.y=1.02+Math.sin(t*2.1)*.012;torso.rotation.z=Math.sin(t*.9)*.012;arms.forEach((arm,i)=>{arm.rotation.x=Math.sin(t*1.7+i*1.2)*.035;arm.rotation.z=(i===0?-.08:.08)+Math.sin(t*1.3+i)*.018;});legs.forEach(leg=>leg.rotation.x*=.82);}
   if(gesture!=='idle'&&t<gestureUntil){
    const fade=Math.sin(Math.PI*Math.min(1,(t-gestureStarted)/(gestureUntil-gestureStarted)));
    if(gesture==='wave'){
