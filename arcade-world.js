@@ -171,7 +171,7 @@ if(mount){
   sphere(.13,side*.025,-.45,.01,hoodMat,pivot);
   const fore=new THREE.Mesh(new THREE.CapsuleGeometry(.112,.34,5,12),hoodLight);fore.position.set(side*.035,-.64,.015);fore.rotation.z=side*.08;fore.castShadow=true;pivot.add(fore);
   cyl(.12,.115,.11,side*.035,-.82,.015,hoodMat,pivot);
-  const hand=new THREE.Group();hand.position.set(side*.035,-.91,.035);pivot.add(hand);sphere(.115,0,-.025,.015,skin,hand,.9,.9,.82);
+  const hand=new THREE.Group();hand.position.set(side*.035,-.91,.035);pivot.add(hand);hands.push(hand);sphere(.115,0,-.025,.015,skin,hand,.9,.9,.82);
   for(let f=0;f<4;f++){const finger=new THREE.Mesh(new THREE.CapsuleGeometry(.027,.075,3,7),skinLight);finger.position.set((f-1.5)*.045,-.105,.035);finger.rotation.z=(f-1.5)*-.12;hand.add(finger);}
   sphere(.032,side*.1,-.035,.045,skin,hand,.9,1,.8);
   return pivot;
@@ -190,10 +190,13 @@ if(mount){
   return pivot;
  }
  makeLeg(-1);makeLeg(1);
- const keys=new Set(),touch={x:0,y:0};let nearest=null,activeService=null,walk=0,nextBlink=2.4,blinkUntil=0;;
+ const keys=new Set(),touch={x:0,y:0};let nearest=null,activeService=null,walk=0,nextBlink=2.4,blinkUntil=0,gesture='idle',gestureStarted=0,gestureUntil=0;;
  const prompt=document.querySelector('#arcade-world-prompt'),interact=document.querySelector('#arcade-interact'),pad=document.querySelector('#arcade-touch-pad'),knob=document.querySelector('#arcade-joystick');
- function useCabinet(){if(!nearest)return;window.dispatchEvent(new CustomEvent('nexus:arcade-play',{detail:{gameId:nearest.userData.id}}));}
- function useService(){if(!activeService)return;window.dispatchEvent(new CustomEvent('nexus:service-open',{detail:{service:activeService.type,table:activeService.table||null}}));}
+ function triggerGesture(type,duration=1.35){gesture=type;gestureStarted=clock.elapsedTime;gestureUntil=gestureStarted+duration;}
+ function useCabinet(){if(!nearest)return;triggerGesture('excited',1.1);window.dispatchEvent(new CustomEvent('nexus:arcade-play',{detail:{gameId:nearest.userData.id}}));}
+ function useService(){if(!activeService)return;triggerGesture('wave',1.55);window.dispatchEvent(new CustomEvent('nexus:service-open',{detail:{service:activeService.type,table:activeService.table||null}}));}
+ window.addEventListener('nexus:character-celebrate',()=>triggerGesture('celebrate',2.1));
+ window.addEventListener('nexus:character-wave',()=>triggerGesture('wave',1.55));
  interact.addEventListener('click',()=>{if(activeService)useService();else useCabinet();});
  window.addEventListener('keydown',e=>{if(!document.querySelector('#overlay').hidden||!document.querySelector('#service-modal').hidden)return;const k=e.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e'].includes(k)){e.preventDefault();keys.add(k);}if(k==='e'){if(activeService)useService();else useCabinet();}});
  window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));window.addEventListener('blur',()=>keys.clear());
@@ -211,6 +214,20 @@ if(mount){
   let x=((keys.has('d')||keys.has('arrowright'))?1:0)-((keys.has('a')||keys.has('arrowleft'))?1:0)+touch.x;
   let z=((keys.has('s')||keys.has('arrowdown'))?1:0)-((keys.has('w')||keys.has('arrowup'))?1:0)+touch.y;
   const len=Math.hypot(x,z);if(len>.08){x/=Math.max(1,len);z/=Math.max(1,len);player.position.x=clamp(player.position.x+x*5.1*dt,-9.7,9.7);player.position.z=clamp(player.position.z+z*5.1*dt,-23.5,22);player.rotation.y=Math.atan2(x,z);walk+=dt*9;torso.position.y=1.02+Math.abs(Math.sin(walk))*.035;arms.forEach((arm,i)=>{arm.rotation.x=Math.sin(walk+i*Math.PI)*.34;arm.rotation.z=(i===0?-.08:.08)+Math.sin(walk+i*Math.PI)*.045;});legs.forEach((leg,i)=>leg.rotation.x=Math.sin(walk+i*Math.PI)*.48);}else{torso.position.y=1.02+Math.sin(t*2.1)*.012;torso.rotation.z=Math.sin(t*.9)*.012;arms.forEach((arm,i)=>{arm.rotation.x=Math.sin(t*1.7+i*1.2)*.035;arm.rotation.z=(i===0?-.08:.08)+Math.sin(t*1.3+i)*.018;});legs.forEach(leg=>leg.rotation.x*=.82);}
+  if(gesture!=='idle'&&t<gestureUntil){
+   const fade=Math.sin(Math.PI*Math.min(1,(t-gestureStarted)/(gestureUntil-gestureStarted)));
+   if(gesture==='wave'){
+    arms[1].rotation.z=-2.15+Math.sin(t*13)*.16*fade;arms[1].rotation.x=-.18;
+    hands[1].rotation.z=Math.sin(t*13)*.24*fade;head.rotation.z+=-.035*fade;
+   }else if(gesture==='excited'){
+    arms.forEach((arm,i)=>{arm.rotation.z=(i===0?1.75:-1.75)*fade;arm.rotation.x=-.2*fade;});
+    torso.rotation.z=Math.sin(t*12)*.045*fade;torso.position.y+=Math.abs(Math.sin(t*12))*.07*fade;
+   }else if(gesture==='celebrate'){
+    arms.forEach((arm,i)=>{arm.rotation.z=(i===0?2.35:-2.35)*fade;arm.rotation.x=-.35*fade;});
+    hands.forEach((hand,i)=>hand.rotation.z=Math.sin(t*10+i)*.3*fade);
+    torso.rotation.z=Math.sin(t*9)*.06*fade;torso.position.y+=Math.abs(Math.sin(t*9))*.1*fade;
+   }
+  }else{gesture='idle';hands.forEach(hand=>{hand.rotation.z*=.8;});}
   camera.position.lerp(new THREE.Vector3(player.position.x,player.position.y+23,player.position.z+17),1-Math.exp(-3.8*dt));camera.lookAt(player.position.x,0,player.position.z-1.5);
   nearest=null;let dmin=4.1;for(const c of cabinets){const d=player.position.distanceTo(c.position);if(d<dmin){dmin=d;nearest=c;}}
   activeService=null;let serviceDistance=3.5;for(const service of services){const d=player.position.distanceTo(service.position);if(d<serviceDistance){serviceDistance=d;activeService=service;}}
