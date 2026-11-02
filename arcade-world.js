@@ -1,6 +1,7 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
 import * as ART from './lobby-art.js';
 import { stepVelocity, turnToward } from './movement.js';
+import { createCrowd } from './lobby-crowd.js';
 import { RoundedBoxGeometry } from 'https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/geometries/RoundedBoxGeometry.js';
 
 const mount=document.querySelector('#arcade-world');
@@ -93,7 +94,7 @@ if(mount){
   for(let n=-2;n<=2;n++){const stitch=box(.055,.012,d*.78,n*w*.16,.058,0,clayMat(accent),rug,.018);stitch.rotation.y=Math.PI/2;}
   const medallion=new THREE.Mesh(new THREE.CircleGeometry(Math.min(w,d)*.19,24),clayMat(accent));medallion.rotation.x=-Math.PI/2;medallion.position.y=.057;rug.add(medallion);
  }
- makeRug(0,7.2,6.6,3.1,0x846071,0xd9ad80);makeRug(-8.9,-11.4,5.6,2.6,0x5d4a7a,0xe8b867);makeRug(8.5,4.4,5.2,2.7,0x5f6977,0xd4a16e);makeRug(-7.7,2.2,4.4,2.5,0x6e806f,0xd7b184);
+ makeRug(0,7.2,6.6,3.1,0x846071,0xd9ad80);makeRug(-8.9,-11.4,5.6,2.6,0x5d4a7a,0xe8b867);makeRug(8.5,4.4,5.2,2.7,0x5f6977,0xd4a16e);makeRug(-8.6,-4.7,5.0,3.0,0x6e806f,0xd7b184);makeRug(8.9,-11.8,5.2,3.1,0x5f6977,0xd4a16e);
  // Hand-built wall sconces repeat the warm/cool lighting language in the walkable world.
  function makeSconce(side,z){
   const fixture=new THREE.Group();fixture.position.set(side*11.78,3.55,z);scene.add(fixture);
@@ -283,6 +284,8 @@ if(mount){
   const tint=new THREE.Color(color);pg.userData.base=1;marqueeLights.push({panel,phase:i*1.3});
   for(const e of [-1,1]){box(.05,1.0,.12,e*.8,0,0,topperFrameMat,pg,.02);}for(const e of [-1,1])box(1.62,.05,.12,0,e*.5,0,topperFrameMat,pg,.02);
  }
+ // West column is tighter so no cabinet stands inside the prize gallery (z 10.5-19.2); east keeps its roomy spacing.
+ const cabinetZ=i=>i<9?-18.5+(i%9)*3.45:-18.5+(i%9)*4.35;
  function makeCabinet(def,i,side,z){
   const [name,id,genre,num,color]=def,g=new THREE.Group();g.position.set(side*5.2,0,z);g.rotation.y=side===-1?Math.PI/2:-Math.PI/2;scene.add(g);
   const body=sculptedBox(1.58,2.65,1.05,0xffffff,.16);body.material=cabinetBodyMaterial(color,i);body.position.y=1.42;body.castShadow=true;g.add(body);addInk(body,.06,g);
@@ -331,7 +334,7 @@ if(mount){
   // Hand-painted floor decal, small and slightly rotated.
   const decal=box(1.9,.025,1.1,side*5.2,.005,z+ (side===-1?1.2:-1.2),mat(0x9b7180,.95),scene,.2);decal.rotation.y=(i%2)*.035;
  }
- definitions.forEach((d,i)=>{const side=i<9?-1:1,slot=i%9;makeCabinet(d,i,side,-18.5+slot*4.35);});
+ definitions.forEach((d,i)=>{const side=i<9?-1:1,slot=i%9;makeCabinet(d,i,side,cabinetZ(i));});
  // ───────── Painted environment pass ─────────
  const artAnimators=[];
  {
@@ -340,7 +343,7 @@ if(mount){
   const pq=ART.paintParquet(),parquetMap=artTex(pq.map,{repeat:[6,12],aniso:8}),parquetRough=artTex(pq.rough,{srgb:false,repeat:[6,12]});
   const parquet=new THREE.Mesh(new THREE.PlaneGeometry(24,48),new THREE.MeshStandardMaterial({map:parquetMap,roughnessMap:parquetRough,roughness:.78,metalness:.04,bumpMap:parquetMap,bumpScale:.6}));
   parquet.rotation.x=-Math.PI/2;parquet.position.set(0,-.06,-1);parquet.receiveShadow=true;scene.add(parquet);
-  const cabList=definitions.map((d,i)=>({x:(i<9?-1:1)*5.2,z:-18.5+(i%9)*4.35,color:d[4]}));
+  const cabList=definitions.map((d,i)=>({x:(i<9?-1:1)*5.2,z:cabinetZ(i),color:d[4]}));
   const carpet=new THREE.Mesh(new THREE.PlaneGeometry(24,48),new THREE.MeshStandardMaterial({color:0xaaa4b4,map:artTex(ART.paintCarpet(cabList),{aniso:8}),transparent:true,roughness:.95,metalness:0,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1,bumpMap:grain,bumpScale:.18}));
   carpet.rotation.x=-Math.PI/2;carpet.position.set(0,-.045,-1);carpet.receiveShadow=true;scene.add(carpet);
   // Walls: painted wallpaper over wainscot on both sides and the back.
@@ -489,7 +492,7 @@ if(mount){
  // Two full-size, walk-up floor attractions sit in the open centre of the district.
  const gameTables=[];
  function makeAirHockeyTable(){
-  const g=new THREE.Group();g.position.set(-4.45,0,-2.55);scene.add(g);
+  const g=new THREE.Group();g.position.set(-8.6,0,-4.7);scene.add(g);
   box(3.55,.34,2.08,0,.69,0,clayMat(0x604653),g,.2);
   box(3.38,.12,1.91,0,.91,0,mat(0x8bc9c3,.34,.08),g,.12);
   box(3.18,.045,1.71,0,.995,0,new THREE.MeshStandardMaterial({map:airFelt,roughness:.72,bumpMap:grain,bumpScale:.025}),g,.08);
@@ -506,10 +509,10 @@ if(mount){
   const mallets=[sphere(.22,-1.05,1.12,.48,clayMat(0xe58b79),g,1,.42,1),sphere(.22,1.05,1.12,-.48,clayMat(0x7fc8bf),g,1,.42,1)];
   const railGlow=mat(0x83d9d1,.32,.08,0x5bd5ce,.42);
   for(const x of [-1.72,1.72])box(.035,.045,1.72,x,1.2,0,railGlow,g,.015);
-  gameTables.push({gameId:'airhockey',name:'COMET AIR HOCKEY',position:new THREE.Vector3(-4.45,0,-2.55),group:g,puck,mallets});
+  gameTables.push({gameId:'airhockey',name:'COMET AIR HOCKEY',position:new THREE.Vector3(-8.6,0,-4.7),group:g,puck,mallets});
  }
  function makeBilliardsTable(){
-  const g=new THREE.Group();g.position.set(4.45,0,-2.55);scene.add(g);
+  const g=new THREE.Group();g.position.set(8.9,0,-11.8);scene.add(g);
   box(3.55,.4,2.12,0,.68,0,clayMat(0x65474a),g,.2);
   box(3.38,.15,1.96,0,.93,0,clayMat(0x95665a),g,.13);
   box(3.12,.055,1.7,0,1.035,0,new THREE.MeshStandardMaterial({map:poolFelt,roughness:.88,bumpMap:grain,bumpScale:.04}),g,.06);
@@ -526,7 +529,7 @@ if(mount){
   sphere(.092,0,1.115,.55,mat(0xf5eddb,.2),g);
   const brassCorners=mat(0xe2b77d,.35,.35);
   for(const x of [-1.6,1.6])for(const z of [-.92,.92])sphere(.065,x,1.18,z,brassCorners,g);
-  gameTables.push({gameId:'billiards',name:'MOONLIGHT BILLIARDS',position:new THREE.Vector3(4.45,0,-2.55),group:g,rack});
+  gameTables.push({gameId:'billiards',name:'MOONLIGHT BILLIARDS',position:new THREE.Vector3(8.9,0,-11.8),group:g,rack});
  }
  makeAirHockeyTable();makeBilliardsTable();
  // A dedicated prize counter makes ticket redemption a destination, not another restaurant menu.
@@ -632,6 +635,13 @@ const jukebox=new THREE.Group();jukebox.position.set(-10.0,0,-12.6);jukebox.scal
   const notes=noteTex.map((tx,i)=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(.34,.34),new THREE.MeshBasicMaterial({map:tx,transparent:true,depthWrite:false,toneMapped:false}));m.rotation.x=-.93;scene.add(m);return {m,phase:i/3};});
   artAnimators.push(t=>{jukeFront.material.emissiveIntensity=.45+.25*Math.sin(t*4.4);jukeboxLamp.color.setHSL((t*.08)%1,.7,.65);notes.forEach(n=>{const u=(t*.32+n.phase)%1;n.m.position.set(-10.0+Math.sin(u*9+n.phase*6)*.45,3.3+u*1.5,-12.3+u*.3);n.m.material.opacity=Math.sin(u*Math.PI);n.m.scale.setScalar(.7+u*.5);});});
 }
+{ // Ambient visitors: a living crowd with routines, queues and reactions.
+  const crowd=createCrowd({THREE,scene,clayMat,cabinets,count:mobileDevice?5:10});
+  window.__crowd=crowd;
+  artAnimators.push(t=>crowd.update(t,player.position));
+}
+// Solid set pieces the player cannot walk through (cabinets, bar, jukebox, lucky wheel).
+const solidBoxes=[...cabinets.map(c=>({x:c.position.x,z:c.position.z,hw:.95,hd:.85})),{x:-10,z:-12.6,hw:.75,hd:.5},{x:-7.7,z:-12.6,hw:1.05,hd:.5},{x:9.3,z:-.6,hw:2.7,hd:1.2}];
 const luckyWheel=new THREE.Group();luckyWheel.position.set(-7.7,0,-12.6);scene.add(luckyWheel);const wheelFrame=sculptedBox(1.8,2.55,.48,0x685064,.14);wheelFrame.position.y=1.28;luckyWheel.add(wheelFrame);const wheelDisc=new THREE.Mesh(new THREE.CylinderGeometry(.83,.83,.12,12),clayMat(0xd9b779));wheelDisc.rotation.x=Math.PI/2;wheelDisc.position.set(0,1.65,.34);luckyWheel.add(wheelDisc);
 // Eight enamelled prize sectors, readable values, brass spokes and a raised centre hub.
 const wheelValues=['0','10','25','50','100','250','500','1K'],wheelColors=[0x9a7080,0x83b9ad,0xd7a66c,0x8b83b5,0xd68a82,0x6f9da9,0xc6a15e,0x977ca9];
@@ -785,7 +795,7 @@ visitorProfiles.forEach((profile,i)=>{const g=new THREE.Group();const [x,z]=visi
   const inputEase=1-Math.exp(-dt*22);touch.x+=(touch.targetX-touch.x)*inputEase;touch.y+=(touch.targetY-touch.y)*inputEase;
   let x=((keys.has('d')||keys.has('arrowright'))?1:0)-((keys.has('a')||keys.has('arrowleft'))?1:0)+touch.x;
   let z=((keys.has('s')||keys.has('arrowdown'))?1:0)-((keys.has('w')||keys.has('arrowup'))?1:0)+touch.y;
-  const len=stepVelocity(motion,x,z,dt);const speed=Math.hypot(motion.x,motion.z);if(speed>.006){const nextX=clamp(player.position.x+motion.x*dt,-9.7,9.7),nextZ=clamp(player.position.z+motion.z*dt,-23.5,22);const blockedX=gameTables.some(table=>Math.abs(nextX-table.position.x)<2.16&&Math.abs(player.position.z-table.position.z)<1.43)||(Math.abs(nextX-prizeCounterPosition.x)<2.05&&Math.abs(player.position.z-prizeCounterPosition.z)<1.12)||(((Math.abs(nextX-prizeRoom.left)<.48||Math.abs(nextX-prizeRoom.right)<.48)&&player.position.z>10.2&&player.position.z<19.4)),blockedZ=gameTables.some(table=>Math.abs(player.position.x-table.position.x)<2.16&&Math.abs(nextZ-table.position.z)<1.43)||(Math.abs(player.position.x-prizeCounterPosition.x)<2.05&&Math.abs(nextZ-prizeCounterPosition.z)<1.12)||((Math.abs(nextZ-prizeRoom.back)<.48&&player.position.x> -11&&player.position.x< -3.2)||(Math.abs(nextZ-prizeRoom.front)<.48&&(player.position.x<prizeRoom.doorLeft||player.position.x>prizeRoom.doorRight)&&player.position.x> -11&&player.position.x< -3.2)||((Math.abs(player.position.x-prizeRoom.left)<.48||Math.abs(player.position.x-prizeRoom.right)<.48)&&nextZ>10.2&&nextZ<19.4));if(!blockedX)player.position.x=nextX;if(!blockedZ)player.position.z=nextZ;if(blockedX)motion.x*=.18;if(blockedZ)motion.z*=.18;player.rotation.y=turnToward(player.rotation.y,Math.atan2(motion.x,motion.z),dt,12);walk+=dt*(5.4+speed*1.15);const stride=Math.min(1,speed/4.65);torso.position.y=1.02+Math.abs(Math.sin(walk))*.045*stride;arms.forEach((arm,i)=>{arm.rotation.x=Math.sin(walk+i*Math.PI)*.42*stride;arm.rotation.z=(i===0?-.08:.08)+Math.sin(walk+i*Math.PI)*.055*stride;});legs.forEach((leg,i)=>leg.rotation.x=Math.sin(walk+i*Math.PI)*.56*stride);}else{motion.x=motion.z=0;torso.position.y=1.02+Math.sin(t*1.45)*.009;torso.rotation.z=Math.sin(t*.65)*.008;arms.forEach((arm,i)=>{arm.rotation.x=Math.sin(t*1.05+i*1.2)*.018;arm.rotation.z=(i===0?-.08:.08)+Math.sin(t*.85+i)*.012;});legs.forEach(leg=>leg.rotation.x+=(0-leg.rotation.x)*(1-Math.exp(-dt*8)));}
+  const len=stepVelocity(motion,x,z,dt);const speed=Math.hypot(motion.x,motion.z);if(speed>.006){const nextX=clamp(player.position.x+motion.x*dt,-9.7,9.7),nextZ=clamp(player.position.z+motion.z*dt,-23.5,22);const blockedX=solidBoxes.some(b=>Math.abs(nextX-b.x)<b.hw+.3&&Math.abs(player.position.z-b.z)<b.hd+.3)||gameTables.some(table=>Math.abs(nextX-table.position.x)<2.16&&Math.abs(player.position.z-table.position.z)<1.43)||(Math.abs(nextX-prizeCounterPosition.x)<2.05&&Math.abs(player.position.z-prizeCounterPosition.z)<1.12)||(((Math.abs(nextX-prizeRoom.left)<.48||Math.abs(nextX-prizeRoom.right)<.48)&&player.position.z>10.2&&player.position.z<19.4)),blockedZ=solidBoxes.some(b=>Math.abs(player.position.x-b.x)<b.hw+.3&&Math.abs(nextZ-b.z)<b.hd+.3)||gameTables.some(table=>Math.abs(player.position.x-table.position.x)<2.16&&Math.abs(nextZ-table.position.z)<1.43)||(Math.abs(player.position.x-prizeCounterPosition.x)<2.05&&Math.abs(nextZ-prizeCounterPosition.z)<1.12)||((Math.abs(nextZ-prizeRoom.back)<.48&&player.position.x> -11&&player.position.x< -3.2)||(Math.abs(nextZ-prizeRoom.front)<.48&&(player.position.x<prizeRoom.doorLeft||player.position.x>prizeRoom.doorRight)&&player.position.x> -11&&player.position.x< -3.2)||((Math.abs(player.position.x-prizeRoom.left)<.48||Math.abs(player.position.x-prizeRoom.right)<.48)&&nextZ>10.2&&nextZ<19.4));if(!blockedX)player.position.x=nextX;if(!blockedZ)player.position.z=nextZ;if(blockedX)motion.x*=.18;if(blockedZ)motion.z*=.18;player.rotation.y=turnToward(player.rotation.y,Math.atan2(motion.x,motion.z),dt,12);walk+=dt*(5.4+speed*1.15);const stride=Math.min(1,speed/4.65);torso.position.y=1.02+Math.abs(Math.sin(walk))*.045*stride;arms.forEach((arm,i)=>{arm.rotation.x=Math.sin(walk+i*Math.PI)*.42*stride;arm.rotation.z=(i===0?-.08:.08)+Math.sin(walk+i*Math.PI)*.055*stride;});legs.forEach((leg,i)=>leg.rotation.x=Math.sin(walk+i*Math.PI)*.56*stride);}else{motion.x=motion.z=0;torso.position.y=1.02+Math.sin(t*1.45)*.009;torso.rotation.z=Math.sin(t*.65)*.008;arms.forEach((arm,i)=>{arm.rotation.x=Math.sin(t*1.05+i*1.2)*.018;arm.rotation.z=(i===0?-.08:.08)+Math.sin(t*.85+i)*.012;});legs.forEach(leg=>leg.rotation.x+=(0-leg.rotation.x)*(1-Math.exp(-dt*8)));}
   if(gesture!=='idle'&&t<gestureUntil){
    const fade=Math.sin(Math.PI*Math.min(1,(t-gestureStarted)/(gestureUntil-gestureStarted)));
    if(gesture==='wave'){

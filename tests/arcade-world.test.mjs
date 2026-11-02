@@ -56,7 +56,7 @@ test('each mini-game defines a distinct instruction set and scoring mechanics',(
 
 test('air hockey has free 2D mallets with momentum transfer, CPU attack/defence, goal posts and first-to-five matches',()=>{
  const upd=fnBody(game,'updateHockey'),hit=fnBody(game,'hockeyHit');
- assert.match(hit,/rv<0/);assert.match(hit,/\(1\+\.9\)/);
+ assert.match(hit,/rv<0/);assert.match(hit,/\(1\+\.72\)/);
  assert.match(upd,/m\.vx=\(m\.x-px\)/);assert.match(upd,/bot\.mode='attack'/);assert.match(upd,/aimErr/);assert.match(upd,/cpuLevel\(\)/);
  assert.match(upd,/for\(const gx of \[HK\.GL,HK\.GR\]\)/);assert.match(upd,/p\.goal>=5/);assert.match(upd,/p\.botGoal>=5/);assert.match(upd,/p\.rally\+\+/);
  assert.match(game,/finish\(game==='airhockey'\?p\.goal>p\.botGoal/);
@@ -620,8 +620,10 @@ test('arcade district has living garden details and a festive social-square cano
 });
 
 test('walk-up air hockey and billiards have a clear physical gap and grounded table legs',()=>{
- assert.match(world,/g\.position\.set\(-4\.45,0,-2\.55\)/);
- assert.match(world,/g\.position\.set\(4\.45,0,-2\.55\)/);
+ assert.match(world,/g\.position\.set\(-8\.6,0,-4\.7\)/);
+ assert.match(world,/g\.position\.set\(8\.9,0,-11\.8\)/);
+ // tables sit in open floor clear of the cabinet columns (x=±5.2, half-width .8) and the prize room
+ assert.match(world,/const cabinetZ=i=>i<9\?-18\.5\+\(i%9\)\*3\.45/);
  assert.match(world,/box\(\.2,\.68,\.2,x,\.34,z,clayMat\(0x60444b\)/);
  assert.match(world,/box\(\.22,\.68,\.22,x,\.34,z,clayMat\(0x68494a\)/);
 });
@@ -699,3 +701,11 @@ test('turbo tunnels is a lap race: spline track, steering physics, three lap cou
  assert.doesNotMatch(game,/p\.lane=Math\.max\(0,p\.lane-1\)/);
 });
 test('canvas keeps its 900:520 ratio on short landscape windows',()=>{const css2=css;assert.match(css2,/#stage\{width:min\(100%,calc\(58vh\*900\/520\)\)/);});
+
+test('lobby crowd has personalities, A* navigation over real obstacles, queues, reactions and stuck recovery',async()=>{
+ const crowd=await readFile(new URL('../lobby-crowd.js',import.meta.url),'utf8');
+ for(const k of ["'queue'","'play'","'react'","'drink'","'browse'","'dance'","'chat'","findPath","losClear","stuckT","skill","fav:pick(FAVS)"])assert.ok(crowd.includes(k),k);
+ assert.match(world,/createCrowd\(\{THREE,scene,clayMat,cabinets/);
+ assert.match(world,/const solidBoxes=\[\.\.\.cabinets\.map/);
+ assert.match(world,/solidBoxes\.some\(b=>Math\.abs\(nextX-b\.x\)/);
+});
