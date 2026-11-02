@@ -36,7 +36,7 @@ This is a static site. Open `index.html`, or run a local static server:
 npx serve .
 ```
 
-Three.js loads as an ES module from jsDelivr, so an internet connection is needed for the 3D environments.
+Three.js loads as an ES module from jsDelivr, so an internet connection is needed for the 3D environments. Run `npm test` to execute the basketball physics regression suite.
 
 ## GitHub Pages
 
