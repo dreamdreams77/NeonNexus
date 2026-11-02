@@ -45,21 +45,7 @@
     if(id==='vault'&&!state.vault){state.vault=true;state.tokens+=25;updateWallet();updateQuests();}
     openModal('DISTRICT ACCESS / '+id.toUpperCase(),d[0],d[1]+' '+d[2],'','BACK TO THE RESORT');
   }));
-  function startGame(){
-    closeModal(); state.score = 0; state.time = 30; state.activeGame = true;
-    openModal('CLASSIC ARCADE / QUICK PLAY','Neon Hoops','Tap the button to shoot. Each basket scores 10 points. You have 30 seconds.', '<div class="game-play"><div class="game-score" id="live-score">0</div><div class="game-clock" id="live-clock">00:30 REMAINING</div><button class="shoot-btn" id="shoot-btn">SHOOT! 🏀</button></div>', 'END GAME', endGame);
-    modalAction.disabled = true; modalAction.style.opacity = '.35';
-    $('#shoot-btn').addEventListener('click', () => {
-      if(!state.activeGame) return;
-      const made = Math.random() > .24;
-      if(made){ state.score += 10; $('#live-score').textContent = state.score; $('#live-score').style.textShadow = '0 0 20px #5ce7f2'; }
-      else { toast('Off the rim! Take another shot.'); }
-    });
-    state.timer = setInterval(() => {
-      state.time--; $('#live-clock').textContent = '00:'+String(state.time).padStart(2,'0')+' REMAINING';
-      if(state.time <= 0) endGame();
-    },1000);
-  }
+  function startGame(){ window.location.href = './hoops.html'; }
   function endGame(){
     if(!state.activeGame) return;
     state.activeGame = false; clearInterval(state.timer);
