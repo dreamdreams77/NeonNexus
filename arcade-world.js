@@ -5,12 +5,13 @@ const mount=document.querySelector('#arcade-world');
 if(mount){
  const scene=new THREE.Scene();scene.background=new THREE.Color(0x33283c);scene.fog=new THREE.FogExp2(0x33283c,.021);
  const camera=new THREE.OrthographicCamera(-13,13,13,-13,.1,120);camera.position.set(0,24,31);
- const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});
- renderer.setPixelRatio(Math.min(devicePixelRatio||1,matchMedia('(max-width: 700px)').matches?1.35:1.7));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+ const mobileDevice=matchMedia('(max-width: 700px)').matches;
+ const renderer=new THREE.WebGLRenderer({antialias:!mobileDevice,alpha:false,powerPreference:'high-performance'});
+ renderer.setPixelRatio(Math.min(devicePixelRatio||1,mobileDevice?1.2:1.5));renderer.shadowMap.enabled=!mobileDevice;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
  renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.18;
  mount.prepend(renderer.domElement);renderer.domElement.setAttribute('aria-label','Walkable 3D claymation arcade. Use WASD or arrow keys, or the touch joystick. Approach a cabinet and press E.');
  const hemi=new THREE.HemisphereLight(0xffe4c8,0x3a2940,2.1);scene.add(hemi);
- const key=new THREE.DirectionalLight(0xffd5ad,3.1);key.position.set(-7,13,9);key.castShadow=true;key.shadow.mapSize.set(2048,2048);key.shadow.camera.left=-20;key.shadow.camera.right=20;key.shadow.camera.top=20;key.shadow.camera.bottom=-20;key.shadow.bias=-.0002;scene.add(key);
+ const key=new THREE.DirectionalLight(0xffd5ad,3.1);key.position.set(-7,13,9);key.castShadow=!mobileDevice;key.shadow.mapSize.set(1024,1024);key.shadow.camera.left=-20;key.shadow.camera.right=20;key.shadow.camera.top=20;key.shadow.camera.bottom=-20;key.shadow.bias=-.0002;scene.add(key);
  const pink=new THREE.PointLight(0xff6fae,34,22);pink.position.set(-7,5,-6);scene.add(pink);
  const cyan=new THREE.PointLight(0x62d9df,30,22);cyan.position.set(7,5,1);scene.add(cyan);
  const gold=new THREE.PointLight(0xffc875,22,16);gold.position.set(0,4,-15);scene.add(gold);
@@ -272,6 +273,41 @@ if(mount){
  const tables=[];
  function makeTable(x,z,i){const g=new THREE.Group();g.position.set(x,0,z);dining.add(g);cyl(.78,.86,.18,0,1.05,0,cream,g);cyl(.12,.16,1,0,.5,0,wood,g);for(let a=0;a<4;a++){const ang=a*Math.PI/2;box(.58,.18,.58,Math.cos(ang)*1.15,.55,Math.sin(ang)*1.15,clayMat(0x9a6862),g,.12);box(.64,.12,.64,Math.cos(ang)*1.15,.93,Math.sin(ang)*1.15,clayMat(0xd6a58d),g,.1);}for(let a=0;a<3;a++){cyl(.22,.22,.035,-.35+a*.35,1.16,.08,mat(0xfff0d3,.3),g);sphere(.08,-.35+a*.35,1.22,.08,clayMat([0xd67f70,0x88bca3,0xe3bc70][a]),g,.7,.4,.7);}tables.push({group:g,position:new THREE.Vector3(x,0,z),number:i});}
  makeTable(5.8,5.3,1);makeTable(9.1,7.8,2);makeTable(5.7,10.5,3);
+ // Two full-size, walk-up floor attractions sit in the open centre of the district.
+ const gameTables=[];
+ function makeAirHockeyTable(){
+  const g=new THREE.Group();g.position.set(-2.35,0,-2.1);scene.add(g);
+  box(3.55,.34,2.08,0,.69,0,clayMat(0x604653),g,.2);
+  box(3.38,.12,1.91,0,.91,0,mat(0x8bc9c3,.34,.08),g,.12);
+  box(3.18,.045,1.71,0,.995,0,mat(0xb8d9ce,.42),g,.08);
+  for(const z of [-.91,.91])box(3.45,.19,.12,0,1.08,z,clayMat(0xe1b17e),g,.06);
+  for(const x of [-1.69,1.69])box(.12,.19,1.78,x,1.08,0,clayMat(0xd69b78),g,.06);
+  box(.07,.012,1.55,0,1.025,0,mat(0xf8ead0,.4),g,.02);
+  const centre=new THREE.Mesh(new THREE.TorusGeometry(.36,.018,8,40),mat(0xf8ead0,.35));centre.rotation.x=Math.PI/2;centre.position.set(0,1.035,0);g.add(centre);
+  for(const x of [-.73,.73]){const goal=box(.48,.08,.13,x,1.04,-.91,mat(0x493a50,.5),g,.04);goal.position.z=-.91;}
+  const puck=sphere(.105,0,1.11,0,mat(0xf7e9ce,.22,.12,0xffffff,.08),g,1,.28,1);
+  const mallets=[sphere(.22,-1.05,1.12,.48,clayMat(0xe58b79),g,1,.42,1),sphere(.22,1.05,1.12,-.48,clayMat(0x7fc8bf),g,1,.42,1)];
+  const railGlow=mat(0x83d9d1,.32,.08,0x5bd5ce,.42);
+  for(const x of [-1.72,1.72])box(.035,.045,1.72,x,1.2,0,railGlow,g,.015);
+  gameTables.push({gameId:'airhockey',name:'COMET AIR HOCKEY',position:new THREE.Vector3(-2.35,0,-2.1),group:g,puck,mallets});
+ }
+ function makeBilliardsTable(){
+  const g=new THREE.Group();g.position.set(2.35,0,-2.1);scene.add(g);
+  box(3.55,.4,2.12,0,.68,0,clayMat(0x65474a),g,.2);
+  box(3.38,.15,1.96,0,.93,0,clayMat(0x95665a),g,.13);
+  box(3.12,.055,1.7,0,1.035,0,mat(0x356e5b,.82),g,.06);
+  for(const z of [-.91,.91])box(3.32,.16,.14,0,1.09,z,clayMat(0x9b6a55),g,.06);
+  for(const x of [-1.64,1.64])box(.14,.16,1.72,x,1.09,0,clayMat(0x9b6a55),g,.06);
+  const pocketMat=mat(0x241f31,.62);
+  for(const x of [-1.54,0,1.54])for(const z of [-.82,.82]){const pocket=sphere(.14,x,1.075,z,pocketMat,g,1,.28,1);pocket.castShadow=false;}
+  const ballMats=[0xe9d8a8,0xe6a05f,0x78a9c0,0xd77e79,0x9d87bd,0x82b58d];
+  const rack=[];for(let row=0;row<5;row++)for(let col=0;col<=row;col++){const n=rack.length+1,x=(col-row/2)*.205,z=-.35+row*.205;const color=n===8?0x252638:ballMats[(n-1)%ballMats.length];const b=sphere(.092,x,1.115,z,mat(color,.24,.08),g);b.userData.number=n;rack.push(b);}
+  sphere(.092,0,1.115,.55,mat(0xf5eddb,.2),g);
+  const brassCorners=mat(0xe2b77d,.35,.35);
+  for(const x of [-1.6,1.6])for(const z of [-.92,.92])sphere(.065,x,1.18,z,brassCorners,g);
+  gameTables.push({gameId:'billiards',name:'MOONLIGHT BILLIARDS',position:new THREE.Vector3(2.35,0,-2.1),group:g,rack});
+ }
+ makeAirHockeyTable();makeBilliardsTable();
  const services=[{type:'bar',name:'GLOW BAR · ORDER FOOD & DRINKS',position:new THREE.Vector3(8.8,0,-.2)},{type:'pass',name:'KITCHEN PASS · COLLECT ORDERS',position:new THREE.Vector3(8.8,0,2.2)},{type:'host',name:'HOST STAND · REQUEST A TABLE',position:new THREE.Vector3(1.4,0,10.2)},...tables.map(t=>({type:'table',name:'TABLE '+t.number+' · TAKE A SEAT',position:t.position,table:t.number}))];
  // Player avatar: a fully modelled, hand-sculpted clay character rather than a flat blob.
  const player=new THREE.Group();scene.add(player);player.position.set(0,0,13);
@@ -337,17 +373,18 @@ if(mount){
   return pivot;
  }
  makeLeg(-1);makeLeg(1);
- const keys=new Set(),touch={x:0,y:0,targetX:0,targetY:0},motion={x:0,z:0};let nearest=null,activeService=null,walk=0,nextBlink=2.4,blinkUntil=0,gesture='idle',gestureStarted=0,gestureUntil=0;
+ const keys=new Set(),touch={x:0,y:0,targetX:0,targetY:0},motion={x:0,z:0};let nearest=null,activeService=null,activeTableGame=null,walk=0,nextBlink=2.4,blinkUntil=0,gesture='idle',gestureStarted=0,gestureUntil=0;
  const prompt=document.querySelector('#arcade-world-prompt'),interact=document.querySelector('#arcade-interact'),pad=document.querySelector('#arcade-touch-pad'),knob=document.querySelector('#arcade-joystick');
  const gameOverlay=document.querySelector('#overlay'),serviceModal=document.querySelector('#service-modal'),reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
  const discovery=document.querySelector('#cabinet-discovery'),discoveryTitle=document.querySelector('#discovery-title'),discoveryGenre=document.querySelector('#discovery-genre'),discoveryDescription=document.querySelector('#discovery-description'),discoveryChallenge=document.querySelector('#discovery-challenge'),discoveryControls=document.querySelector('#discovery-controls'),discoveryAction=document.querySelector('#discovery-action');
  function triggerGesture(type,duration=1.35){gesture=type;gestureStarted=clock.elapsedTime;gestureUntil=gestureStarted+duration;}
  function useCabinet(){if(!nearest)return;triggerGesture('excited',1.1);window.dispatchEvent(new CustomEvent('nexus:arcade-play',{detail:{gameId:nearest.userData.id}}));}
  function useService(){if(!activeService)return;triggerGesture('wave',1.55);window.dispatchEvent(new CustomEvent('nexus:service-open',{detail:{service:activeService.type,table:activeService.table||null}}));}
+ function useTableGame(){if(!activeTableGame)return;triggerGesture('excited',1.1);window.dispatchEvent(new CustomEvent('nexus:table-play',{detail:{gameId:activeTableGame.gameId}}));}
  window.addEventListener('nexus:character-celebrate',()=>triggerGesture('celebrate',2.1));
  window.addEventListener('nexus:character-wave',()=>triggerGesture('wave',1.55));
- interact.addEventListener('click',()=>{if(activeService)useService();else useCabinet();});
- window.addEventListener('keydown',e=>{if(!document.querySelector('#overlay').hidden||!document.querySelector('#service-modal').hidden)return;const k=e.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e'].includes(k)){e.preventDefault();keys.add(k);}if(k==='e'){if(activeService)useService();else useCabinet();}});
+ interact.addEventListener('click',()=>{if(activeService)useService();else if(activeTableGame)useTableGame();else useCabinet();});
+ window.addEventListener('keydown',e=>{if(!document.querySelector('#overlay').hidden||!document.querySelector('#service-modal').hidden)return;const k=e.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e'].includes(k)){e.preventDefault();keys.add(k);}if(k==='e'){if(activeService)useService();else if(activeTableGame)useTableGame();else useCabinet();}});
  window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));window.addEventListener('blur',()=>keys.clear());
  if(pad){let pid=null;const setTarget=e=>{const r=pad.getBoundingClientRect(),dx=e.clientX-r.left-r.width/2,dy=e.clientY-r.top-r.height/2,len=Math.max(1,Math.hypot(dx,dy)),scale=Math.min(1,len/(r.width*.32));touch.targetX=dx/len*scale;touch.targetY=dy/len*scale;};pad.addEventListener('pointerdown',e=>{pid=e.pointerId;pad.setPointerCapture(pid);setTarget(e);});pad.addEventListener('pointermove',e=>{if(pid===e.pointerId)setTarget(e);});const stop=e=>{if(pid!==null&&(!e||e.pointerId===pid)){pid=null;touch.targetX=touch.targetY=0;}};pad.addEventListener('pointerup',stop);pad.addEventListener('pointercancel',stop);pad.addEventListener('lostpointercapture',stop);}
  const ray=new THREE.Raycaster(),pointer=new THREE.Vector2();
@@ -355,7 +392,7 @@ if(mount){
  window.addEventListener('nexus:order-created',()=>{const chef=serviceStaff.find(s=>s.role==='chef');if(chef){chef.reactionUntil=clock.elapsedTime+2.4;chef.emotion='focused';}});
  window.addEventListener('nexus:order-ready',()=>{serviceStaff.forEach(s=>{s.reactionUntil=clock.elapsedTime+2.8;s.emotion='happy';});triggerGesture('celebrate',1.35);});
  window.addEventListener('nexus:order-served',()=>{const chef=serviceStaff.find(s=>s.role==='chef');if(chef){chef.reactionUntil=clock.elapsedTime+2;s.emotion='proud';}});
- const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),clock=new THREE.Clock();
+ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),clock=new THREE.Clock(),cameraTarget=new THREE.Vector3();let previewSetCache=new Set(),nextPreviewRefresh=0,moteFrame=0;
  function resize(){const w=Math.max(1,mount.clientWidth),h=Math.max(1,mount.clientHeight),aspect=w/h,viewHeight=Math.max(26,16/aspect);camera.left=-viewHeight*aspect/2;camera.right=viewHeight*aspect/2;camera.top=viewHeight/2;camera.bottom=-viewHeight/2;camera.updateProjectionMatrix();renderer.setSize(w,h,false);}new ResizeObserver(resize).observe(mount);resize();
  function update(dt,t){
   if(t>=nextBlink){blinkUntil=t+.13;nextBlink=t+2.8+((Math.sin(t*4.7)+1)*.75);}
@@ -363,10 +400,10 @@ if(mount){
   blinkLids.forEach(lid=>{lid.scale.y=.015+Math.max(0,blink)*.96;lid.position.y=.09-Math.max(0,blink)*.055;});
   head.rotation.x=Math.sin(t*.83)*.018;head.rotation.z=Math.sin(t*.61)*.012;
   hairCurls.forEach(curl=>{const phase=t*7.54+curl.userData.phase;curl.rotation.z=Math.sin(phase)*.025;curl.scale.y=.72+Math.sin(phase+1)*.012;});
-  touch.x+=(touch.targetX-touch.x)*(1-Math.exp(-dt*17));touch.y+=(touch.targetY-touch.y)*(1-Math.exp(-dt*17));
+  const inputEase=1-Math.exp(-dt*22);touch.x+=(touch.targetX-touch.x)*inputEase;touch.y+=(touch.targetY-touch.y)*inputEase;
   let x=((keys.has('d')||keys.has('arrowright'))?1:0)-((keys.has('a')||keys.has('arrowleft'))?1:0)+touch.x;
   let z=((keys.has('s')||keys.has('arrowdown'))?1:0)-((keys.has('w')||keys.has('arrowup'))?1:0)+touch.y;
-  const len=Math.hypot(x,z);if(len>1){x/=len;z/=len;}const response=1-Math.exp(-dt*(len>.06?13:8));motion.x+=(x*5.1-motion.x)*response;motion.z+=(z*5.1-motion.z)*response;const speed=Math.hypot(motion.x,motion.z);if(speed>.12){player.position.x=clamp(player.position.x+motion.x*dt,-9.7,9.7);player.position.z=clamp(player.position.z+motion.z*dt,-23.5,22);player.rotation.y=Math.atan2(motion.x,motion.z);walk+=dt*(6+speed*1.15);torso.position.y=1.02+Math.abs(Math.sin(walk))*.035;arms.forEach((arm,i)=>{arm.rotation.x=Math.sin(walk+i*Math.PI)*.34;arm.rotation.z=(i===0?-.08:.08)+Math.sin(walk+i*Math.PI)*.045;});legs.forEach((leg,i)=>leg.rotation.x=Math.sin(walk+i*Math.PI)*.48);}else{motion.x=motion.z=0;torso.position.y=1.02+Math.sin(t*2.1)*.012;torso.rotation.z=Math.sin(t*.9)*.012;arms.forEach((arm,i)=>{arm.rotation.x=Math.sin(t*1.7+i*1.2)*.035;arm.rotation.z=(i===0?-.08:.08)+Math.sin(t*1.3+i)*.018;});legs.forEach(leg=>leg.rotation.x*=.82);}
+  const len=Math.hypot(x,z);if(len>1){x/=len;z/=len;}const response=1-Math.exp(-dt*(len>.06?19:14));motion.x+=(x*5.1-motion.x)*response;motion.z+=(z*5.1-motion.z)*response;const speed=Math.hypot(motion.x,motion.z);if(speed>.018){player.position.x=clamp(player.position.x+motion.x*dt,-9.7,9.7);player.position.z=clamp(player.position.z+motion.z*dt,-23.5,22);player.rotation.y=Math.atan2(motion.x,motion.z);walk+=dt*(6+speed*1.15);torso.position.y=1.02+Math.abs(Math.sin(walk))*.035;arms.forEach((arm,i)=>{arm.rotation.x=Math.sin(walk+i*Math.PI)*.34;arm.rotation.z=(i===0?-.08:.08)+Math.sin(walk+i*Math.PI)*.045;});legs.forEach((leg,i)=>leg.rotation.x=Math.sin(walk+i*Math.PI)*.48);}else{motion.x=motion.z=0;torso.position.y=1.02+Math.sin(t*2.1)*.012;torso.rotation.z=Math.sin(t*.9)*.012;arms.forEach((arm,i)=>{arm.rotation.x=Math.sin(t*1.7+i*1.2)*.035;arm.rotation.z=(i===0?-.08:.08)+Math.sin(t*1.3+i)*.018;});legs.forEach(leg=>leg.rotation.x*=.82);}
   if(gesture!=='idle'&&t<gestureUntil){
    const fade=Math.sin(Math.PI*Math.min(1,(t-gestureStarted)/(gestureUntil-gestureStarted)));
    if(gesture==='wave'){
@@ -381,24 +418,27 @@ if(mount){
     torso.rotation.z=Math.sin(t*9)*.06*fade;torso.position.y+=Math.abs(Math.sin(t*9))*.1*fade;
    }
   }else{gesture='idle';hands.forEach(hand=>{hand.rotation.z*=.8;});}
-  camera.position.lerp(new THREE.Vector3(player.position.x,player.position.y+23,player.position.z+17),1-Math.exp(-3.8*dt));camera.lookAt(player.position.x,0,player.position.z-1.5);
+  cameraTarget.set(player.position.x,player.position.y+23,player.position.z+17);camera.position.lerp(cameraTarget,1-Math.exp(-7.2*dt));camera.lookAt(player.position.x,0,player.position.z-1.5);
   nearest=null;let dmin=4.1,discovered=null,discoverDistance=7.6;for(const c of cabinets){const d=player.position.distanceTo(c.position);if(d<discoverDistance){discoverDistance=d;discovered=c;}if(d<dmin){dmin=d;nearest=c;}}
   activeService=null;let serviceDistance=3.5;for(const service of services){const d=player.position.distanceTo(service.position);if(d<serviceDistance){serviceDistance=d;activeService=service;}}
+  activeTableGame=null;let tableDistance=3.7;for(const table of gameTables){const d=player.position.distanceTo(table.position);if(d<tableDistance){tableDistance=d;activeTableGame=table;}}
   if(activeService){prompt.textContent='E / TAP TO INTERACT  ·  '+activeService.name;interact.hidden=false;interact.textContent=activeService.type==='table'?'SIT AT TABLE '+activeService.table+' ↗':activeService.name.split(' · ')[0]+' ↗';}
+  else if(activeTableGame){prompt.textContent='E / TAP TO PLAY · '+activeTableGame.name+' · 10 TOKEN ENTRY';interact.hidden=false;interact.textContent='PLAY '+activeTableGame.name+' · 10 ✦';}
   else if(nearest){prompt.textContent='E / TAP TO PLAY  ·  '+nearest.userData.name;interact.hidden=false;interact.textContent='PLAY '+nearest.userData.name+' ↗';}
   else if(discovered){prompt.textContent='GAME PREVIEW · '+discovered.userData.name+' · WALK CLOSER TO PLAY';interact.hidden=true;}
   else{prompt.textContent='EXPLORE THE DISTRICT · APPROACH A CABINET OR SERVICE';interact.hidden=true;}
-  if(discovered&&!activeService){
+  if(discovered&&!activeService&&!activeTableGame){
    const data=gameGuide[discovered.userData.id]||{label:discovered.userData.genre,description:'Step up and discover this arcade challenge.',challenge:'Skill · score · high-score chase',controls:'Follow the on-screen instructions'};
    discovery.hidden=false;discoveryTitle.textContent=discovered.userData.name;discoveryGenre.textContent=data.label;discoveryDescription.textContent=data.description;discoveryChallenge.textContent=data.challenge;discoveryControls.textContent=data.controls;discoveryAction.textContent=nearest&&nearest===discovered?'E / TAP TO START':'WALK CLOSER TO UNLOCK PLAY';
   }else discovery.hidden=true;
   const previewEnabled=!reduceMotion&&document.visibilityState==='visible'&&(!gameOverlay||gameOverlay.hidden)&&(!serviceModal||serviceModal.hidden);
-  const previewSet=previewEnabled?new Set(cabinets.map(c=>({cabinet:c,distance:player.position.distanceTo(c.position)})).filter(v=>v.distance<19).sort((a,b)=>a.distance-b.distance).slice(0,4).map(v=>v.cabinet)):new Set();
+  if(previewEnabled&&t>=nextPreviewRefresh){previewSetCache=new Set(cabinets.map(c=>({cabinet:c,distance:player.position.distanceTo(c.position)})).filter(v=>v.distance<19).sort((a,b)=>a.distance-b.distance).slice(0,4).map(v=>v.cabinet));nextPreviewRefresh=t+.25;}else if(!previewEnabled)previewSetCache.clear();
+  const previewSet=previewSetCache;
   cabinets.forEach((c,i)=>{const pulse=.75+Math.sin(t*2.1+i*.8)*.22;c.userData.lamp.intensity=1.4+pulse*1.1;c.position.y=Math.sin(t*1.3+i)*.012;c.userData.discoveryRing.visible=!!discovered&&discovered===c&&!activeService;c.userData.discoveryRing.material.opacity=.35+Math.sin(t*3.2+i)*.16;
    const preview=c.userData.preview,screenDistance=player.position.distanceTo(c.position);
    if(preview&&previewSet.has(c)){preview.clock+=dt;if(preview.clock>=.12){preview.clock=0;preview.frame++;drawCabinetPreview(preview,preview.frame);}}else if(preview){preview.clock=0;}
   });
-  const motesAttr=moteGeo.attributes.position;for(let i=0;i<90;i++){const y=motesAttr.getY(i)+dt*(.025+(i%4)*.012);motesAttr.setY(i,y>5?0.45:y);}motesAttr.needsUpdate=true;
+  if((moteFrame++%2)===0){const motesAttr=moteGeo.attributes.position;for(let i=0;i<90;i++){const y=motesAttr.getY(i)+dt*2*(.025+(i%4)*.012);motesAttr.setY(i,y>5?0.45:y);}motesAttr.needsUpdate=true;}
   // The prize host breathes, blinks and gives a distinct welcome wave when approached.
   const hostDistance=player.position.distanceTo(host.position);
   const hostNear=hostDistance<4.8;
@@ -443,6 +483,6 @@ if(mount){
   });
   if(knob)knob.style.transform='translate('+touch.x*31+'px,'+touch.y*31+'px)';pink.intensity=30+Math.sin(t*1.4)*5;cyan.intensity=28+Math.cos(t*1.1)*5;
  }
- function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.04),t=clock.elapsedTime;update(dt,t);renderer.render(scene,camera);}
+ function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.05),t=clock.elapsedTime;update(dt,t);renderer.render(scene,camera);}
  animate();
 }
