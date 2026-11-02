@@ -18,13 +18,16 @@ if(mount){
  const mat=(color,roughness=.82,metalness=0,emissive=0,ei=0)=>new THREE.MeshStandardMaterial({color,roughness,metalness,emissive,emissiveIntensity:ei});
  // Handmade plaster has a fine irregular grain and soft thumbprint-like surface variation.
  function clayMaps(){
-  const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');x.fillStyle='#aaa';x.fillRect(0,0,256,256);
-  for(let i=0;i<1900;i++){const v=90+Math.random()*90;x.fillStyle='rgba('+v+','+v+','+v+','+(.035+Math.random()*.09)+')';x.beginPath();x.ellipse(Math.random()*256,Math.random()*256,Math.random()*5+.5,Math.random()*2+.5,Math.random()*3,0,Math.PI*2);x.fill();}
-  for(let i=0;i<18;i++){x.strokeStyle='rgba(40,30,35,.12)';x.lineWidth=1+Math.random()*2;x.beginPath();x.arc(Math.random()*256,Math.random()*256,4+Math.random()*25,Math.random()*6,Math.random()*6+1);x.stroke();}
-  const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(1.4,1.4);return t;
+  const c=document.createElement('canvas');c.width=c.height=512;const x=c.getContext('2d');x.fillStyle='#aaa';x.fillRect(0,0,512,512);
+  // Fine grain, soft dragged tool marks and shallow fingerprints give the clay a tactile surface.
+  let seed=18473;const rand=()=>{seed=(seed*16807)%2147483647;return(seed-1)/2147483646;};
+  for(let i=0;i<5200;i++){const v=78+rand()*112;x.fillStyle='rgba('+v+','+v+','+v+','+(.025+rand()*.105)+')';x.beginPath();x.ellipse(rand()*512,rand()*512,rand()*7+.4,rand()*2.8+.3,rand()*Math.PI,0,Math.PI*2);x.fill();}
+  for(let i=0;i<52;i++){const px=rand()*512,py=rand()*512,r=5+rand()*24,start=rand()*Math.PI*2;x.strokeStyle='rgba(35,25,32,'+(.055+rand()*.075)+')';x.lineWidth=.7+rand()*1.7;x.beginPath();x.arc(px,py,r,start,start+1.2+rand()*3.7);x.stroke();x.strokeStyle='rgba(255,245,218,.10)';x.lineWidth=.8;x.beginPath();x.arc(px-1.5,py-1.5,r*.82,start+.2,start+1.4);x.stroke();}
+  for(let i=0;i<90;i++){const px=rand()*512,py=rand()*512;x.strokeStyle='rgba(45,32,39,'+(.025+rand()*.045)+')';x.lineWidth=.6+rand();x.beginPath();x.moveTo(px,py);x.quadraticCurveTo(px+4+rand()*12,py-2+rand()*4,px+12+rand()*18,py+rand()*3);x.stroke();}
+  const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(1.4,1.4);t.generateMipmaps=true;t.minFilter=THREE.LinearMipmapLinearFilter;return t;
  }
  const grain=clayMaps();
- function clayMat(color,rough=.9){return new THREE.MeshStandardMaterial({color,roughness:rough,metalness:0,bumpMap:grain,bumpScale:.055});}
+ function clayMat(color,rough=.9){return new THREE.MeshPhysicalMaterial({color,roughness:rough,metalness:0,bumpMap:grain,bumpScale:.072,roughnessMap:grain,clearcoat:.08,clearcoatRoughness:.82});}
  function feltTexture(base){const c=document.createElement('canvas');c.width=512;c.height=256;const x=c.getContext('2d');x.fillStyle=base;x.fillRect(0,0,512,256);for(let i=0;i<2100;i++){x.fillStyle=i%2?'rgba(255,244,218,.055)':'rgba(25,45,38,.065)';x.fillRect((i*97)%512,(i*53)%256,1+(i%3),1);}for(let i=0;i<48;i++){x.strokeStyle='rgba(240,224,190,.055)';x.lineWidth=1;x.beginPath();x.moveTo((i*83)%512,(i*37)%256);x.quadraticCurveTo((i*83)%512+18,(i*37)%256-4,(i*83)%512+34,(i*37)%256+2);x.stroke();}const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;}
  const airFelt=feltTexture('#b8d9ce'),poolFelt=feltTexture('#356e59');
  const box=(w,h,d,x,y,z,m,parent=scene,round=0)=>{const geo=round?new RoundedBoxGeometry(w,h,d,3,round):new THREE.BoxGeometry(w,h,d);const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o;};
@@ -347,7 +350,7 @@ if(mount){
  box(6.8,.2,.18,-7.1,.22,11.42,roomTrim,scene,.04);
  const galleryDisplayRoot=new THREE.Group();scene.add(galleryDisplayRoot);
  const prizeArt={
-  gold:mat(0xd6ad70,.28,.7),silver:mat(0xb7c6ce,.22,.82),dark:mat(0x332b3e,.3),white:mat(0xfff0d9,.24),
+  gold:new THREE.MeshPhysicalMaterial({color:0xd6ad70,roughness:.24,metalness:.72,clearcoat:.65,clearcoatRoughness:.22}),silver:new THREE.MeshPhysicalMaterial({color:0xb7c6ce,roughness:.2,metalness:.82,clearcoat:.5}),dark:new THREE.MeshPhysicalMaterial({color:0x332b3e,roughness:.3,clearcoat:.28}),white:new THREE.MeshPhysicalMaterial({color:0xfff0d9,roughness:.24,clearcoat:.18}),
   coral:clayMat(0xd88975),teal:clayMat(0x78b9b0),violet:clayMat(0x9382bd),cream:clayMat(0xf0d6ad),blue:clayMat(0x729dbb),green:clayMat(0x8fbd99),pink:clayMat(0xdba0b0)
  };
  function artMesh(g,m,p,x=0,y=0,z=0,scale){const o=new THREE.Mesh(g,m);o.position.set(x,y,z);if(scale)o.scale.set(...scale);o.castShadow=true;o.receiveShadow=true;p.add(o);return o;}
