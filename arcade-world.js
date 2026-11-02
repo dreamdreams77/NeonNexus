@@ -216,9 +216,14 @@ if(mount){
   const crestDots=[];
   for(let n=0;n<3;n++){const dot=new THREE.Mesh(new THREE.SphereGeometry(.027,10,8),new THREE.MeshStandardMaterial({color:n===1?0xffe2a0:color,emissive:color,emissiveIntensity:.65}));crest.add(dot);crestDots.push(dot);}
   const crestLight=new THREE.PointLight(color,.35,1.25);crestLight.position.z=.08;crest.add(crestLight);
+  // Seven tactile mastery pips turn long-term play into a visible cabinet trophy.
+  const masteryRing=new THREE.Mesh(new THREE.TorusGeometry(.112,.012,7,24),new THREE.MeshStandardMaterial({color:0x9b795e,metalness:.65,roughness:.32}));
+  masteryRing.position.set(-.48,.69,.615);g.add(masteryRing);
+  const masteryPips=[];
+  for(let pip=0;pip<7;pip++){const angle=Math.PI*.12+pip*(Math.PI*.76/6),dot=new THREE.Mesh(new THREE.SphereGeometry(.022,10,8),new THREE.MeshStandardMaterial({color:0x574454,emissive:0x211b2a,emissiveIntensity:.12,roughness:.3,metalness:.2}));dot.position.set(-.48+Math.cos(angle)*.087,.69+Math.sin(angle)*.087,.625);g.add(dot);masteryPips.push(dot);}
   const lamp=new THREE.PointLight(color,1.8,3.2);lamp.position.set(0,2.2,.9);g.add(lamp);
   const discoveryRing=new THREE.Mesh(new THREE.RingGeometry(.92,1.12,48),new THREE.MeshBasicMaterial({color:color,transparent:true,opacity:.62,side:THREE.DoubleSide,depthWrite:false}));discoveryRing.rotation.x=-Math.PI/2;discoveryRing.position.set(side*5.2,.035,z);discoveryRing.visible=false;scene.add(discoveryRing);
-  g.userData={name,id,genre,index:i,screen,screenTex,preview,marquee:marqScreen,lamp,discoveryRing,crest,crestRing,crestCore,crestDots,crestLight,baseY:1.42};
+  g.userData={name,id,genre,index:i,screen,screenTex,preview,marquee:marqScreen,lamp,discoveryRing,crest,crestRing,crestCore,crestDots,crestLight,masteryPips,masteryRing,masteryLevel:0,baseY:1.42};
   cabinets.push(g);
   // Hand-painted floor decal, small and slightly rotated.
   const decal=box(1.9,.025,1.1,side*5.2,.005,z+ (side===-1?1.2:-1.2),mat(0x9b7180,.95),scene,.2);decal.rotation.y=(i%2)*.035;
@@ -546,9 +551,10 @@ visitorProfiles.forEach((profile,i)=>{const g=new THREE.Group();const [x,z]=visi
  window.addEventListener('nexus:order-created',()=>{const chef=serviceStaff.find(s=>s.role==='chef');if(chef){chef.reactionUntil=clock.elapsedTime+2.4;chef.emotion='focused';}});
  window.addEventListener('nexus:order-ready',()=>{serviceStaff.forEach(s=>{s.reactionUntil=clock.elapsedTime+2.8;s.emotion='happy';});triggerGesture('celebrate',1.35);});
  window.addEventListener('nexus:order-served',()=>{const chef=serviceStaff.find(s=>s.role==='chef');if(chef){chef.reactionUntil=clock.elapsedTime+2;s.emotion='proud';}});
- const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),clock=new THREE.Clock(),cameraTarget=new THREE.Vector3();let previewSetCache=new Set(),nextPreviewRefresh=0,moteFrame=0;
+ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),clock=new THREE.Clock(),cameraTarget=new THREE.Vector3();let previewSetCache=new Set(),nextPreviewRefresh=0,moteFrame=0,nextMasteryRefresh=0;
  function resize(){const w=Math.max(1,mount.clientWidth),h=Math.max(1,mount.clientHeight),aspect=w/h,viewHeight=Math.max(26,16/aspect);camera.left=-viewHeight*aspect/2;camera.right=viewHeight*aspect/2;camera.top=viewHeight/2;camera.bottom=-viewHeight/2;camera.updateProjectionMatrix();renderer.setSize(w,h,false);}new ResizeObserver(resize).observe(mount);resize();
  function update(dt,t){
+  if(t>=nextMasteryRefresh){nextMasteryRefresh=t+1.25;try{const save=JSON.parse(localStorage.getItem('neon-nexus-player-v1')||'{}'),mastery=save.arcadeMastery||{};cabinets.forEach(c=>{const level=Math.max(0,Math.min(7,Number(mastery[c.userData.id]?.level)||0));c.userData.masteryLevel=level;c.userData.masteryPips.forEach((pip,n)=>{const lit=n<level;pip.material.color.setHex(lit?0xffd18a:0x574454);pip.material.emissive.setHex(lit?0xff9d52:0x211b2a);pip.material.emissiveIntensity=lit?.48:0.12;});c.userData.masteryRing.material.color.setHex(level>=7?0xffd18a:0x9b795e);c.userData.masteryRing.material.emissive.setHex(level>=7?0x9d5d25:0x000000);c.userData.masteryRing.material.emissiveIntensity=level>=7?.35:0;});}catch{}}
   if(t>=nextBlink){blinkUntil=t+.13;nextBlink=t+2.8+((Math.sin(t*4.7)+1)*.75);}
   const blink=blinkUntil>t?Math.sin(Math.PI*(t-(blinkUntil-.13))/.13):0;
   blinkLids.forEach(lid=>{lid.scale.y=.015+Math.max(0,blink)*.96;lid.position.y=.09-Math.max(0,blink)*.055;});
