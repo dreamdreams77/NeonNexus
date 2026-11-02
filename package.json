@@ -1,1 +1,1 @@
-{"name":"neon-nexus","version":"0.2.0","private":true,"type":"module","scripts":{"test":"node --check arcade.js && node --check app.js && node --check hoops.js && node --check hoops-physics.js && node --test tests/*.test.mjs"}}
+{"name":"neon-nexus","version":"0.2.0","private":true,"type":"module","scripts":{"test":"node --check arcade.js && node --check arcade-world.js && node --check app.js && node --check hoops.js && node --check hoops-physics.js && node --test tests/*.test.mjs"}}
