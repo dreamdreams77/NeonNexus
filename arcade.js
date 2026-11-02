@@ -262,10 +262,10 @@ function finishRace(timeout){
  scoreBy(Math.round(pts+lapBonus));p.gradeLabel=['1ST','2ND','3RD','4TH'][place-1]+' PLACE'+(me.best<90?' · BEST LAP '+me.best.toFixed(1)+'s':'')+(timeout?' · TIME LIMIT':'');
  finish(place<=2&&!timeout);
 }
+let raceIdleTrack=null;
 function drawRace(){
  const r=p.race;panel(60,70,780,430,'#3d6a49');
- if(!r){ctx.fillStyle='#fff0d4';ctx.font='bold 22px Fredoka';ctx.textAlign='center';ctx.fillText('THREE LAPS · THREE RIVALS',450,285);return;}
- const tr=r.tr;ctx.save();ctx.beginPath();ctx.roundRect(70,80,760,410,18);ctx.clip();
+ const tr=r?r.tr:(raceIdleTrack=raceIdleTrack||raceTrack());ctx.save();ctx.beginPath();ctx.roundRect(70,80,760,410,18);ctx.clip();
  const gg=ctx.createLinearGradient(0,80,0,490);gg.addColorStop(0,'#4f8a58');gg.addColorStop(1,'#3b6b47');ctx.fillStyle=gg;ctx.fillRect(70,80,760,410);
  for(let i=0;i<150;i++){ctx.fillStyle=i%3?'rgba(255,240,170,.07)':'rgba(20,50,30,.12)';ctx.beginPath();ctx.ellipse((i*163)%760+70,(i*97)%410+80,5+(i%5)*3,2+(i%3),i,0,6.283);ctx.fill();}
  ctx.lineJoin='round';ctx.lineCap='butt';
@@ -276,6 +276,7 @@ function drawRace(){
  ctx.strokeStyle='rgba(255,255,255,.05)';ctx.lineWidth=RACE_HALF*1.1;ctx.stroke(tr.path);
  ctx.setLineDash([18,20]);ctx.strokeStyle='rgba(245,228,190,.7)';ctx.lineWidth=3;ctx.stroke(tr.path);ctx.setLineDash([]);
  const s0=tr.pts[0],nx=-Math.sin(s0.h),ny=Math.cos(s0.h);ctx.save();ctx.translate(s0.x,s0.y);ctx.rotate(s0.h);for(let i=0;i<6;i++)for(let k=0;k<2;k++){ctx.fillStyle=(i+k)%2?'#fff':'#1d1424';ctx.fillRect(-5+k*5,-RACE_HALF+i*(RACE_HALF/3),5,RACE_HALF/3);}ctx.restore();
+ if(!r){ctx.restore();ctx.fillStyle='rgba(25,18,35,.7)';ctx.beginPath();ctx.roundRect(300,255,300,64,16);ctx.fill();ctx.fillStyle='#fff0d4';ctx.font='bold 22px Fredoka';ctx.textAlign='center';ctx.fillText('THREE LAPS · THREE RIVALS',450,285);ctx.font='13px Fredoka';ctx.fillText('PRESS START TO RACE',450,306);return;}
  const order=[...r.cars].sort((a,b)=>a.y-b.y);
  for(const c of order){ctx.save();ctx.translate(c.x,c.y);ctx.fillStyle='rgba(0,0,0,.3)';ctx.beginPath();ctx.ellipse(2,4,15,8,c.a,0,6.283);ctx.fill();ctx.rotate(c.a);
   rounded(-14,-8,28,16,6,c.color);ctx.fillStyle='rgba(30,20,40,.75)';ctx.fillRect(1,-5,7,10);ctx.fillStyle='rgba(255,255,255,.55)';ctx.fillRect(-11,-6,3,4);ctx.fillRect(-11,2,3,4);ctx.fillStyle='#1d1424';ctx.fillRect(-12,-10,7,3);ctx.fillRect(-12,7,7,3);ctx.fillRect(6,-10,7,3);ctx.fillRect(6,7,7,3);

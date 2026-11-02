@@ -151,8 +151,8 @@ export function createCrowd(ctx){
      break;}
     case'queue':v.timer+=dt;heading=Math.atan2(v.cab.side*5.2-p.x,v.cab.z-p.z);torsoLean=Math.sin(t*1.5+v.i)*.03;if(v.timer>2&&v.timer%7<dt){/* shuffle impatiently */}break;
     case'play':{v.timer-=dt;const f=v.face;heading=Math.atan2(f[0]-p.x,f[1]-p.z);const mash=Math.sin(t*14+v.playSeed);armLift=[.55+mash*.35,.55-mash*.35];torsoLean=.08+Math.sin(t*3+v.playSeed)*.03;headYaw=Math.sin(t*2+v.playSeed)*.12;bob=Math.abs(mash)*.012;
-     v.cab.cab.userData.lamp.intensity=1.8+Math.abs(Math.sin(t*9))*.9;
-     if(v.timer<=0){const win=rand()<.3+v.skill*.4;v.react=win?'win':'lose';v.reactT=2.4;v.state='react';v.cab.cab.userData.lamp.intensity=win?4.2:1.8;if(win){spark(p.x,1.4,p.z);if(onCabinetCheer)onCabinetCheer(v.cab.cab);}}
+     v.cab.cab.userData.lamp.boost=Math.max(v.cab.cab.userData.lamp.boost||0,Math.abs(Math.sin(t*9))*1.2);
+     if(v.timer<=0){const win=rand()<.3+v.skill*.4;v.react=win?'win':'lose';v.reactT=2.4;v.state='react';v.cab.cab.userData.lamp.boost=win?3:0;if(win){spark(p.x,1.4,p.z);if(onCabinetCheer)onCabinetCheer(v.cab.cab);}}
      break;}
     case'react':{v.reactT-=dt;const u=v.reactT/2.4;if(v.react==='win'){hop=Math.abs(Math.sin((1-u)*Math.PI*3))*.28;armLift=[2.6,2.6];smile=1;if(Math.random()<dt*2)spark(p.x,1.3,p.z,3);}else{armLift=[.1,.1];torsoLean=.28;headYaw=Math.sin(t*9)*.35*u;smile=-1;}
      if(v.reactT<=0){leave(v);v.state='idle';v.timer=.6+rand()*1.2;}break;}

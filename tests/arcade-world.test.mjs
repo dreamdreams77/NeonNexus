@@ -512,7 +512,7 @@ test('the remaining cabinets have distinct mastery perks beyond XP-only progress
 test('the physical arcade environment has matching sculpted wall sconces and practical warm lights',()=>{
  assert.match(world,/function makeSconce\(side,z\)/);
  assert.match(world,/new THREE\.TorusGeometry\(\.205/);
- assert.match(world,/new THREE\.PointLight\(0xffbd83,1\.35,5\.5,2\)/);
+ assert.doesNotMatch(world,/new THREE\.PointLight\(0xffbd83/);
  assert.match(world,/for\(const z of \[-15,-3,9,21\]\)for\(const side of \[-1,1\]\)makeSconce/);
 });
 test('Moonlight Billiards cabinet mastery improves controlled cue-shot power',()=>{
@@ -720,3 +720,9 @@ test('players meet a title screen with load progress, failure fallback and persi
  assert.match(css,/prefers-reduced-motion:reduce\)\{\.intro-bg i/);
 });
 test('planter petal colours cannot index out of range for negative world x',()=>{assert.match(world,/\(\(\(i\+Math\.round\(x\)\)%3\)\+3\)%3/);});
+
+test('light budget: cabinet glow uses a fixed pool of real lights instead of dozens of point lights',()=>{
+ assert.match(world,/function makeLampProxy/);assert.match(world,/LAMP_POOL=mobileDevice\?3:5/);assert.match(world,/function updateLampPool/);
+ assert.ok((world.match(/new THREE\.PointLight/g)||[]).length<=14,'point light constructions');
+ assert.doesNotMatch(world,/new THREE\.PointLight\(color,1\.8,3\.2\)/);
+});

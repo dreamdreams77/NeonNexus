@@ -104,7 +104,7 @@ if(mount){
   const arm=cyl(.045,.055,.28,side*.13,.02,0,brass,fixture);arm.rotation.z=Math.PI/2;
   sphere(.17,side*.29,.02,0,glass,fixture,1,.92,.9);
   const halo=new THREE.Mesh(new THREE.TorusGeometry(.205,.024,8,20),brass);halo.position.set(side*.29,.02,0);halo.rotation.y=Math.PI/2;fixture.add(halo);
-  if(!mobileDevice){const glow=new THREE.PointLight(0xffbd83,1.35,5.5,2);glow.position.set(side*.36,.02,0);fixture.add(glow);}
+  // sconce glow is emissive-only: eight real point lights cost far more than they add
  }
  for(const z of [-15,-3,9,21])for(const side of [-1,1])makeSconce(side,z);
  // A hand-strung festival canopy gives the central aisle the warmth of a little village square.
@@ -284,6 +284,20 @@ if(mount){
   const tint=new THREE.Color(color);pg.userData.base=1;marqueeLights.push({panel,phase:i*1.3});
   for(const e of [-1,1]){box(.05,1.0,.12,e*.8,0,0,topperFrameMat,pg,.02);}for(const e of [-1,1])box(1.62,.05,.12,0,e*.5,0,topperFrameMat,pg,.02);
  }
+
+ // Light budget: only a handful of real point lights exist. Cabinet glow lives in lamp proxies and the nearest few
+ // are lent real lights from a fixed pool (constant light count = no shader recompiles while walking).
+ const lampProxies=[],LAMP_POOL=mobileDevice?3:5,lampPool=[];
+ function makeLampProxy(color,intensity,pos){const p={intensity,base:intensity,color:new THREE.Color(color),pos:pos.clone()};lampProxies.push(p);return p;}
+ for(let i=0;i<LAMP_POOL;i++){const l=new THREE.PointLight(0xffffff,0,3.4);l.userData.proxy=null;scene.add(l);lampPool.push(l);}
+ const _order=[];
+ function updateLampPool(pos,dt){
+  _order.length=0;for(const p of lampProxies){p.d=(p.pos.x-pos.x)**2+(p.pos.z-pos.z)**2;_order.push(p);}
+  _order.sort((a,b)=>a.d-b.d);
+  for(let i=0;i<lampPool.length;i++){const l=lampPool[i],want=_order[i];
+   if(l.userData.proxy!==want){l.userData.fade=0;l.userData.proxy=want;l.position.copy(want.pos);l.color.copy(want.color);}
+   l.userData.fade=Math.min(1,(l.userData.fade||0)+dt*5);l.intensity=want.intensity*l.userData.fade;}
+ }
  // West column is tighter so no cabinet stands inside the prize gallery (z 10.5-19.2); east keeps its roomy spacing.
  const cabinetZ=i=>i<9?-18.5+(i%9)*3.45:-18.5+(i%9)*4.35;
  function makeCabinet(def,i,side,z){
@@ -320,13 +334,13 @@ if(mount){
   crest.add(crestCore);
   const crestDots=[];
   for(let n=0;n<3;n++){const dot=new THREE.Mesh(new THREE.SphereGeometry(.027,10,8),new THREE.MeshStandardMaterial({color:n===1?0xffe2a0:color,emissive:color,emissiveIntensity:.65}));crest.add(dot);crestDots.push(dot);}
-  const crestLight=new THREE.PointLight(color,.35,1.25);crestLight.position.z=.08;crest.add(crestLight);
+  const crestLight={intensity:.35,color:new THREE.Color(color)}; // glow is carried by emissive crest parts; a real light per crest was too costly
   // Seven tactile mastery pips turn long-term play into a visible cabinet trophy.
   const masteryRing=new THREE.Mesh(new THREE.TorusGeometry(.112,.012,7,24),new THREE.MeshStandardMaterial({color:0x9b795e,metalness:.65,roughness:.32}));
   masteryRing.position.set(-.48,.69,.615);g.add(masteryRing);
   const masteryPips=[];
   for(let pip=0;pip<7;pip++){const angle=Math.PI*.12+pip*(Math.PI*.76/6),dot=new THREE.Mesh(new THREE.SphereGeometry(.022,10,8),new THREE.MeshStandardMaterial({color:0x574454,emissive:0x211b2a,emissiveIntensity:.12,roughness:.3,metalness:.2}));dot.position.set(-.48+Math.cos(angle)*.087,.69+Math.sin(angle)*.087,.625);g.add(dot);masteryPips.push(dot);}
-  const lamp=new THREE.PointLight(color,1.8,3.2);lamp.position.set(0,2.2,.9);g.add(lamp);
+  g.updateMatrixWorld(true);const lamp=makeLampProxy(color,1.8,g.localToWorld(new THREE.Vector3(0,2.2,.9)));
   addCabinetSculpture(g,id,color);
   const discoveryRing=new THREE.Mesh(new THREE.RingGeometry(.92,1.12,48),new THREE.MeshBasicMaterial({color:color,transparent:true,opacity:.62,side:THREE.DoubleSide,depthWrite:false}));discoveryRing.rotation.x=-Math.PI/2;discoveryRing.position.set(side*5.2,.035,z);discoveryRing.visible=false;scene.add(discoveryRing);
   g.userData={name,id,genre,index:i,screen,screenTex,preview,marquee:marqScreen,lamp,discoveryRing,crest,crestRing,crestCore,crestDots,crestLight,masteryPips,masteryRing,masteryLevel:0,baseY:1.42};
@@ -433,7 +447,7 @@ if(mount){
   box(.5,.07,.07,0,.13,.26,brass,g,.025);
   const coinSlot=box(.13,.035,.018,0,.2,.29,mat(0x201b2b,.28,.5),g,.008);
   const trim=new THREE.Mesh(new THREE.BoxGeometry(.76,.035,.5),brass);trim.position.y=.94;g.add(trim);
-  const lamp=new THREE.PointLight([0x78dfc6,0x83b9f0,0xf2bd6e][index],.65,2.2);lamp.position.set(0,1.03,.3);g.add(lamp);
+  const lamp={intensity:.65,color:new THREE.Color([0x78dfc6,0x83b9f0,0xf2bd6e][index])};
   pokerMachines.push({group:g,lamp,index});
  }
  makePokerMachine(7.1,-1.8,0);makePokerMachine(8.8,-1.8,1);makePokerMachine(10.5,-1.8,2);
@@ -699,7 +713,7 @@ visitorProfiles.forEach((profile,i)=>{const g=new THREE.Group();const [x,z]=visi
  // Player avatar: a fully modelled, hand-sculpted clay character rather than a flat blob.
 [{type:'bar',name:'GLOW BAR · ORDER FOOD & DRINKS',position:new THREE.Vector3(8.8,0,-.2)},{type:'pass',name:'KITCHEN PASS · COLLECT ORDERS',position:new THREE.Vector3(8.8,0,2.2)},{type:'prize',name:'PRIZE EXCHANGE · REDEEM TICKETS',position:prizeCounterPosition},{type:'host',name:'HOST STAND · REQUEST A TABLE',position:new THREE.Vector3(1.4,0,10.2)},...tables.map(t=>({type:'table',name:'TABLE '+t.number+' · TAKE A SEAT',position:t.position,table:t.number}))];
  // Player avatar: a fully modelled, hand-sculpted clay character rather than a flat blob.
- let freeCam=false;if(location.search.includes('debug'))window.__nx={get camera(){return camera;},get scene(){return scene;},free(v){freeCam=v;},get player(){return player;},get motion(){return motion;},resize:()=>resize()};
+ let freeCam=false;if(location.search.includes('debug'))window.__nx={get camera(){return camera;},get scene(){return scene;},get renderer(){return renderer;},free(v){freeCam=v;},get player(){return player;},get motion(){return motion;},resize:()=>resize()};
  const player=new THREE.Group();scene.add(player);player.position.set(0,0,13);
  const skin=clayMat(0xe8b895),skinLight=clayMat(0xf2c7a4),hairMat=clayMat(0x493342),hairLight=clayMat(0x654451),hoodMat=clayMat(0x6d9f9b),hoodLight=clayMat(0x8cc4b8),trouserMat=clayMat(0x514252),shoeMat=clayMat(0x3b3445),soleMat=clayMat(0xd8b48f),eyeWhite=mat(0xfff0d9,.48),irisMat=mat(0x6a807a,.42),pupilMat=mat(0x29283a,.3),glintMat=mat(0xffffff,.2,0,0xffffff,.2);
  const torso=new THREE.Group();torso.position.y=1.02;player.add(torso);
@@ -776,7 +790,7 @@ visitorProfiles.forEach((profile,i)=>{const g=new THREE.Group();const [x,z]=visi
  interact.addEventListener('click',()=>{if(activeService)useService();else if(activeTableGame)useTableGame();else useCabinet();});
  window.addEventListener('keydown',e=>{if(document.body.classList.contains('intro-open'))return;if(!document.querySelector('#overlay').hidden||!document.querySelector('#service-modal').hidden)return;const k=e.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e'].includes(k)){e.preventDefault();keys.add(k);}if(k==='e'){if(activeService)useService();else if(activeTableGame)useTableGame();else useCabinet();}});
  window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));window.addEventListener('blur',()=>keys.clear());
- if(pad){let pid=null;const setTarget=e=>{const r=pad.getBoundingClientRect(),dx=e.clientX-r.left-r.width/2,dy=e.clientY-r.top-r.height/2,len=Math.max(1,Math.hypot(dx,dy)),scale=Math.min(1,len/(r.width*.32));touch.targetX=dx/len*scale;touch.targetY=dy/len*scale;};pad.addEventListener('pointerdown',e=>{pid=e.pointerId;pad.setPointerCapture(pid);setTarget(e);});pad.addEventListener('pointermove',e=>{if(pid===e.pointerId)setTarget(e);});const stop=e=>{if(pid!==null&&(!e||e.pointerId===pid)){pid=null;touch.targetX=touch.targetY=0;}};pad.addEventListener('pointerup',stop);pad.addEventListener('pointercancel',stop);pad.addEventListener('lostpointercapture',stop);}
+ if(pad){let pid=null;const setTarget=e=>{const r=pad.getBoundingClientRect(),dx=e.clientX-r.left-r.width/2,dy=e.clientY-r.top-r.height/2,len=Math.max(1,Math.hypot(dx,dy)),scale=Math.min(1,len/(r.width*.32));touch.targetX=dx/len*scale;touch.targetY=dy/len*scale;};pad.addEventListener('pointerdown',e=>{pid=e.pointerId;try{pad.setPointerCapture(pid);}catch{};setTarget(e);});pad.addEventListener('pointermove',e=>{if(pid===e.pointerId)setTarget(e);});const stop=e=>{if(pid!==null&&(!e||e.pointerId===pid)){pid=null;touch.targetX=touch.targetY=0;}};pad.addEventListener('pointerup',stop);pad.addEventListener('pointercancel',stop);pad.addEventListener('lostpointercapture',stop);}
  const ray=new THREE.Raycaster(),pointer=new THREE.Vector2();
  renderer.domElement.addEventListener('pointerdown',e=>{const r=renderer.domElement.getBoundingClientRect();pointer.x=(e.clientX-r.left)/r.width*2-1;pointer.y=-(e.clientY-r.top)/r.height*2+1;ray.setFromCamera(pointer,camera);const hits=ray.intersectObjects(cabinets,true);if(hits.length){let o=hits[0].object;while(o.parent&&!o.userData.id)o=o.parent;if(o.userData.id&&player.position.distanceTo(o.position)<4.1){nearest=o;useCabinet();}}});
  window.addEventListener('nexus:order-created',()=>{const chef=serviceStaff.find(s=>s.role==='chef');if(chef){chef.reactionUntil=clock.elapsedTime+2.4;chef.emotion='focused';}});
@@ -785,7 +799,7 @@ visitorProfiles.forEach((profile,i)=>{const g=new THREE.Group();const [x,z]=visi
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),clock=new THREE.Clock(),cameraTarget=new THREE.Vector3();let previewSetCache=new Set(),nextPreviewRefresh=0,moteFrame=0,nextMasteryRefresh=0;
  function resize(){const w=Math.max(1,mount.clientWidth),h=Math.max(1,mount.clientHeight),aspect=w/h,viewHeight=Math.max(26,16/aspect);camera.left=-viewHeight*aspect/2;camera.right=viewHeight*aspect/2;camera.top=viewHeight/2;camera.bottom=-viewHeight/2;camera.updateProjectionMatrix();renderer.setSize(w,h,false);}new ResizeObserver(resize).observe(mount);resize();
  function update(dt,t){
-  for(let i=0;i<artAnimators.length;i++)artAnimators[i](t);if(marqueeLights.length){for(const m of marqueeLights)m.panel.material.color.setScalar(.9+.1*Math.sin(t*1.8+m.phase));}
+  for(let i=0;i<artAnimators.length;i++)artAnimators[i](t);updateLampPool(player.position,dt);if(marqueeLights.length){for(const m of marqueeLights)m.panel.material.color.setScalar(.9+.1*Math.sin(t*1.8+m.phase));}
   if(t>=nextMasteryRefresh){nextMasteryRefresh=t+1.25;try{const save=JSON.parse(localStorage.getItem('neon-nexus-player-v1')||'{}'),mastery=save.arcadeMastery||{};cabinets.forEach(c=>{const level=Math.max(0,Math.min(7,Number(mastery[c.userData.id]?.level)||0));c.userData.masteryLevel=level;c.userData.masteryPips.forEach((pip,n)=>{const lit=n<level;pip.material.color.setHex(lit?0xffd18a:0x574454);pip.material.emissive.setHex(lit?0xff9d52:0x211b2a);pip.material.emissiveIntensity=lit?.48:0.12;});c.userData.masteryRing.material.color.setHex(level>=7?0xffd18a:0x9b795e);c.userData.masteryRing.material.emissive.setHex(level>=7?0x9d5d25:0x000000);c.userData.masteryRing.material.emissiveIntensity=level>=7?.35:0;});}catch{}}
   if(t>=nextBlink){blinkUntil=t+.13;nextBlink=t+2.8+((Math.sin(t*4.7)+1)*.75);}
   const blink=blinkUntil>t?Math.sin(Math.PI*(t-(blinkUntil-.13))/.13):0;
@@ -826,7 +840,7 @@ visitorProfiles.forEach((profile,i)=>{const g=new THREE.Group();const [x,z]=visi
   const previewEnabled=!reduceMotion&&document.visibilityState==='visible'&&(!gameOverlay||gameOverlay.hidden)&&(!serviceModal||serviceModal.hidden);
   if(previewEnabled&&t>=nextPreviewRefresh){previewSetCache=new Set(cabinets.map(c=>({cabinet:c,distance:player.position.distanceTo(c.position)})).filter(v=>v.distance<19).sort((a,b)=>a.distance-b.distance).slice(0,4).map(v=>v.cabinet));nextPreviewRefresh=t+.25;}else if(!previewEnabled)previewSetCache.clear();
   const previewSet=previewSetCache;
-  cabinets.forEach((c,i)=>{const pulse=.75+Math.sin(t*2.1+i*.8)*.22;c.userData.lamp.intensity=1.4+pulse*1.1;c.position.y=Math.sin(t*1.3+i)*.012;const crest=c.userData.crest;if(crest){crest.rotation.z=Math.sin(t*1.1+i*.7)*.12;crest.position.y=.83+Math.sin(t*2.2+i)*.025;crest.rotation.y=Math.sin(t*.8+i)*.09;c.userData.crestRing.rotation.z=t*(.28+i%3*.06);c.userData.crestCore.scale.setScalar(.92+Math.sin(t*3+i)*.08);c.userData.crestDots.forEach((dot,n)=>{const a=t*(.85+n*.08)+n*Math.PI*2/3;dot.position.set(Math.cos(a)*.112,Math.sin(a)*.112,.025);});c.userData.crestLight.intensity=.25+pulse*.22;}c.userData.discoveryRing.visible=!!discovered&&discovered===c&&!activeService;c.userData.discoveryRing.material.opacity=.35+Math.sin(t*3.2+i)*.16;
+  cabinets.forEach((c,i)=>{const pulse=.75+Math.sin(t*2.1+i*.8)*.22;{const L=c.userData.lamp;L.boost=(L.boost||0)*Math.exp(-dt*2.2);L.intensity=1.4+pulse*1.1+L.boost;}c.position.y=Math.sin(t*1.3+i)*.012;const crest=c.userData.crest;if(crest){crest.rotation.z=Math.sin(t*1.1+i*.7)*.12;crest.position.y=.83+Math.sin(t*2.2+i)*.025;crest.rotation.y=Math.sin(t*.8+i)*.09;c.userData.crestRing.rotation.z=t*(.28+i%3*.06);c.userData.crestCore.scale.setScalar(.92+Math.sin(t*3+i)*.08);c.userData.crestDots.forEach((dot,n)=>{const a=t*(.85+n*.08)+n*Math.PI*2/3;dot.position.set(Math.cos(a)*.112,Math.sin(a)*.112,.025);});c.userData.crestLight.intensity=.25+pulse*.22;}c.userData.discoveryRing.visible=!!discovered&&discovered===c&&!activeService;c.userData.discoveryRing.material.opacity=.35+Math.sin(t*3.2+i)*.16;
    const preview=c.userData.preview,screenDistance=player.position.distanceTo(c.position);
    if(preview&&previewSet.has(c)){preview.clock+=dt;if(preview.clock>=.12){preview.clock=0;preview.frame++;drawCabinetPreview(preview,preview.frame);}}else if(preview){preview.clock=0;}
   });
