@@ -135,6 +135,9 @@ if(mount){
   for(const ex of [-.1,.1]){sphere(.035,ex,.045,.27,mat(0x302638),headPivot);sphere(.012,ex-.01,.06,.3,mat(0xffffff),headPivot);}
   sphere(.045,0,-.12,.28,clayMat(0xd58d80),headPivot,.8,.55,.5);
   const lids=[];for(const ex of [-.1,.1])lids.push(sphere(.038,ex,.095,.29,clayMat(0xe7b997),headPivot,1,.012,.35));
+  const cheeks=[sphere(.055,-.19,-.09,.245,clayMat(0xe78e88),headPivot,.9,.55,.35),sphere(.055,.19,-.09,.245,clayMat(0xe78e88),headPivot,.9,.55,.35)];
+  const smile=new THREE.Mesh(new THREE.TorusGeometry(.075,.012,7,16,Math.PI),clayMat(0x8b5057));smile.position.set(0,-.15,.285);smile.rotation.z=Math.PI;headPivot.add(smile);
+  const brows=[sphere(.065,-.1,.16,.27,clayMat(0x654b4d),headPivot,1,.2,.35),sphere(.065,.1,.16,.27,clayMat(0x654b4d),headPivot,1,.2,.35)];
   if(hat){cyl(.2,.24,.12,0,.36,0,cream,headPivot);sphere(.2,0,.46,0,cream,headPivot,1,.7,1);}else sphere(.34,0,.29,-.03,clayMat(0x574052),headPivot,1,.34,.9);
   const arms=[];
   for(const side of [-1,1]){
@@ -160,7 +163,7 @@ if(mount){
    const steamMat=new THREE.MeshBasicMaterial({color:0xffdfc4,transparent:true,opacity:.25});
    for(let i=0;i<3;i++){const steam=new THREE.Mesh(new THREE.SphereGeometry(.035,8,7),steamMat);steam.position.set(.12+i*.09,1.28+i*.04,.28);g.add(steam);steam.userData.phase=i*1.9;(g.userData.steam||(g.userData.steam=[])).push(steam);}
   }
-  const staff={group:g,arms,head:headPivot,lids,role,propPivot,body,phase:role==='bartender'?.7:2.1,near:false,blinkAt:2.2,blinkUntil:0};
+  const staff={group:g,arms,head:headPivot,lids,cheeks,smile,brows,role,propPivot,body,phase:role==='bartender'?.7:2.1,near:false,blinkAt:2.2,blinkUntil:0,reactionUntil:0,emotion:'neutral'};
   serviceStaff.push(staff);return staff;
  }
  makeStaff(8.7,-2.9,0x8bb8a2,false,'bartender');makeStaff(10.4,-5.2,0xd58b79,true,'chef');
@@ -250,6 +253,9 @@ if(mount){
  if(pad){let pid=null;pad.addEventListener('pointerdown',e=>{pid=e.pointerId;pad.setPointerCapture(pid);});pad.addEventListener('pointermove',e=>{if(pid!==e.pointerId)return;const r=pad.getBoundingClientRect(),dx=e.clientX-r.left-r.width/2,dy=e.clientY-r.top-r.height/2,len=Math.max(1,Math.hypot(dx,dy)),s=Math.min(1,len/(r.width*.32));touch.x=dx/len*s;touch.y=dy/len*s;knob.style.transform='translate('+touch.x*24+'px,'+touch.y*24+'px)';});const stop=e=>{if(pid!==null&&(!e||e.pointerId===pid)){pid=null;touch.x=touch.y=0;knob.style.transform='translate(0,0)';}};pad.addEventListener('pointerup',stop);pad.addEventListener('pointercancel',stop);}
  const ray=new THREE.Raycaster(),pointer=new THREE.Vector2();
  renderer.domElement.addEventListener('pointerdown',e=>{const r=renderer.domElement.getBoundingClientRect();pointer.x=(e.clientX-r.left)/r.width*2-1;pointer.y=-(e.clientY-r.top)/r.height*2+1;ray.setFromCamera(pointer,camera);const hits=ray.intersectObjects(cabinets,true);if(hits.length){let o=hits[0].object;while(o.parent&&!o.userData.id)o=o.parent;if(o.userData.id&&player.position.distanceTo(o.position)<5.8){nearest=o;useCabinet();}}});
+ window.addEventListener('nexus:order-created',()=>{const chef=serviceStaff.find(s=>s.role==='chef');if(chef){chef.reactionUntil=clock.elapsedTime+2.4;chef.emotion='focused';}});
+ window.addEventListener('nexus:order-ready',()=>{serviceStaff.forEach(s=>{s.reactionUntil=clock.elapsedTime+2.8;s.emotion='happy';});triggerGesture('celebrate',1.35);});
+ window.addEventListener('nexus:order-served',()=>{const chef=serviceStaff.find(s=>s.role==='chef');if(chef){chef.reactionUntil=clock.elapsedTime+2;s.emotion='proud';}});
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),clock=new THREE.Clock();
  function resize(){const w=Math.max(1,mount.clientWidth),h=Math.max(1,mount.clientHeight),aspect=w/h,viewHeight=Math.max(26,16/aspect);camera.left=-viewHeight*aspect/2;camera.right=viewHeight*aspect/2;camera.top=viewHeight/2;camera.bottom=-viewHeight/2;camera.updateProjectionMatrix();renderer.setSize(w,h,false);}new ResizeObserver(resize).observe(mount);resize();
  function update(dt,t){
@@ -303,21 +309,22 @@ if(mount){
    if(t>=staff.blinkAt){staff.blinkUntil=t+.13;staff.blinkAt=t+2.6+Math.abs(Math.sin(t*1.7+i))*2;}
    const blink=staff.blinkUntil>t?Math.sin(Math.PI*(t-(staff.blinkUntil-.13))/.13):0;
    staff.lids.forEach(lid=>lid.scale.y=.012+Math.max(0,blink)*.075);
+   const reacting=staff.reactionUntil>t;staff.emotion=reacting?staff.emotion:(near?'welcoming':'neutral');staff.smile.scale.y=reacting?1.5:near?1.22:1;staff.brows.forEach((b,j)=>{b.rotation.z=reacting?(j===0?-.18:.18):near?(j===0?-.07:.07):0;});staff.cheeks.forEach(c=>{c.scale.x=reacting?1.12:near?1.06:.9;});
    g.position.y=Math.sin(t*1.9+i)*.012;
    staff.body.scale.y=1.15+Math.sin(t*1.6+i)*.012;
    staff.arms[0].rotation.z=-.12+Math.sin(t*1.4+staff.phase)*.025;
    if(staff.role==='bartender'){
     // Repeated circular polishing strokes, then a small glass lift toward a guest.
     const polish=Math.sin(staff.phase*2.4);
-    staff.arms[1].rotation.z=near?-1.05+Math.sin(t*4)*.1:-.48+polish*.16;
+    staff.arms[1].rotation.z=reacting?-1.8:near?-1.05+Math.sin(t*4)*.1:-.48+polish*.16;
     staff.arms[1].rotation.x=-.18+Math.cos(staff.phase*2.4)*.1;
     staff.propPivot.rotation.z=Math.sin(staff.phase*2.4)*.28;
     staff.propPivot.rotation.x=near?-.25:Math.sin(t*1.8)*.08;
    }else{
     // Slow stirring, a gentle lean into the pot and a quick glance up at guests.
-    staff.arms[1].rotation.z=-.72+Math.sin(staff.phase*1.7)*.22;
+    staff.arms[1].rotation.z=reacting?-1.9:-.72+Math.sin(staff.phase*1.7)*.22;
     staff.arms[1].rotation.x=-.35+Math.cos(staff.phase*1.7)*.12;
-    staff.arms[0].rotation.z=near?-.48+Math.sin(t*3)*.08:-.2+Math.sin(staff.phase*1.1)*.08;
+    staff.arms[0].rotation.z=reacting?-.9:near?-.48+Math.sin(t*3)*.08:-.2+Math.sin(staff.phase*1.1)*.08;
     staff.propPivot.rotation.z=Math.sin(staff.phase*1.7)*.22;
     staff.head.rotation.x+=near?-.035:Math.sin(t*1.1)*.015;
     (g.userData.steam||[]).forEach((steam,j)=>{steam.position.y=1.28+j*.04+((t*0.22+j*.13)% .42);steam.material.opacity=.12+(.12*Math.sin(t*2+j));});
