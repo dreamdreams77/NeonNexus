@@ -107,7 +107,7 @@ test('three new cabinets have distinct kitchen, catching and timing gameplay loo
 });
 
 test('player character has expressive blinking and subtle stop-motion clay idle animation',()=>{
- assert.match(world,/const arms=\[\],legs=\[\],blinkLids=\[\],hairCurls=\[\]/);
+ assert.match(world,/const arms=\[\],legs=\[\],hands=\[\],blinkLids=\[\],hairCurls=\[\]/);
  assert.match(world,/const eye=new THREE\.Group\(\)/);
  assert.match(world,/blinkLids\.forEach\(lid=>\{lid\.scale\.y=/);
  assert.match(world,/nextBlink=2\.4,blinkUntil=0/);
