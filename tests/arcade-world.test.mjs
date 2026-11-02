@@ -547,3 +547,8 @@ test('arcade visitors have individualized sculpted props and readable nameplates
  assert.match(world,/Ticket slot, brass service trim, cabinet fasteners/);
  assert.match(world,/badgePlate=new THREE\.Mesh\(new THREE\.CircleGeometry/);
 });
+
+test('prize rarity styling follows the catalogue and quest claims retain their success message after re-render',()=>{
+ assert.match(game,/card\.dataset\.rarity=item\.rarity/);
+ assert.match(game,/openService\('npc',null,npc\);serviceStatus\.textContent='Quest complete!'/);
+});
