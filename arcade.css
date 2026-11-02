@@ -5,3 +5,19 @@
 
 /* Full 3D cabinet interior used by Kitchen Rush; canvas remains the fallback for other cabinets. */
 .game3d-stage{display:none;width:100%;height:clamp(340px,55vh,560px);min-height:320px;overflow:hidden;border:4px solid #986c69;border-radius:18px;background:#41364d;touch-action:pan-y;box-shadow:inset 0 0 0 2px #fff5}.game3d-stage canvas{display:block;width:100%;height:100%;touch-action:pan-y}@media(max-width:650px){.game3d-stage{height:clamp(330px,52vh,470px);min-height:330px}}
+
+/* RPG-first presentation: the world is the page, not a panel above a game catalogue. */
+html,body{width:100%;height:100%;min-height:100%;overflow:hidden}body{min-height:100dvh;background:#211e2d}
+.bar{position:fixed;inset:0 0 auto;height:58px;padding-inline:clamp(14px,3vw,34px);background:linear-gradient(180deg,#211b2cef,#211b2c99);backdrop-filter:blur(12px);border-bottom:1px solid #f9d8aa22}
+.brand{font-size:17px;letter-spacing:2.5px}.rpg-main{height:100dvh;width:100%;padding-top:58px;display:block}
+.intro,.game-list-heading,.game-grid{display:none!important}
+.arcade-world-wrap{height:100%;width:100%;max-width:none;margin:0;padding:0;position:relative}
+.world-label{position:absolute;z-index:2;top:10px;left:14px;right:14px;margin:0;pointer-events:none;font-size:10px;text-shadow:0 2px 8px #130d1b;letter-spacing:1.2px}
+.arcade-world{height:calc(100dvh - 58px);min-height:0;width:100%;border:0;border-radius:0;box-shadow:none;background:#29263c}
+.arcade-world canvas{width:100%;height:100%;display:block}.world-crosshair{display:none}
+.world-prompt{top:44px;left:50%;max-width:min(90%,620px);font-size:11px;padding:9px 16px}
+.world-caption{display:none}.arcade-touch-pad{left:18px;bottom:20px;width:124px;height:124px;background:#241d31a8;border-color:#f7d8b477}
+.arcade-interact{bottom:24px;left:auto;right:18px;transform:none;max-width:calc(100% - 165px);padding:15px 19px}
+.overlay{z-index:10}
+@media(max-width:650px){.bar{height:52px}.rpg-main{padding-top:52px}.arcade-world{height:calc(100dvh - 52px)}.world-label{top:9px;font-size:8px;gap:8px}.world-label span:last-child{max-width:58%;text-align:right}.world-prompt{top:40px;font-size:9px;white-space:normal}.arcade-touch-pad{width:112px;height:112px;left:12px;bottom:14px}.arcade-interact{right:12px;bottom:26px;max-width:calc(100% - 145px);font-size:10px;padding:13px 15px}}
+@media(max-height:520px){.arcade-touch-pad{width:88px;height:88px}.arcade-touch-pad #arcade-joystick{width:34px;height:34px;margin:-17px}.world-prompt{top:34px}}
