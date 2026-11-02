@@ -127,3 +127,19 @@ test('player greets services, reacts to cabinets and celebrates arcade wins',()=
  assert.match(world,/hands\[1\]\.rotation\.z=Math\.sin\(t\*13\)/);
  assert.match(game,/if\(win\)window\.dispatchEvent\(new CustomEvent\('nexus:character-celebrate'\)\)/);
 });
+
+test('host, bartender and chef have distinct articulated claymation routines and guest reactions',()=>{
+ assert.match(world,/const hostArms=\[\]/);
+ assert.match(world,/hostWelcomeUntil/);
+ assert.match(world,/hostEyeLids\.forEach/);
+ assert.match(world,/function makeStaff\(x,z,shirt,hat,role\)/);
+ assert.match(world,/role==='bartender'/);
+ assert.match(world,/role==='chef'/);
+ assert.match(world,/staff\.role==='bartender'/);
+ assert.match(world,/staff\.role==='chef'/);
+ assert.match(world,/staff\.head\.rotation\.y=near\?/);
+ assert.match(world,/staff\.propPivot\.rotation\.z=Math\.sin\(staff\.phase\*2\.4\)/);
+ assert.match(world,/staff\.propPivot\.rotation\.z=Math\.sin\(staff\.phase\*1\.7\)/);
+ assert.match(world,/g\.userData\.steam/);
+ assert.match(world,/staff\.lids\.forEach/);
+});
