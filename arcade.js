@@ -115,8 +115,8 @@ if(game==='pulse'){
  const left=keys.ArrowLeft||keys.a||p.touchDir===-1,right=keys.ArrowRight||keys.d||p.touchDir===1,jump=keys[' ']||keys.ArrowUp||keys.w;
  p.vx+=(right?560:left?-560:0)*dt;p.vx*=Math.pow(.82,dt*60);p.vx=clamp(p.vx,-245,245);
  if(jump&&p.grounded&&!p.jumpLock){p.vy=-470;p.grounded=false;p.jumpLock=true;sound(300,.08,'triangle');}if(!jump)p.jumpLock=false;
- p.vy+=980*dt;p.x=clamp(p.x+p.vx*dt,25,2380);p.y+=p.vy*dt;p.grounded=false;
- for(const o of objects.filter(o=>o.type==='platform'))if(p.x+15>o.x&&p.x-15<o.x+o.w&&p.y+24>=o.y&&p.y+24<=o.y+Math.max(18,p.vy*dt+20)&&p.vy>=0){p.y=o.y-24;p.vy=0;p.grounded=true;}
+ p.vy+=980*dt;p.x=clamp(p.x+p.vx*dt,25,2380);const previousY=p.y;p.y+=p.vy*dt;p.grounded=false;
+ for(const o of objects.filter(o=>o.type==='platform'))if(p.x+15>o.x&&p.x-15<o.x+o.w&&previousY+24<=o.y+8&&p.y+24>=o.y&&p.vy>=0){p.y=o.y-24;p.vy=0;p.grounded=true;}
  if(p.y>540){p.hp--;p.x=Math.max(80,p.x-100);p.y=330;p.vy=0;if(p.hp<=0){finish();return;}}
  p.camera=clamp(p.x-360,0,1550);p.invuln=Math.max(0,p.invuln-dt);
  for(const o of objects){if(o.type==='enemy'||o.type==='boss'){o.phase+=dt;o.x+=Math.sin(o.phase*1.8)*22*dt;o.shot-=dt;if(o.shot<=0){objects.push({type:'enemyshot',x:o.x,y:o.y,vx:(p.x-o.x)*.24,vy:90});o.shot=o.type==='boss'?1.1:2.2;}if(Math.hypot(o.x-p.x,o.y-p.y)<(o.type==='boss'?47:33)&&p.invuln<=0){p.hp--;p.invuln=1.2;if(p.hp<=0){finish();return;}}}if(o.type==='cell'&&!o.taken&&Math.hypot(o.x-p.x,o.y-p.y)<30){o.taken=true;p.energy++;scoreBy(15);}}
