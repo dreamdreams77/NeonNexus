@@ -365,7 +365,7 @@ test('the arcade has a physical prize exchange counter with walk-up interaction'
  assert.match(world,/PRIZE EXCHANGE/);
  assert.match(world,/type:'prize',name:'PRIZE EXCHANGE · REDEEM TICKETS'/);
  assert.match(world,/prizeCounterPosition/);
- assert.match(world,/service\.type/);
+ assert.match(world,/activeService\.type/);
 });
 test('tickets are a separate persistent currency from dining tokens and every cabinet awards them',()=>{
  assert.match(html,/id="arcade-tokens"/);
