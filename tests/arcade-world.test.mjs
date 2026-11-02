@@ -732,3 +732,16 @@ test('air hockey and billiards tables are illustrated top-down tables with drawn
  assert.match(world,/function illustrateTable/);assert.match(world,/illustrateTable\(g,\[puck,\.\.\.mallets\]/);assert.match(world,/illustrateTable\(g,keep,paintPoolTable/);
  assert.match(world,/alphaTest:\.06,toneMapped:false\}\)\);top\.rotation/);
 });
+
+test('lucky wheel, jukebox and back bar are illustrations; sculpted back-bar clutter is retired',async()=>{
+ const spr=await readFile(new URL('../lobby-sprites.js',import.meta.url),'utf8');
+ for(const f of ['drawWheel','paintBackBar'])assert.match(spr,new RegExp('function '+f+'\\('));
+ assert.match(spr,/'0','10','25','50','100','250','500','1K'/);
+ assert.doesNotMatch(spr,/paintShape\([^;]*'rgba\(/); // paint helpers only accept hex colours
+ assert.match(world,/drawWheel\(cv\.getContext/);assert.match(world,/jukeboxBody\.visible=false/);assert.match(world,/paintBackBar\(\)/);assert.match(world,/Retire the sculpted back-bar clutter/);
+});
+
+test('crowd queues pick an open direction and visitors never deadlock on a player standing at their destination',async()=>{
+ const crowd=await readFile(new URL('../lobby-crowd.js',import.meta.url),'utf8');
+ assert.match(crowd,/cb\.qdir=/);assert.match(crowd,/v\.cab\.qdir\*\(k\+1\)/);assert.match(crowd,/pd<1\.15&&v\.path\.length===1/);
+});

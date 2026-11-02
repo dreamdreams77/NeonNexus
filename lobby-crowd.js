@@ -78,6 +78,8 @@ export function createCrowd(ctx){
   while(k<cells.length){let far=k;for(let m=cells.length-1;m>=k;m--){if(losClear(anchor,cells[m])){far=m;break;}}pts.push(cells[far]);anchor=cells[far];k=far+1;}
   pts.push(to);return pts;
  }
+ // Queues extend whichever way along the aisle is open (the gallery riser blocks the south side of one cabinet).
+ for(const cb of cabs){cb.qdir=(free(cb.front.x,cb.z+1.15)&&free(cb.front.x,cb.z+2.3))?1:(free(cb.front.x,cb.z-1.15)&&free(cb.front.x,cb.z-2.3))?-1:1;}
  function route(v,to){const p=v.g.position;v.path=findPath([p.x,p.z],to);v.state='walk';}
  const zoneOf=(x,z)=>x>-10.7&&x<-3.5&&z>10.5&&z<19.2?'prize':'floor';
 
@@ -87,7 +89,7 @@ export function createCrowd(ctx){
   v.act=act;
   if(act==='cabinet'){
    const free=cabs.filter(c=>!c.occ&&!c.queue.length),busy=cabs.filter(c=>c.occ&&c.queue.length<2);
-   if(busy.length&&rand()<.4){const c=pick(busy);c.queue.push(v);v.cab=c;route(v,[c.front.x,c.z+(c.queue.length)*1.15],'floor');v.onArrive=()=>{v.state='queue';v.timer=0;};return;}
+   if(busy.length&&rand()<.4){const c=pick(busy);c.queue.push(v);v.cab=c;route(v,[c.front.x,c.z+c.qdir*(c.queue.length)*1.15],'floor');v.onArrive=()=>{v.state='queue';v.timer=0;};return;}
    if(free.length){const c=pick(free);c.occ=v;v.cab=c;route(v,[c.front.x,c.z],'floor');v.onArrive=()=>startPlay(v);return;}
    return chooseWander(v);
   }
@@ -103,7 +105,7 @@ export function createCrowd(ctx){
  function startBrowse(v){v.state='browse';v.timer=3+rand()*3;v.face=[v.g.position.x+(rand()<.5?-1:1)*2,v.g.position.z-2];}
  function showProp(v,kind){v.prop=kind;v.propUntil=1e9;v.m.prop.visible=true;v.m.cup.visible=kind==='cup';v.m.plush.visible=kind==='plush';}
  function leave(v){ // release whatever the visitor was occupying, then pick something new
-  if(v.cab&&v.cab.occ===v){v.cab.occ=null;const nxt=v.cab.queue.shift();if(nxt){v.cab.occ=nxt;route(nxt,[v.cab.front.x,v.cab.z],'floor');nxt.onArrive=()=>startPlay(nxt);v.cab.queue.forEach((q,k)=>{if(q.state==='queue')q.path=[[v.cab.front.x,v.cab.z+(k+1)*1.15]],q.state='walk',q.onArrive=()=>{q.state='queue';};});}}
+  if(v.cab&&v.cab.occ===v){v.cab.occ=null;const nxt=v.cab.queue.shift();if(nxt){v.cab.occ=nxt;route(nxt,[v.cab.front.x,v.cab.z],'floor');nxt.onArrive=()=>startPlay(nxt);v.cab.queue.forEach((q,k)=>{if(q.state==='queue')q.path=[[v.cab.front.x,v.cab.z+v.cab.qdir*(k+1)*1.15]],q.state='walk',q.onArrive=()=>{q.state='queue';};});}}
   if(v.stool&&v.stool.occ===v)v.stool.occ=null;
   v.cab=null;v.stool=null;
   if(v.prop){v.propUntil=v.t+7;}
@@ -129,7 +131,8 @@ export function createCrowd(ctx){
      const dx=wp[0]-p.x,dz=wp[1]-p.z,d=Math.hypot(dx,dz);
      if(d<.22){v.path.shift();if(!v.path.length){const f=v.onArrive;v.onArrive=null;f?f():(v.state='idle');}break;}
      let ux=dx/d,uz=dz/d;
-     if(player){const px=p.x-player.x,pz=p.z-player.z,pd=Math.hypot(px,pz);if(pd<1.7&&pd>0){const k=(1.7-pd)/1.7*1.6,sgn=(ux*pz-uz*px)>=0?1:-1;ux+=px/pd*k*.6+(-uz*sgn)*k*.8;uz+=pz/pd*k*.6+(ux*sgn)*k*.2;const l=Math.hypot(ux,uz)||1;ux/=l;uz/=l;}}
+     if(player){const px=p.x-player.x,pz=p.z-player.z,pd=Math.hypot(px,pz);if(pd<1.15&&v.path.length===1&&d<2.6){v.path.length=0;break;}
+      if(pd<1.7&&pd>0){const k=(1.7-pd)/1.7*1.6,sgn=(ux*pz-uz*px)>=0?1:-1;ux+=px/pd*k*.6+(-uz*sgn)*k*.8;uz+=pz/pd*k*.6+(ux*sgn)*k*.2;const l=Math.hypot(ux,uz)||1;ux/=l;uz/=l;}}
      const sp=v.speed*(v.path.length===1?Math.min(1,.35+d*.6):1)*1.9,bx=p.x,bz=p.z;p.x+=ux*sp*dt;p.z+=uz*sp*dt;moving=Math.min(1,sp/1.9);heading=Math.atan2(ux,uz);
      v.stuckT=(Math.hypot(p.x-bx,p.z-bz)<sp*dt*.2?(v.stuckT||0)+dt:Math.max(0,(v.stuckT||0)-dt*2));
      if(v.stuckT>2.5){v.stuckT=0;if(v.cab&&v.cab.occ===v){v.cab.occ=null;}if(v.cab){const qi=v.cab.queue.indexOf(v);if(qi>=0)v.cab.queue.splice(qi,1);}if(v.stool&&v.stool.occ===v)v.stool.occ=null;v.cab=null;v.stool=null;chooseWander(v);}

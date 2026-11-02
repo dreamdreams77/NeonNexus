@@ -2,7 +2,7 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.m
 import * as ART from './lobby-art.js';
 import { stepVelocity, turnToward } from './movement.js';
 import { createCrowd } from './lobby-crowd.js';
-import { createActor, CAST, createCabinetSprite, paintGalleryWall, paintGalleryFloor, createPlantSprite, paintTableTop, paintStoolTop, paintBarTop, createPokerSprite, paintAirTable, paintPoolTable, paintDisc, paintSoftShadow } from './lobby-sprites.js';
+import { createActor, CAST, createCabinetSprite, paintGalleryWall, paintGalleryFloor, createPlantSprite, paintTableTop, paintStoolTop, paintBarTop, createPokerSprite, paintAirTable, paintPoolTable, paintDisc, paintSoftShadow, drawWheel, WHEEL_W, WHEEL_H, paintBackBar } from './lobby-sprites.js';
 import { RoundedBoxGeometry } from 'https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/geometries/RoundedBoxGeometry.js';
 
 const mount=document.querySelector('#arcade-world');
@@ -421,6 +421,7 @@ if(mount){
  // Open kitchen and bar counter along the east wall, with a visible pass-through.
  box(5.8,1.35,1.25,8.8,.72,-1.8,wood,dining,.2);
  box(5.95,.16,1.35,8.8,1.46,-1.8,cream,dining,.12);
+ {const bb=new THREE.Mesh(new THREE.PlaneGeometry(6.2,2.17),new THREE.MeshBasicMaterial({map:artTex(paintBackBar(),{aniso:4}),transparent:true,alphaTest:.04,toneMapped:false}));const bg=new THREE.Group();bg.position.set(8.8,.15,-3.6);bg.rotation.x=-.4;bb.position.y=1.08;bg.add(bb);scene.add(bg);}
  {const bt=new THREE.Mesh(new THREE.PlaneGeometry(5.95,1.35),new THREE.MeshBasicMaterial({map:artTex(paintBarTop(),{aniso:4}),toneMapped:false}));bt.rotation.x=-Math.PI/2;bt.position.set(8.8,1.552,-1.8);scene.add(bt);}
  {const st=artTex(paintStoolTop(),{aniso:4});for(let i=0;i<3;i++){const d=new THREE.Mesh(new THREE.PlaneGeometry(.95,.95),new THREE.MeshBasicMaterial({map:st,transparent:true,toneMapped:false,depthWrite:false}));d.rotation.x=-Math.PI/2;d.position.set(7+i*1.8,.07,.9);scene.add(d);}}
  // Kitchen wall, tiled backsplash, shelves, warm pendants and cookware silhouettes.
@@ -606,7 +607,7 @@ const jukebox=new THREE.Group();jukebox.position.set(-10.0,0,-12.6);jukebox.scal
   jukebox.remove(jukeboxGlass);
   const jukeFront=new THREE.Mesh(new THREE.PlaneGeometry(1.0,2.0),new THREE.MeshStandardMaterial({map:artTex(ART.paintJukebox(),{aniso:4}),emissiveMap:null,roughness:.35,metalness:.2,emissive:0x331a2a,emissiveIntensity:.5}));jukeFront.position.set(0,1.1,.375);jukebox.add(jukeFront);
   jukebox.remove(jukeboxCrown);const crown=new THREE.Mesh(new THREE.CylinderGeometry(.5,.5,.7,18,1,false,0,Math.PI),mat(0xd98c9a,.35,.4));crown.rotation.z=Math.PI/2;crown.rotation.y=Math.PI/2;
-  const arcTop=new THREE.Mesh(new THREE.SphereGeometry(.57,20,12,0,Math.PI*2,0,Math.PI/2),mat(0xe0a3ae,.32,.45));arcTop.scale.set(1,1.1,.66);arcTop.position.y=2.25;jukebox.add(arcTop);addInk(jukeboxBody,.05,jukebox);
+  const arcTop=new THREE.Mesh(new THREE.SphereGeometry(.57,20,12,0,Math.PI*2,0,Math.PI/2),mat(0xe0a3ae,.32,.45));arcTop.scale.set(1,1.1,.66);arcTop.position.y=2.25;jukebox.add(arcTop);jukeboxBody.visible=false;arcTop.visible=false;jukeFront.removeFromParent();{const tl=new THREE.Group();tl.rotation.x=-.5;jukeFront.position.set(0,1.28,0);jukeFront.scale.set(1.2,1.25,1);tl.add(jukeFront);jukebox.add(tl);}
   const noteTex=['#ff7ab6','#5fe0d4','#ffc66b'].map(c=>artTex(ART.paintNote(c),{aniso:1}));
   const notes=noteTex.map((tx,i)=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(.34,.34),new THREE.MeshBasicMaterial({map:tx,transparent:true,depthWrite:false,toneMapped:false}));m.rotation.x=-.93;scene.add(m);return {m,phase:i/3};});
   artAnimators.push(t=>{jukeFront.material.emissiveIntensity=.45+.25*Math.sin(t*4.4);jukeboxLamp.color.setHSL((t*.08)%1,.7,.65);notes.forEach(n=>{const u=(t*.32+n.phase)%1;n.m.position.set(-10.0+Math.sin(u*9+n.phase*6)*.45,3.3+u*1.5,-12.3+u*.3);n.m.material.opacity=Math.sin(u*Math.PI);n.m.scale.setScalar(.7+u*.5);});});
@@ -624,6 +625,7 @@ const wheelValues=['0','10','25','50','100','250','500','1K'],wheelColors=[0x9a7
 for(let i=0;i<8;i++){const angle=i*Math.PI/4;const sector=new THREE.Mesh(new THREE.CylinderGeometry(.73,.73,.045,1,1,false,angle,Math.PI/4),new THREE.MeshStandardMaterial({color:wheelColors[i],roughness:.42,metalness:.12}));sector.rotation.x=Math.PI/2;sector.position.set(0,1.65,.42);luckyWheel.add(sector);const a=angle+Math.PI/8,label=new THREE.Mesh(new THREE.PlaneGeometry(.32,.16),new THREE.MeshBasicMaterial({map:textTexture(wheelValues[i],'TICKETS','#f5d39a'),transparent:true}));label.position.set(Math.sin(a)*.48,1.65+Math.cos(a)*.48,.47);label.rotation.z=-a;label.scale.set(.9,.9,1);luckyWheel.add(label);const spoke=box(.025,.68,.025,0,1.65,.475,clayMat(0xf1d5a2),luckyWheel,.012);spoke.rotation.z=-angle;}
 const wheelHub=new THREE.Mesh(new THREE.CylinderGeometry(.17,.17,.1,24),clayMat(0xf0d5a1));wheelHub.rotation.x=Math.PI/2;wheelHub.position.set(0,1.65,.49);luckyWheel.add(wheelHub);const wheelStar=new THREE.Mesh(new THREE.CircleGeometry(.105,5),new THREE.MeshBasicMaterial({color:0x75526a}));wheelStar.position.set(0,1.65,.55);luckyWheel.add(wheelStar);
 const wheelRing=new THREE.Mesh(new THREE.TorusGeometry(.85,.075,10,24),clayMat(0xf1d5a2));wheelRing.position.set(0,1.65,.42);luckyWheel.add(wheelRing);for(let i=0;i<8;i++){const peg=sphere(.075,Math.sin(i*Math.PI/4)*.7+0,1.65+Math.cos(i*Math.PI/4)*.7,.43,clayMat([0xe78b82,0x83c7ba,0xe7c27d,0x9d91c7][i%4]),luckyWheel);peg.position.set(Math.sin(i*Math.PI/4)*.7,1.65+Math.cos(i*Math.PI/4)*.7,.43);}const wheelLamp=new THREE.PointLight(0xf4c779,1.8,3.5);wheelLamp.position.set(0,1.7,.8);luckyWheel.add(wheelLamp);
+{for(const ch of [...luckyWheel.children]){if(ch!==wheelLamp)ch.visible=false;}const cv=document.createElement('canvas');cv.width=WHEEL_W;cv.height=WHEEL_H;drawWheel(cv.getContext('2d'));const tex=artTex(cv,{aniso:4}),h=3.0,m=new THREE.Mesh(new THREE.PlaneGeometry(h*WHEEL_W/WHEEL_H,h),new THREE.MeshBasicMaterial({map:tex,transparent:true,alphaTest:.04,toneMapped:false}));m.position.y=h/2-.1;const tl=new THREE.Group();tl.rotation.x=-.5;tl.add(m);luckyWheel.add(tl);}
 // Randomized walk-up visitors: each has a distinct silhouette, name and dialogue personality.
 const visitorNPCs=[],visitorArms=[],visitorLegs=[];const visitorProfiles=[
  {name:'Pip',questId:'pip',role:'Prize hunter',intro:'Pip is clutching a little plush and looks delighted to see another player.',dialogue:{chat:'I have been saving tickets for the giant comet bear. I am so close!',tip:'The claw machine is all about patience. Wait for the prize to settle before grabbing.',rumour:'Someone hit a 500-ticket wheel prize earlier. The thousand-ticket jackpot is incredibly rare.'}},
@@ -864,6 +866,9 @@ visitorProfiles.forEach((profile,i)=>{const g=new THREE.Group();const [x,z]=visi
   visitorNPCs.forEach((v,i)=>{const a=npcActors[i],g=v.group;let pose='idle',force=null;if(v.waveUntil>t){pose='wave';force='front';}else if(v.walkingNow)pose='walk'+(((Math.floor(v.walk*2/Math.PI))%4)+4)%4;a.root.rotation.y=-g.rotation.y;a.set(g.rotation.y,pose,force,Math.sin(t*1.5+i)*.008);});
   if(knob)knob.style.transform='translate('+touch.x*31+'px,'+touch.y*31+'px)';pink.intensity=18+Math.sin(t*1.4)*3;cyan.intensity=28+Math.cos(t*1.1)*5;
  }
+ // Retire the sculpted back-bar clutter (pendants, shelf props, menu board) now that the illustrated back bar replaces it.
+ dining.children.forEach(c=>{if(c.position.z<-2.1&&c.position.x>5.3&&c.position.y>1.6)c.visible=false;});
+ scene.updateMatrixWorld(true);{const v=new THREE.Vector3();scene.traverse(o=>{if(!o.isMesh||!o.visible)return;const t=o.geometry&&o.geometry.type;if(t!=='SphereGeometry'&&t!=='CylinderGeometry'&&t!=='TorusGeometry')return;o.getWorldPosition(v);if(v.x>5.3&&v.x<11.8&&v.z<-2.0&&v.z>-4.4&&v.y>1.75&&v.y<3.9){let p=o,staff=false;while(p){if(serviceStaff.some(s=>s.group===p)){staff=true;break;}p=p.parent;}if(!staff)o.visible=false;}});}
  let announcedReady=false,frameCount=0;function animate(){requestAnimationFrame(animate);if(!announcedReady&&frameCount++>2){announcedReady=true;window.dispatchEvent(new CustomEvent('nexus:world-ready'));}const paused=document.hidden||!gameOverlay.hidden;if(paused){clock.getDelta();return;}const dt=Math.min(clock.getDelta(),.05),t=clock.elapsedTime;update(dt,t);renderer.render(scene,camera);}
  animate();
 }
