@@ -508,3 +508,14 @@ test('the remaining cabinets have distinct mastery perks beyond XP-only progress
  assert.match(immersive,/saved\.arcadeMastery\.chef=record/);
  assert.match(immersive,/missLimit=3\+\(masteryLevel>=4\?1:0\)/);
 });
+
+test('the physical arcade environment has matching sculpted wall sconces and practical warm lights',()=>{
+ assert.match(world,/function makeSconce\(side,z\)/);
+ assert.match(world,/new THREE\.TorusGeometry\(\.205/);
+ assert.match(world,/new THREE\.PointLight\(0xffbd83,1\.35,5\.5,2\)/);
+ assert.match(world,/for\(const z of \[-15,-3,9,21\]\)for\(const side of \[-1,1\]\)makeSconce/);
+});
+test('Moonlight Billiards cabinet mastery improves controlled cue-shot power',()=>{
+ assert.match(game,/p\.masteryLevel>=2\?1\.08:1/);
+ assert.match(game,/p\.masteryLevel>=4\?1\.06:1/);
+});
