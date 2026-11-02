@@ -115,3 +115,15 @@ test('player character has expressive blinking and subtle stop-motion clay idle 
  assert.match(world,/hairCurls\.forEach\(curl=>\{/);
  assert.match(world,/curl\.scale\.y=\.72\+Math\.sin\(phase\+1\)\*\.012/);
 });
+
+test('avatar animation state is initialized before facial and hair meshes use it',()=>{
+ assert.ok(world.indexOf('const arms=[],legs=[],hands=[],blinkLids=[],hairCurls=[];')<world.indexOf('blinkLids.push(lid)'));
+ assert.ok(world.indexOf('const arms=[],legs=[],hands=[],blinkLids=[],hairCurls=[];')<world.indexOf('hairCurls.push(curl)'));
+});
+test('player greets services, reacts to cabinets and celebrates arcade wins',()=>{
+ assert.match(world,/triggerGesture\('wave',1\.55\)/);
+ assert.match(world,/triggerGesture\('excited',1\.1\)/);
+ assert.match(world,/gesture==='celebrate'/);
+ assert.match(world,/hands\[1\]\.rotation\.z=Math\.sin\(t\*13\)/);
+ assert.match(game,/if\(win\)window\.dispatchEvent\(new CustomEvent\('nexus:character-celebrate'\)\)/);
+});
