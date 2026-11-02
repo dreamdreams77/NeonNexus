@@ -373,7 +373,7 @@ test('tickets are a separate persistent currency from dining tokens and every ca
  assert.match(html,/id="arcade-tokens"/);
  assert.match(html,/id="arcade-tickets"/);
  assert.match(game,/const ticketsEarned=Math\.max\(2,Math\.floor\(score\/9\)/);
- assert.match(game,/saved\.tickets=\(Number\(saved\.tickets\)\|\|0\)\+ticketsEarned/);
+ assert.match(game,/saved\.tickets=\(Number\(saved\.tickets\)\|\|0\)\+payoutTickets/);
  assert.match(game,/saved\.ticketHistory\.unshift\(\{game,score,amount:ticketsEarned,at:Date\.now\(\)\}\)/);
  assert.match(game,/\+ticketsEarned\+' TICKETS'/);
  assert.match(game,/function writePlayer\(saved\).*arcade-tickets/);
@@ -533,4 +533,11 @@ test('cabinet mastery adds a transparent ticket payout bonus and the prize room 
  assert.match(game,/masteryBonus:masteryTicketBonus/);
  for(const id of ['vip-night','mastery-medal','golden-key'])assert.ok(game.includes("id:'"+id+"'"));
  assert.ok(game.includes("'Experiences'"));
+});
+
+test('the prize counter restocks its limited inventory once per day without resetting player collections',()=>{
+ assert.match(game,/saved\.prizeRestockDay!==today/);
+ assert.match(game,/Object\.fromEntries\(prizeCatalog\.map\(item=>\[item\.id,item\.stock\]\)\)/);
+ assert.match(css,/\.visitor-quest/);
+ assert.match(css,/data-rarity="LEGENDARY"/);
 });
