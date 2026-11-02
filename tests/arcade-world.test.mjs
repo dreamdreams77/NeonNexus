@@ -449,3 +449,19 @@ test('prize gallery uses distinct detailed 3D collectible sculpts instead of gen
  assert.match(world,/artBox\(group,0,\.045,0/);
  assert.match(world,/OWNED × /);
 });
+
+test('clay surfaces use tactile fingerprints, tool marks and physically varied roughness',()=>{
+ assert.match(world,/Fine grain, soft dragged tool marks and shallow fingerprints/);
+ assert.match(world,/roughnessMap:grain/);
+ assert.match(world,/clearcoatRoughness:.82/);
+ assert.match(world,/MeshPhysicalMaterial\(\{color:0xd6ad70/);
+});
+test('arcade games reward clean streaks, preserve per-game mastery and avoid stale memory callbacks',()=>{
+ assert.match(game,/function awardStreak\(/);
+ assert.match(game,/STREAK ×/);
+ assert.match(game,/saved\.arcadeStats\[game\]/);
+ assert.match(game,/saved\.arcadeSessions=saved\.arcadeSessions\.slice\(0,25\)/);
+ assert.match(game,/if\(sequenceTimer\)clearTimeout\(sequenceTimer\)/);
+ assert.match(game,/running&&game==='memory'/);
+ assert.match(game,/combo=0;sound\(100/);
+});
