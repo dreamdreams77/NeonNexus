@@ -2,11 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 
-const [html,game,world,immersive]=await Promise.all([
+const [html,game,world,immersive,css]=await Promise.all([
  readFile(new URL('../arcade.html',import.meta.url),'utf8'),
  readFile(new URL('../arcade.js',import.meta.url),'utf8'),
  readFile(new URL('../arcade-world.js',import.meta.url),'utf8'),
- readFile(new URL('../arcade-game3d.js',import.meta.url),'utf8')
+ readFile(new URL('../arcade-game3d.js',import.meta.url),'utf8'),
+ readFile(new URL('../arcade.css',import.meta.url),'utf8')
 ]);
 const ids=['skeeball','airhockey','whack','target','memory','rhythm','meteor','racer','stack','pinball','claw','chef','sushi','mixology','pulse','moto','moonquest'];
 
