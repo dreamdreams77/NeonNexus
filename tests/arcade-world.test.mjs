@@ -708,3 +708,15 @@ test('lobby crowd has personalities, A* navigation over real obstacles, queues, 
  assert.match(world,/const solidBoxes=\[\.\.\.cabinets\.map/);
  assert.match(world,/solidBoxes\.some\(b=>Math\.abs\(nextX-b\.x\)/);
 });
+
+test('players meet a title screen with load progress, failure fallback and persisted settings before the lobby',async()=>{
+ const intro=await readFile(new URL('../intro.js',import.meta.url),'utf8');
+ assert.match(html,/id="intro" class="nx-intro"/);assert.match(html,/id="intro-play"[^>]*disabled/);assert.match(html,/id="set-sound"/);assert.match(html,/id="set-quality"/);assert.match(html,/id="intro-error"/);
+ assert.ok(html.indexOf('./intro.js')<html.indexOf('./arcade.js'));
+ assert.match(intro,/nexus:world-ready/);assert.match(intro,/neon-nexus-settings-v1/);assert.match(intro,/el>12/);
+ assert.match(world,/nexus:world-ready/);assert.match(world,/body\.classList\.contains\('intro-open'\)/);assert.match(world,/savedQuality/);
+ assert.match(game,/window\.nexusSetMuted/);
+ assert.match(css,/\.nx-intro\{/);assert.doesNotMatch(css.slice(css.indexOf('Title screen')),/\n\.intro\{/);
+ assert.match(css,/prefers-reduced-motion:reduce\)\{\.intro-bg i/);
+});
+test('planter petal colours cannot index out of range for negative world x',()=>{assert.match(world,/\(\(\(i\+Math\.round\(x\)\)%3\)\+3\)%3/);});
