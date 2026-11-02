@@ -21,3 +21,12 @@ html,body{width:100%;height:100%;min-height:100%;overflow:hidden}body{min-height
 .overlay{z-index:10}
 @media(max-width:650px){.bar{height:52px}.rpg-main{padding-top:52px}.arcade-world{height:calc(100dvh - 52px)}.world-label{top:9px;font-size:8px;gap:8px}.world-label span:last-child{max-width:58%;text-align:right}.world-prompt{top:40px;font-size:9px;white-space:normal}.arcade-touch-pad{width:112px;height:112px;left:12px;bottom:14px}.arcade-interact{right:12px;bottom:26px;max-width:calc(100% - 145px);font-size:10px;padding:13px 15px}}
 @media(max-height:520px){.arcade-touch-pad{width:88px;height:88px}.arcade-touch-pad #arcade-joystick{width:34px;height:34px;margin:-17px}.world-prompt{top:34px}}
+
+/* Softer hand-made finish and a roomier, responsive thumb control. */
+#stage{filter:saturate(.96) contrast(1.035);box-shadow:inset 0 0 0 2px #fff5,0 3px 0 #674b50}
+.arcade-world{border-radius:31px 25px 33px 27px;box-shadow:0 22px 60px #130e1e99,inset 0 0 0 5px #fff1,inset 0 0 36px #f4cfa31a}
+.arcade-world canvas{filter:saturate(.96) contrast(1.035)}
+.arcade-touch-pad{width:124px;height:124px;background:radial-gradient(circle at 42% 35%,#59445dba,#211a2bba);box-shadow:0 5px 18px #120e1d66,inset 0 2px 8px #fff2}
+.arcade-touch-pad #arcade-joystick{width:46px;height:46px;margin:-23px;box-shadow:0 4px 12px #120e1d99,inset 0 1px 2px #fff8;transition:box-shadow .12s}
+#stage:focus-visible,.arcade-world canvas:focus-visible{outline:3px solid #f5c17d;outline-offset:3px}
+@media(max-width:650px){.arcade-touch-pad{left:14px;bottom:16px;width:126px;height:126px}.arcade-touch-pad:after{inset:18px}}
