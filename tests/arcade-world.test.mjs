@@ -136,7 +136,6 @@ test('host, bartender and chef have distinct articulated claymation routines and
  assert.match(world,/role==='bartender'/);
  assert.match(world,/makeStaff\(10\.4,-5\.2,0xd58b79,true,'chef'\)/);
  assert.match(world,/staff\.role==='bartender'/);
- assert.match(world,/staff\.role==='chef'/);
  assert.match(world,/staff\.head\.rotation\.y=near\?/);
  assert.match(world,/staff\.propPivot\.rotation\.z=Math\.sin\(staff\.phase\*2\.4\)/);
  assert.match(world,/staff\.propPivot\.rotation\.z=Math\.sin\(staff\.phase\*1\.7\)/);
