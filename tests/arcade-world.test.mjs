@@ -98,7 +98,7 @@ test('Kitchen Rush runs as a dedicated Three.js claymation room with 3D ingredie
  assert.match(game,/if\(game==='chef'\)\{window\.dispatchEvent/);
  assert.match(immersive,/new THREE\.WebGLRenderer/);
  
- for(const feature of ['PerspectiveCamera','Raycaster','KITCHEN TICKET','THE NEXUS KITCHEN','misses>=3','arcadeBest\.chef','ingredients'])assert.ok(immersive.includes(feature),'missing 3D gameplay feature '+feature);
+ for(const feature of ['PerspectiveCamera','Raycaster','KITCHEN TICKET','THE NEXUS KITCHEN','misses>=missLimit','arcadeBest\.chef','ingredients'])assert.ok(immersive.includes(feature),'missing 3D gameplay feature '+feature);
 });
 test('kitchen, catching and timing cabinets have distinct gameplay loops',()=>{
  for(const id of ['chef','sushi','mixology']){assert.ok(game.includes(id+':['));assert.ok(game.includes("case'"+id+"'"));}
