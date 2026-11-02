@@ -359,3 +359,53 @@ test('billiards rack contains one each of balls 1–15 with the eight ball at th
  assert.match(game,/b\.number===8/);
  assert.match(game,/!b\.pocketed&&b\.number!==8/);
 });
+
+test('the arcade has a physical prize exchange counter with walk-up interaction',()=>{
+ assert.match(world,/prizeCounterPosition=new THREE\.Vector3\(-8\.55,0,4\.7\)/);
+ assert.match(world,/PRIZE EXCHANGE/);
+ assert.match(world,/type:'prize',name:'PRIZE EXCHANGE · REDEEM TICKETS'/);
+ assert.match(world,/prizeCounterPosition/);
+ assert.match(world,/service\.type/);
+});
+test('tickets are a separate persistent currency from dining tokens and every cabinet awards them',()=>{
+ assert.match(html,/id="arcade-tokens"/);
+ assert.match(html,/id="arcade-tickets"/);
+ assert.match(game,/const ticketsEarned=Math\.max\(2,Math\.floor\(score\/9\)/);
+ assert.match(game,/saved\.tickets=\(Number\(saved\.tickets\)\|\|0\)\+ticketsEarned/);
+ assert.match(game,/saved\.ticketHistory\.unshift\(\{game,score,amount:ticketsEarned,at:Date\.now\(\)\}\)/);
+ assert.match(game,/\+ticketsEarned\+' TICKETS'/);
+ assert.match(game,/function writePlayer\(saved\).*arcade-tickets/);
+});
+test('the prize exchange has varied categories, rarity, ticket prices and limited stock',()=>{
+ for(const category of ['Plush','Toys','Collectibles','Tech','Big Wins'])assert.ok(game.includes("category:'"+category+"'"),'missing prize category '+category);
+ for(const rarity of ['COMMON','UNCOMMON','RARE','EPIC','LEGENDARY'])assert.ok(game.includes("rarity:'"+rarity+"'"),'missing rarity '+rarity);
+ assert.match(game,/stock:\d+/);
+ assert.match(game,/cost:\d+/);
+ assert.match(game,/prizeCategories=\['All','Plush','Toys','Collectibles','Tech','Big Wins'\]/);
+ assert.match(game,/LIMITED STOCK/);
+});
+test('prize redemption checks balance and stock, deducts tickets, and adds the item to the player collection',()=>{
+ assert.match(game,/function redeemPrize\(item\)/);
+ assert.match(game,/if\(stock<=0\)/);
+ assert.match(game,/if\(tickets<item\.cost\)/);
+ assert.match(game,/saved\.tickets=tickets-item\.cost/);
+ assert.match(game,/saved\.prizeStock\[item\.id\]=stock-1/);
+ assert.match(game,/owned\.quantity\+\+/);
+ assert.match(game,/saved\.prizeHistory\.unshift/);
+ assert.match(game,/nexus:prize-redeemed/);
+});
+test('players can browse prize categories and review their own prize haul and redemption history',()=>{
+ assert.match(html,/id="prize-filters"/);
+ assert.match(html,/id="prize-view-toggle"/);
+ assert.match(html,/id="prize-collection"/);
+ assert.match(game,/prizeView==='shop'\?'haul':'shop'/);
+ assert.match(game,/YOUR PRIZE HAUL/);
+ assert.match(game,/RECENT REDEMPTIONS/);
+ assert.match(game,/aria-pressed/);
+});
+test('Kitchen Rush also awards separate prize tickets while preserving the token economy',()=>{
+ assert.match(immersive,/const ticketNode=document\.querySelector\('#arcade-tickets'\)/);
+ assert.match(immersive,/ticketsEarned=Math\.max\(2,Math\.floor\(score\/9\)/);
+ assert.match(immersive,/saved\.tickets=\(Number\(saved\.tickets\)\|\|0\)\+ticketsEarned/);
+ assert.match(immersive,/ticketNode\.textContent=saved\.tickets/);
+});
