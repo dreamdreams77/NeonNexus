@@ -10,10 +10,14 @@ const [html,game,world,immersive]=await Promise.all([
 ]);
 const ids=['skeeball','airhockey','whack','target','memory','rhythm','meteor','racer','stack','pinball','claw','chef','sushi','mixology'];
 
-test('arcade page exposes fourteen cabinet games plus Neon Hoops',()=>{
- for(const id of ids)assert.match(html,new RegExp('data-game="'+id+'"'));
- assert.match(html,/href="\.\/hoops\.html"/);
- assert.equal((html.match(/class="game-card/g)||[]).length,15);
+test('arcade opens as one walkable RPG district with all fourteen cabinets and no game catalogue below it',()=>{
+ for(const id of ids)assert.ok(world.includes("'"+id+"'"),'missing world cabinet '+id);
+ assert.match(world,/\['NEON HOOPS','hoops'/);
+ assert.match(html,/id="arcade-world"/);
+ assert.doesNotMatch(html,/class="game-grid"/);
+ assert.doesNotMatch(html,/class="game-list-heading"/);
+ assert.match(html,/href="\.\/index\.html"/);
+ assert.match(world,/new THREE\.OrthographicCamera/);
 });
 
 test('every playable cabinet has a 3D model and launches its matching game',()=>{
