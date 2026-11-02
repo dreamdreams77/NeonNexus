@@ -552,3 +552,17 @@ test('prize rarity styling follows the catalogue and quest claims retain their s
  assert.match(game,/card\.dataset\.rarity=item\.rarity/);
  assert.match(game,/openService\('npc',null,npc\);serviceStatus\.textContent='Quest complete! '/);
 });
+
+test('daily district circuit tracks three distinct cabinets, grants one claim per UTC day, and persists its ticket reward',()=>{
+ for(const term of ['DAILY DISTRICT CIRCUIT','Play 3 different cabinets today','dailyCircuitClaimed','played.size<3','amount:80'])assert.ok(game.includes(term),'missing daily circuit detail '+term);
+ assert.match(game,/new Set\(sessions\.map\(s=>s\.game\)\)/);
+ assert.match(game,/latest\.dailyCircuitClaimed=date/);
+ assert.match(css,/\.daily-circuit/);
+});
+
+test('premium experience prizes have bespoke 3D display models and the lucky wheel shows all eight ticket sectors',()=>{
+ for(const id of ['vip-night','mastery-medal','golden-key'])assert.ok(world.includes("id==='"+id+"'"));
+ for(const value of ['0','10','25','50','100','250','500','1K'])assert.ok(world.includes("'"+value+"'"));
+ assert.match(world,/Eight enamelled prize sectors/);
+ assert.match(world,/wheelHub=new THREE\.Mesh/);
+});
