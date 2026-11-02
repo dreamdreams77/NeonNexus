@@ -383,7 +383,7 @@ test('the prize exchange has varied categories, rarity, ticket prices and limite
  for(const rarity of ['COMMON','UNCOMMON','RARE','EPIC','LEGENDARY'])assert.ok(game.includes("rarity:'"+rarity+"'"),'missing rarity '+rarity);
  assert.match(game,/stock:\d+/);
  assert.match(game,/cost:\d+/);
- assert.match(game,/prizeCategories=\['All','Plush','Toys','Collectibles','Tech','Big Wins'\]/);
+ assert.match(game,/prizeCategories=\['All','Plush','Toys','Collectibles','Tech','Big Wins','Experiences'\]/);
  assert.match(game,/LIMITED STOCK/);
 });
 test('prize redemption checks balance and stock, deducts tickets, and adds the item to the player collection',()=>{
