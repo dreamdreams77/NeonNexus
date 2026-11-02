@@ -15,7 +15,7 @@
     });
   };
   const openModal = (kicker, title, copy, content = '', action = 'GOT IT', callback = closeModal) => {
-    modalKicker.textContent = kicker; modalTitle.textContent = title; modalCopy.textContent = copy; modalContent.innerHTML = content; modalAction.textContent = action + ' ↗'; modalAction.onclick = callback; modal.classList.add('open'); modal.setAttribute('aria-hidden','false');
+    modalKicker.textContent = kicker; modalTitle.textContent = title; modalCopy.textContent = copy; modalContent.innerHTML = content; modalAction.textContent = action + ' ↗'; modalAction.onclick = callback; modalAction.disabled = false; modalAction.style.opacity = '1'; modal.classList.add('open'); modal.setAttribute('aria-hidden','false');
   };
   function closeModal(){ modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); }
   $('#modal-close').addEventListener('click', closeModal);
