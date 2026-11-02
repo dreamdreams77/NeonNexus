@@ -105,3 +105,13 @@ test('three new cabinets have distinct kitchen, catching and timing gameplay loo
  assert.match(game,/catchStreak/);
  assert.match(game,/mixRound/);
 });
+
+test('player character has expressive blinking and subtle stop-motion clay idle animation',()=>{
+ assert.match(world,/const arms=\[\],legs=\[\],blinkLids=\[\],hairCurls=\[\]/);
+ assert.match(world,/const eye=new THREE\.Group\(\)/);
+ assert.match(world,/blinkLids\.forEach\(lid=>\{lid\.scale\.y=/);
+ assert.match(world,/nextBlink=2\.4,blinkUntil=0/);
+ assert.match(world,/head\.rotation\.x=Math\.sin\(t\*\.83\)/);
+ assert.match(world,/hairCurls\.forEach\(curl=>\{/);
+ assert.match(world,/curl\.scale\.y=\.72\+Math\.sin\(phase\+1\)\*\.012/);
+});
