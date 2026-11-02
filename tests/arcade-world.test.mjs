@@ -238,3 +238,24 @@ test('storybook environment has painted wall art, handmade planters and drifting
  assert.match(world,/motesAttr\.needsUpdate=true/);
  assert.match(css,/Cabinet discovery: an editorial mini-preview/);
 });
+
+test('all eighteen cabinets show their own animated gameplay vignette rather than a static title card',()=>{
+ assert.match(world,/function makeCabinetPreview\(id,color\)/);
+ assert.match(world,/function drawCabinetPreview\(p,frame\)/);
+ assert.match(world,/new THREE\.CanvasTexture\(canvas\)/);
+ assert.match(world,/map:screenTex,emissive:color/);
+ for(const id of ['hoops','skeeball','airhockey','whack','target','memory','rhythm','meteor','racer','stack','pinball','claw','chef','sushi','mixology','pulse','moto','moonquest'])assert.ok(world.includes("case'"+id+"':"),'missing animated screen scene for '+id);
+ assert.match(world,/drawCabinetPreview\(preview,0\)/);
+ assert.match(world,/drawCabinetPreview\(preview,preview\.frame\)/);
+ assert.match(world,/preview\.frame\+\+/);
+});
+test('cabinet screen animation is throttled and limited to nearby machines for mobile performance',()=>{
+ assert.match(world,/screenDistance<19/);
+ assert.match(world,/preview\.clock>=\.12/);
+ assert.match(world,/preview\.clock=0/);
+ assert.match(world,/texture\.anisotropy=Math\.min\(4,renderer\.capabilities\.getMaxAnisotropy\(\)\)/);
+});
+test('direct cabinet screen clicks obey the same 4.1-unit interaction range as proximity prompts',()=>{
+ assert.match(world,/player\.position\.distanceTo\(o\.position\)<4\.1/);
+ assert.doesNotMatch(world,/player\.position\.distanceTo\(o\.position\)<5\.8/);
+});
