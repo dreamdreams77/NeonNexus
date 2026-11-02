@@ -118,7 +118,7 @@ if(game==='airhockey'){mouse.y=clamp(mouse.y,300,430);}
 }
 function onMove(e){pointer(e);if(game==='sushi'&&running)p.x=clamp(mouse.x,190,710);if(game==='meteor'&&running)p.x=clamp(mouse.x,190,710);if(game==='airhockey') {mouse.x=clamp(mouse.x,160,740);mouse.y=clamp(mouse.y,295,430);}if(game==='skeeball'&&p.drag){p.ballX=clamp(mouse.x,150,750);p.ballY=415;}}
 function onUp(e){pointer(e);if(game==='racer'&&running&&Math.abs(mouse.x-swipeStartX)>25)p.lane=clamp(p.lane+(mouse.x<swipeStartX?1:-1),0,2);if(game==='skeeball'&&p.drag&&running){const power=clamp((mouse.y-p.dragStartY)*4,260,680);p.vx=(mouse.x-p.dragX)*2.1;p.vy=-power;p.rolling=true;p.drag=false;sound(190,.1,'triangle');}}
-function keydown(e){keys[e.key]=true;if(!running)return;if(e.key===' '){e.preventDefault();if(game==='stack')dropStack();if(game==='pinball'&&!p.launched){p.launched=true;p.vy=-460;p.vx=35;sound(180,.15,'sawtooth');}if(game==='claw')grabClaw();}
+function keydown(e){keys[e.key]=true;if(!running)return;if(e.key===' '){e.preventDefault();if(game==='stack')dropStack();if(game==='pinball'&&!p.launched){p.launched=true;p.vy=-460;p.vx=35;sound(180,.15,'sawtooth');}if(game==='claw')grabClaw();if(game==='mixology')pourMix();}
 if(game==='racer'&&(e.key==='ArrowLeft'||e.key.toLowerCase()==='a'))p.lane=Math.max(0,p.lane-1);
 if(game==='racer'&&(e.key==='ArrowRight'||e.key.toLowerCase()==='d'))p.lane=Math.min(2,p.lane+1);
 if(game==='rhythm'){const lanes={d:0,f:1,j:2,k:3};const lane=lanes[e.key.toLowerCase()];if(lane!==undefined)hitRhythm(lane);}
