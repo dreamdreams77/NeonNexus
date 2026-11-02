@@ -289,7 +289,8 @@ const prizeCatalog=[
 ];
 const prizeCategories=['All','Plush','Toys','Collectibles','Tech','Big Wins','Experiences'];let prizeCategory='All',prizeView='shop';
 function renderPrizeExchange(){
- const saved=readPlayer(),tickets=Number(saved.tickets)||0,haul=saved.prizes||[],owned=haul.reduce((n,item)=>n+(Number(item.quantity)||0),0);
+ const saved=readPlayer(),today=new Date().toISOString().slice(0,10);if(saved.prizeRestockDay!==today){saved.prizeStock=Object.fromEntries(prizeCatalog.map(item=>[item.id,item.stock]));saved.prizeRestockDay=today;writePlayer(saved);}
+ const tickets=Number(saved.tickets)||0,haul=saved.prizes||[],owned=haul.reduce((n,item)=>n+(Number(item.quantity)||0),0);
  prizeBalance.textContent='🎟 '+tickets.toLocaleString()+' TICKETS AVAILABLE  ·  '+owned+' PRIZES IN YOUR HAUL';
  prizeFilters.innerHTML='';prizeCategories.forEach(category=>{const b=document.createElement('button');b.className='prize-filter';b.type='button';b.textContent=category;b.setAttribute('aria-pressed',String(prizeCategory===category));b.addEventListener('click',()=>{prizeCategory=category;renderPrizeExchange();});prizeFilters.append(b);});
  prizeViewToggle.textContent=prizeView==='shop'?'MY PRIZE HAUL':'BACK TO PRIZE SHOP';
