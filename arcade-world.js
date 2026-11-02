@@ -149,9 +149,11 @@ if(mount){
   sphere(.092,side*.326,-.015,-.005,skin,head,.72,1,.72);sphere(.039,side*.35,-.018,.047,clayMat(0xd68f83),head,.6,.85,.5);
   sphere(.105,side*.19,-.12,.215,clayMat(0xe9a08e),head,.9,.65,.35);
   for(let f=0;f<3;f++)sphere(.012,side*(.18+f*.035),-.105+(f%2)*.035,.25,mat(0xb9786d),head,.7,.7,.4);
-  sphere(.086,side*.125,.055,.278,eyeWhite,head,1,.92,.5);sphere(.049,side*.125,.052,.312,irisMat,head,1,.98,.48);
-  sphere(.026,side*.125,.052,.333,pupilMat,head,1,.98,.45);sphere(.012,side*.108,.076,.35,glintMat,head,.8,.8,.5);
-  const brow=sphere(.105,side*.128,.17,.27,hairMat,head,1,.27,.42);brow.rotation.z=side*.12;
+  const eye=new THREE.Group();eye.position.set(side*.125,.055,.278);head.add(eye);
+  sphere(.086,0,0,0,eyeWhite,eye,1,.92,.5);sphere(.049,0,-.003,.034,irisMat,eye,1,.98,.48);
+  sphere(.026,0,-.003,.055,pupilMat,eye,1,.98,.45);sphere(.012,-.017,.021,.072,glintMat,eye,.8,.8,.5);
+  const lid=sphere(.087,0,.09,.006,skinLight,eye,1,.015,.42);blinkLids.push(lid);
+  const brow=sphere(.105,side*.128,.17,.27,hairMat,head,1,.27,.42);brow.rotation.z=side*.12;brow.userData.restZ=brow.rotation.z;brow.userData.side=side;brow.name='expressive-brow';
  }
  sphere(.055,0,-.015,.305,skin,head,.78,1.35,.75);sphere(.072,0,-.075,.34,skinLight,head,1,.72,.72);
  const mouthCurve=new THREE.CatmullRomCurve3([new THREE.Vector3(-.09,-.145,.285),new THREE.Vector3(-.045,-.18,.318),new THREE.Vector3(.015,-.185,.32),new THREE.Vector3(.085,-.145,.285)]);
@@ -159,9 +161,9 @@ if(mount){
  sphere(.032,0,-.22,.275,clayMat(0xd8897d),head,.9,.35,.35);
  const hairCap=sphere(.315,0,.205,-.035,hairMat,head,1.08,.58,.96);
  sphere(.16,-.2,.11,.075,hairLight,head,.7,.78,.8);sphere(.16,.2,.1,.075,hairMat,head,.72,.8,.8);
- for(let i=0;i<9;i++){const a=-1.15+i*.285,x=Math.sin(a)*.255,y=.27+Math.cos(a)*.115,z=.035+Math.cos(a)*.08;const curl=sphere(.105,x,y,z,i%3===0?hairLight:hairMat,head,.95,.72,.88);curl.rotation.z=Math.sin(i*2)*.2;}
+ for(let i=0;i<9;i++){const a=-1.15+i*.285,x=Math.sin(a)*.255,y=.27+Math.cos(a)*.115,z=.035+Math.cos(a)*.08;const curl=sphere(.105,x,y,z,i%3===0?hairLight:hairMat,head,.95,.72,.88);curl.rotation.z=Math.sin(i*2)*.2;curl.userData.phase=i*1.7;hairCurls.push(curl);}
  const fringe=sphere(.16,-.045,.16,.245,hairLight,head,1.2,.55,.55);fringe.rotation.z=-.25;
- const arms=[],legs=[];
+ const arms=[],legs=[],blinkLids=[],hairCurls=[];
  function makeArm(side){
   const pivot=new THREE.Group();pivot.position.set(side*.39,1.34,.005);torso.add(pivot);arms.push(pivot);
   const upper=new THREE.Mesh(new THREE.CapsuleGeometry(.135,.39,5,12),hoodMat);upper.position.y=-.235;upper.rotation.z=-side*.12;upper.castShadow=true;pivot.add(upper);
@@ -187,7 +189,7 @@ if(mount){
   return pivot;
  }
  makeLeg(-1);makeLeg(1);
- const keys=new Set(),touch={x:0,y:0};let nearest=null,activeService=null,walk=0;;
+ const keys=new Set(),touch={x:0,y:0};let nearest=null,activeService=null,walk=0,nextBlink=2.4,blinkUntil=0;;
  const prompt=document.querySelector('#arcade-world-prompt'),interact=document.querySelector('#arcade-interact'),pad=document.querySelector('#arcade-touch-pad'),knob=document.querySelector('#arcade-joystick');
  function useCabinet(){if(!nearest)return;window.dispatchEvent(new CustomEvent('nexus:arcade-play',{detail:{gameId:nearest.userData.id}}));}
  function useService(){if(!activeService)return;window.dispatchEvent(new CustomEvent('nexus:service-open',{detail:{service:activeService.type,table:activeService.table||null}}));}
@@ -200,9 +202,14 @@ if(mount){
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),clock=new THREE.Clock();
  function resize(){const w=Math.max(1,mount.clientWidth),h=Math.max(1,mount.clientHeight),aspect=w/h,viewHeight=Math.max(26,16/aspect);camera.left=-viewHeight*aspect/2;camera.right=viewHeight*aspect/2;camera.top=viewHeight/2;camera.bottom=-viewHeight/2;camera.updateProjectionMatrix();renderer.setSize(w,h,false);}new ResizeObserver(resize).observe(mount);resize();
  function update(dt,t){
+  if(t>=nextBlink){blinkUntil=t+.13;nextBlink=t+2.8+((Math.sin(t*4.7)+1)*.75);}
+  const blink=blinkUntil>t?Math.sin(Math.PI*(t-(blinkUntil-.13))/.13):0;
+  blinkLids.forEach(lid=>{lid.scale.y=.015+Math.max(0,blink)*.96;lid.position.y=.09-Math.max(0,blink)*.055;});
+  head.rotation.x=Math.sin(t*.83)*.018;head.rotation.z=Math.sin(t*.61)*.012;
+  hairCurls.forEach(curl=>{const phase=t*7.54+curl.userData.phase;curl.rotation.z=Math.sin(phase)*.025;curl.scale.y=.72+Math.sin(phase+1)*.012;});
   let x=((keys.has('d')||keys.has('arrowright'))?1:0)-((keys.has('a')||keys.has('arrowleft'))?1:0)+touch.x;
   let z=((keys.has('s')||keys.has('arrowdown'))?1:0)-((keys.has('w')||keys.has('arrowup'))?1:0)+touch.y;
-  const len=Math.hypot(x,z);if(len>.08){x/=Math.max(1,len);z/=Math.max(1,len);player.position.x=clamp(player.position.x+x*5.1*dt,-9.7,9.7);player.position.z=clamp(player.position.z+z*5.1*dt,-23.5,22);player.rotation.y=Math.atan2(x,z);walk+=dt*9;torso.position.y=1.02+Math.abs(Math.sin(walk))*.035;arms.forEach((arm,i)=>{arm.rotation.x=Math.sin(walk+i*Math.PI)*.34;arm.rotation.z=(i===0?-.08:.08)+Math.sin(walk+i*Math.PI)*.045;});legs.forEach((leg,i)=>leg.rotation.x=Math.sin(walk+i*Math.PI)*.48);}else{torso.position.y=1.02+Math.sin(t*2.1)*.012;arms.forEach((arm,i)=>{arm.rotation.x=Math.sin(t*1.7+i*1.2)*.035;arm.rotation.z=(i===0?-.08:.08)+Math.sin(t*1.3+i)*.018;});legs.forEach(leg=>leg.rotation.x*=.82);}
+  const len=Math.hypot(x,z);if(len>.08){x/=Math.max(1,len);z/=Math.max(1,len);player.position.x=clamp(player.position.x+x*5.1*dt,-9.7,9.7);player.position.z=clamp(player.position.z+z*5.1*dt,-23.5,22);player.rotation.y=Math.atan2(x,z);walk+=dt*9;torso.position.y=1.02+Math.abs(Math.sin(walk))*.035;arms.forEach((arm,i)=>{arm.rotation.x=Math.sin(walk+i*Math.PI)*.34;arm.rotation.z=(i===0?-.08:.08)+Math.sin(walk+i*Math.PI)*.045;});legs.forEach((leg,i)=>leg.rotation.x=Math.sin(walk+i*Math.PI)*.48);}else{torso.position.y=1.02+Math.sin(t*2.1)*.012;torso.rotation.z=Math.sin(t*.9)*.012;arms.forEach((arm,i)=>{arm.rotation.x=Math.sin(t*1.7+i*1.2)*.035;arm.rotation.z=(i===0?-.08:.08)+Math.sin(t*1.3+i)*.018;});legs.forEach(leg=>leg.rotation.x*=.82);}
   camera.position.lerp(new THREE.Vector3(player.position.x,player.position.y+23,player.position.z+17),1-Math.exp(-3.8*dt));camera.lookAt(player.position.x,0,player.position.z-1.5);
   nearest=null;let dmin=4.1;for(const c of cabinets){const d=player.position.distanceTo(c.position);if(d<dmin){dmin=d;nearest=c;}}
   activeService=null;let serviceDistance=3.5;for(const service of services){const d=player.position.distanceTo(service.position);if(d<serviceDistance){serviceDistance=d;activeService=service;}}
