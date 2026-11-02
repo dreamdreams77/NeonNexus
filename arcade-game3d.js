@@ -7,7 +7,7 @@ const scoreNode=document.querySelector('#score');
 const timeNode=document.querySelector('#time');
 const resultNode=document.querySelector('#result');
 const tokenNode=document.querySelector('#arcade-tokens');
-if(!stage||!canvas)return;
+if(!stage||!canvas)throw new Error('Kitchen Rush game surface is missing');
 
 let renderer,scene,camera,clock,chef,armL,armR,raf=0,active=false,visible=false;
 let ingredients=[],ticketTexture,ticketContext,ticketMaterial,plateFood=[],steam=[],decor=[];
@@ -93,7 +93,6 @@ function chefIdle(t){chef.rotation.z=Math.sin(t*1.1)*.025;armL.rotation.z=Math.s
 function pointerDown(e){if(!active)return;const r=renderer.domElement.getBoundingClientRect(),p=new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1),ray=new THREE.Raycaster();ray.setFromCamera(p,camera);const hits=ray.intersectObjects(ingredients,true);if(!hits.length)return;let root=hits[0].object;while(root.parent&&root.userData.ingredient===undefined)root=root.parent;if(root.userData.ingredient!==undefined)choose(root.userData.ingredient);}
 function openGame(id){visible=id==='chef';stage.style.display=visible?'block':'none';canvas.style.display=visible?'none':'block';if(visible){resize();resultNode.textContent='';startButton.textContent='START SERVICE';}}
 function stop(){active=false;cancelAnimationFrame(raf);if(visible){stage.style.display='block';canvas.style.display='block';}visible=false;}
-document.addEventListener('nexus:unused',()=>{});
 window.addEventListener('nexus:game3d-open',e=>openGame(e.detail?.gameId));
 window.addEventListener('nexus:game3d-start',startGame);
 window.addEventListener('nexus:game3d-stop',stop);
