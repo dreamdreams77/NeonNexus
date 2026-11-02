@@ -346,14 +346,13 @@ test('mobile rendering reduces GPU cost and world camera smoothing reuses its ta
  assert.match(world,/nextPreviewRefresh=t\+\.25/);
 });
 
-test('arcade floor uses instanced textured tiles to cut draw calls while preserving the handmade surface',()=>{
- assert.match(world,/new THREE\.InstancedMesh\(new RoundedBoxGeometry\(1\.92,\.035,1\.92,2,\.035\)/);
- assert.match(world,/floorTiles\.setColorAt/);
- assert.match(world,/floorTiles\.instanceMatrix\.needsUpdate=true/);
+test('arcade floor is two painted planes (tiling parquet + one carpet overlay) instead of hundreds of tile meshes, felts stay textured',()=>{
+ assert.match(world,/scene\.remove\(floorTiles\)/);
+ assert.match(world,/new THREE\.PlaneGeometry\(24,48\),new THREE\.MeshStandardMaterial\(\{map:parquetMap,roughnessMap:parquetRough/);
  assert.match(world,/function feltTexture\(base\)/);
  assert.match(world,/map:airFelt,roughness:\.72,bumpMap:grain/);
  assert.match(world,/map:poolFelt,roughness:\.88,bumpMap:grain/);
- assert.match(world,/blockedX=gameTables\.some/);
+ assert.match(world,/blockedX=solidBoxes\.some[\s\S]*gameTables\.some/);
 });
 test('billiards rack contains one each of balls 1–15 with the eight ball at the triangle centre',()=>{
  assert.match(game,/const eight=rack\[4\],swap=rack\[7\];eight\.number=8;swap\.number=5/);
