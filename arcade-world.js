@@ -124,7 +124,7 @@ if(mount){
  const tables=[];
  function makeTable(x,z,i){const g=new THREE.Group();g.position.set(x,0,z);dining.add(g);cyl(.78,.86,.18,0,1.05,0,cream,g);cyl(.12,.16,1,0,.5,0,wood,g);for(let a=0;a<4;a++){const ang=a*Math.PI/2;box(.58,.18,.58,Math.cos(ang)*1.15,.55,Math.sin(ang)*1.15,clayMat(0x9a6862),g,.12);box(.64,.12,.64,Math.cos(ang)*1.15,.93,Math.sin(ang)*1.15,clayMat(0xd6a58d),g,.1);}for(let a=0;a<3;a++){cyl(.22,.22,.035,-.35+a*.35,1.16,.08,mat(0xfff0d3,.3),g);sphere(.08,-.35+a*.35,1.22,.08,clayMat([0xd67f70,0x88bca3,0xe3bc70][a]),g,.7,.4,.7);}tables.push({group:g,position:new THREE.Vector3(x,0,z),number:i});}
  makeTable(5.8,5.3,1);makeTable(9.1,7.8,2);makeTable(5.7,10.5,3);
- const services=[{type:'bar',name:'GLOW BAR · ORDER FOOD & DRINKS',position:new THREE.Vector3(8.8,0,-.2)},{type:'host',name:'HOST STAND · REQUEST A TABLE',position:new THREE.Vector3(1.4,0,10.2)},...tables.map(t=>({type:'table',name:'TABLE '+t.number+' · TAKE A SEAT',position:t.position,table:t.number}))];
+ const services=[{type:'bar',name:'GLOW BAR · ORDER FOOD & DRINKS',position:new THREE.Vector3(8.8,0,-.2)},{type:'pass',name:'KITCHEN PASS · COLLECT ORDERS',position:new THREE.Vector3(8.8,0,2.2)},{type:'host',name:'HOST STAND · REQUEST A TABLE',position:new THREE.Vector3(1.4,0,10.2)},...tables.map(t=>({type:'table',name:'TABLE '+t.number+' · TAKE A SEAT',position:t.position,table:t.number}))];
  // Player avatar: asymmetrical clay hoodie, rounded head, hair cap, eyes and stubby limbs.
  const player=new THREE.Group();scene.add(player);player.position.set(0,0,13);
  const hoodie=new THREE.Mesh(new THREE.CapsuleGeometry(.37,.68,5,10),clayMat(0x7db9b1));hoodie.position.y=1.04;hoodie.castShadow=true;player.add(hoodie);
