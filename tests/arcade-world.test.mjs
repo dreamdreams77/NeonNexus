@@ -592,3 +592,19 @@ test('scoring produces restrained visual sparkles and a pitch-scaled arcade chim
  assert.match(game,/function scoreBy\(n\).*addParticles\(mouse\.x,mouse\.y,n>=25\?/);
  assert.match(game,/sound\(Math\.min\(860,340\+n\*5\),\.055,'sine',\.018\)/);
 });
+
+test('Glow Bar has three walk-up video poker machines with a playable five-card draw loop',()=>{
+ assert.match(world,/function makePokerMachine\(x,z,index\)/);
+ assert.match(world,/makePokerMachine\(7\.1,-1\.8,0\);makePokerMachine\(8\.8,-1\.8,1\);makePokerMachine\(10\.5,-1\.8,2\)/);
+ assert.match(world,/pokerMachines\.map/);
+ assert.match(world,/machine:activeService\.machine/);
+ assert.match(game,/function pokerDeck\(\)/);
+ assert.match(game,/function pokerRank\(hand\)/);
+ assert.match(game,/pokerPhase==='hold'/);
+ assert.match(game,/pokerPaytable/);
+ assert.match(game,/current\.tokens=wallet-5/);
+ assert.match(game,/latest\.tokens=Number\(latest\.tokens\?\?250\)\+award\*5/);
+ assert.match(game,/service==='poker'/);
+ assert.match(css,/\.poker-card\.held/);
+ assert.match(css,/\.poker-paytable/);
+});
