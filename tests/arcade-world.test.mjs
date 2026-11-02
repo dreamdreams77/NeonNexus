@@ -541,3 +541,9 @@ test('the prize counter restocks its limited inventory once per day without rese
  assert.match(css,/\.visitor-quest/);
  assert.match(css,/data-rarity="LEGENDARY"/);
 });
+
+test('arcade visitors have individualized sculpted props and readable nameplates, while cabinets receive a detailed finish pass',()=>{
+ for(const term of ['Signature props make every regular readable','const bag=sculptedBox','const band=new THREE.Mesh(new THREE.TorusGeometry','const pack=sculptedBox','const cue=cyl','const nameplate=box'])assert.ok(world.includes(term),'missing visitor art detail '+term);
+ assert.match(world,/Ticket slot, brass service trim, cabinet fasteners/);
+ assert.match(world,/badgePlate=new THREE\.Mesh\(new THREE\.CircleGeometry/);
+});
