@@ -5,39 +5,47 @@ An original arcade-resort experience: explore themed districts, play quick chall
 ## Current prototype
 
 - Responsive resort welcome page with a deliberate entry point and six district discovery panels.
-- **Interactive 3D Grand Atrium** with a central landmark, illuminated arcade cabinets, seating, planters and atmospheric lighting.
-- **Third-person player movement** using WASD / arrow keys on desktop and an on-screen touch joystick on mobile.
-- **Physical arcade cabinet interactions**: walk close and press E or tap Interact. Neon Hoops launches the playable challenge; Prize Drop awards a one-time 15-token discovery bonus; other cabinets preview upcoming games.
+- **Interactive 3D Grand Atrium** with central landmark, illuminated arcade cabinets, seating, planters and atmospheric lighting.
+- **Five additional explorable 3D districts**, each with its own environment, landmarks and activities:
+  - **Combat District:** holographic target range with three interactive targets.
+  - **Velocity Boulevard:** night circuit, electric show car, track barriers, garage showcase and finish gate.
+  - **Classic Arcade:** skee-ball, air hockey and claw-machine cabinets.
+  - **Food & Social:** Afterglow Café, host character, seating and order counter.
+  - **Prize Vault:** collector gallery with five illuminated display cases and a bonus point of interest.
+- Third-person movement in both world areas: WASD / arrow keys on desktop and an on-screen joystick on mobile.
+- Approach an activity and press **E**, or use the on-screen **Interact** button.
+- District cards jump directly into the corresponding world. The district tabs also let you switch spaces.
+- Activities award tokens; each activity can be completed once per local player profile to prevent repeat farming.
 - Playable 30-second **Neon Hoops** challenge with scoring, best score and token rewards.
 - Three starter quests, token wallet and prize-vault redemption.
-- **Persistent local player profile**: wallet, quest progress, best score, claimed bonus and redeemed prizes save in the browser on that device.
+- **Persistent local player profile**: wallet, quest progress, best score, claimed bonuses, redeemed prizes and completed district activities save in the browser on that device.
 - Responsive layouts, keyboard-accessible dialogs and reduced-motion support.
 
 ## Controls
 
-- Desktop: **WASD** or **arrow keys** to walk; **E** to use a nearby machine.
-- Mobile: drag the on-screen joystick to move; approach a machine and tap **Interact**.
-- You can also tap a cabinet in the 3D scene when your character is close to it.
+- Desktop: **WASD** or **arrow keys** to walk; **E** to use a nearby activity.
+- Mobile: drag the on-screen joystick to move; approach an activity and tap **Interact**.
+- Select any district tab to switch worlds. The original Grand Atrium remains available above.
 
 ## Run locally
 
-This is a static site. Open `index.html` in a browser, or run a local static server:
+This is a static site. Open `index.html`, or run a local static server:
 
 ```bash
 npx serve .
 ```
 
-The 3D scene loads Three.js as an ES module from jsDelivr, so an internet connection is needed for that dependency. The rest of the site remains static.
+Three.js loads as an ES module from jsDelivr, so an internet connection is needed for the 3D environments.
 
 ## GitHub Pages
 
-In the repository settings, set **Pages → Build and deployment → Deploy from a branch**, choose `main` and `/(root)`. The site is served from `index.html`.
+In repository settings, set **Pages → Build and deployment → Deploy from a branch**, choose `main` and `/(root)`. The site is served from `index.html`.
 
 ## Roadmap
 
-1. Expand each district into its own functional playable space.
-2. Add richer character customisation, NPCs, social features and tournaments.
-3. Add original mini-games, animations, audio, accessibility and performance polish.
+1. Turn each district activity into a deeper mini-game with distinct mechanics, sound and animations.
+2. Add richer character customisation, NPC dialogue, social features and tournaments.
+3. Add accessibility options, performance polish and richer mobile controls.
 4. Consider cloud-backed profiles and cross-device saves (current saves are local to one browser/device).
 
 Neon Nexus is an original project. All names, visual design and planned experiences are being developed as original IP.
