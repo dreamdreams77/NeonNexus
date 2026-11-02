@@ -429,7 +429,7 @@ test('the prize gallery is a physically walkable 3D room with an open doorway an
 test('redeemed prizes become physical gallery shelf displays and refresh immediately after redemption',()=>{
  assert.match(world,/function refreshPrizeGallery\(\)/);
  assert.match(world,/saved\.prizes\|\|\[\]/);
- assert.match(world,/owned\.forEach/);
+ assert.match(world,/shown\.forEach/);
  assert.match(world,/OWNED × /);
  assert.match(world,/window\.addEventListener\('nexus:prize-redeemed',refreshPrizeGallery\)/);
  assert.match(game,/else if\(service==='prize-room'\)/);
