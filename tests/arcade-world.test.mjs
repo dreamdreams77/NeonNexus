@@ -414,3 +414,25 @@ test('ticket and token payouts preserve a genuinely empty token wallet instead o
  assert.match(game,/saved\.tokens=\(Number\(saved\.tokens\?\?250\)\|\|0\)\+earned/);
  assert.match(immersive,/saved\.tokens=\(Number\(saved\.tokens\?\?250\)\|\|0\)\+earned/);
 });
+
+test('the prize gallery is a physically walkable 3D room with an open doorway and solid wall collision',()=>{
+ assert.match(world,/const prizeRoom=\{left:-10\.7,right:-3\.5,back:10\.5,front:19\.2,doorLeft:-8\.35,doorRight:-5\.85/);
+ assert.match(world,/Walkable Prize Gallery/);
+ assert.match(world,/galleryShelfY=\[1\.05,2\.15,3\.25\]/);
+ assert.match(world,/PRIZE GALLERY/);
+ assert.match(world,/type:'prize-room',name:'PRIZE GALLERY/);
+ assert.match(world,/prizeRoom\.doorLeft/);
+ assert.match(world,/prizeRoom\.doorRight/);
+ assert.match(world,/Math\.abs\(player\.position\.x-prizeRoom\.left\)/);
+ assert.match(world,/Math\.abs\(player\.position\.x-prizeRoom\.right\)/);
+});
+test('redeemed prizes become physical gallery shelf displays and refresh immediately after redemption',()=>{
+ assert.match(world,/function refreshPrizeGallery\(\)/);
+ assert.match(world,/saved\.prizes\|\|\[\]/);
+ assert.match(world,/owned\.forEach/);
+ assert.match(world,/OWNED × /);
+ assert.match(world,/window\.addEventListener\('nexus:prize-redeemed',refreshPrizeGallery\)/);
+ assert.match(game,/else if\(service==='prize-room'\)/);
+ assert.match(game,/prizeView='haul'/);
+ assert.match(game,/WALKABLE PRIZE GALLERY/);
+});
