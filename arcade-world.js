@@ -99,6 +99,18 @@ if(mount){
  for(const x of [-.13,.13])sphere(.045,x,1.69,.31,mat(0x33283b),host);
  for(const x of [-.23,.23])sphere(.075,x,1.48,.26,clayMat(0xe78d87),host);
  const smile=new THREE.Mesh(new THREE.TorusGeometry(.09,.018,8,18,Math.PI),mat(0x7c4855));smile.position.set(0,1.48,.31);smile.rotation.z=Math.PI;host.add(smile);
+ // Host gestures are driven by articulated clay arms, not whole-body wobble.
+ const hostArms=[];
+ for(const side of [-1,1]){
+  const pivot=new THREE.Group();pivot.position.set(side*.34,1.13,0);host.add(pivot);hostArms.push(pivot);
+  const sleeve=new THREE.Mesh(new THREE.CapsuleGeometry(.105,.34,4,10),clayMat(0x76506c));sleeve.position.set(side*.035,-.2,0);sleeve.rotation.z=-side*.12;pivot.add(sleeve);
+  sphere(.105,side*.05,-.42,.025,clayMat(0xeac09e),pivot,.9,.95,.85);
+  for(let f=0;f<3;f++)sphere(.022,side*.05+(f-1)*.04,-.5,.055,clayMat(0xeac09e),pivot,.8,1,.8);
+ }
+ const hostHead=sphere(.055,0,1.96,.03,clayMat(0xeac09e),host,.9,.7,.7);
+ const hostEyeLids=[];
+ for(const side of [-1,1]){const lid=sphere(.05,side*.13,1.68,.34,clayMat(0xeac09e),host,1,.015,.4);hostEyeLids.push(lid);}
+ let hostWelcomeUntil=0,hostBlinkAt=2.7,hostBlinkUntil=0;
  // The restaurant is part of this same continuous floor: no scene swap or second page.
  const dining= new THREE.Group();scene.add(dining);
  const wood=clayMat(0x80564b),cream=clayMat(0xf0d3a8),brass=mat(0xd6a15f,.38,.35,0x9c6130,.22),leaf=clayMat(0x6c9b78);
@@ -115,7 +127,43 @@ if(mount){
  const barTexture=textTexture('THE GLOW BAR','KITCHEN · JUICE · MOCKTAILS','#ffc88a');const barPlane=new THREE.Mesh(new THREE.PlaneGeometry(3.3,.52),new THREE.MeshBasicMaterial({map:barTexture}));barPlane.position.set(8.8,4.35,-2.29);dining.add(barPlane);
  // Tiny clay staff animate behind the open counter.
  const serviceStaff=[];
- function makeStaff(x,z,shirt,hat){const g=new THREE.Group();g.position.set(x,0,z);dining.add(g);sphere(.31,0,1.55,0,clayMat(0xe7b997),g,.95,1,.88);sphere(.33,0,1.27,0,clayMat(shirt),g,.95,1.15,.8);for(const ex of [-.1,.1])sphere(.035,ex,1.6,.27,mat(0x302638),g);if(hat){cyl(.2,.24,.12,0,1.91,0,cream,g);sphere(.2,0,2.02,0,cream,g,1,.7,1);}else sphere(.34,0,1.83,-.03,clayMat(0x574052),g,1,.34,.9);serviceStaff.push(g);}
+ function makeStaff(x,z,shirt,hat,role){
+  const g=new THREE.Group();g.position.set(x,0,z);dining.add(g);
+  const body=sphere(.33,0,1.27,0,clayMat(shirt),g,.95,1.15,.8);
+  const headPivot=new THREE.Group();headPivot.position.set(0,1.55,0);g.add(headPivot);
+  sphere(.31,0,0,0,clayMat(0xe7b997),headPivot,.95,1,.88);
+  for(const ex of [-.1,.1]){sphere(.035,ex,.045,.27,mat(0x302638),headPivot);sphere(.012,ex-.01,.06,.3,mat(0xffffff),headPivot);}
+  sphere(.045,0,-.12,.28,clayMat(0xd58d80),headPivot,.8,.55,.5);
+  const lids=[];for(const ex of [-.1,.1])lids.push(sphere(.038,ex,.095,.29,clayMat(0xe7b997),headPivot,1,.012,.35));
+  if(hat){cyl(.2,.24,.12,0,.36,0,cream,headPivot);sphere(.2,0,.46,0,cream,headPivot,1,.7,1);}else sphere(.34,0,.29,-.03,clayMat(0x574052),headPivot,1,.34,.9);
+  const arms=[];
+  for(const side of [-1,1]){
+   const pivot=new THREE.Group();pivot.position.set(side*.29,1.43,.015);g.add(pivot);arms.push(pivot);
+   const sleeve=new THREE.Mesh(new THREE.CapsuleGeometry(.105,.31,4,10),clayMat(shirt));sleeve.position.set(side*.025,-.2,0);sleeve.rotation.z=-side*.1;pivot.add(sleeve);
+   const fore=new THREE.Mesh(new THREE.CapsuleGeometry(.082,.27,4,9),clayMat(0xe7b997));fore.position.set(side*.04,-.48,.035);pivot.add(fore);
+   sphere(.09,side*.045,-.65,.06,clayMat(0xe7b997),pivot,.9,.85,.8);
+  }
+  let prop=null,propPivot=null;
+  if(role==='bartender'){
+   // A tiny glass and folded polishing cloth make the counter work readable.
+   propPivot=new THREE.Group();propPivot.position.set(.04,-.67,.12);arms[1].add(propPivot);
+   cyl(.075,.09,.18,0,.08,0,mat(0x9ed8d0,.2,0,0x4da9a0,.15),propPivot);
+   cyl(.072,.072,.012,0,.17,0,mat(0xffe3b4,.3),propPivot);
+   prop=box(.16,.035,.11,-.12,.02,.015,clayMat(0xf0c7a0),propPivot,.025);
+  }else{
+   // The chef holds a wooden spoon over a small steaming stock pot.
+   propPivot=new THREE.Group();propPivot.position.set(.04,-.67,.1);arms[1].add(propPivot);
+   const spoon=cyl(.018,.025,.42,0,.18,0,clayMat(0x9b684b),propPivot);spoon.rotation.z=-.16;
+   sphere(.065,0,.4,0,clayMat(0x9b684b),propPivot,.7,1.25,.65);
+   cyl(.24,.28,.22,.22,.95,.28,clayMat(0x5d5260),g);
+   cyl(.22,.22,.025,.22,1.08,.28,mat(0x786f78),g);
+   const steamMat=new THREE.MeshBasicMaterial({color:0xffdfc4,transparent:true,opacity:.25});
+   for(let i=0;i<3;i++){const steam=new THREE.Mesh(new THREE.SphereGeometry(.035,8,7),steamMat);steam.position.set(.12+i*.09,1.28+i*.04,.28);g.add(steam);steam.userData.phase=i*1.9;(g.userData.steam||(g.userData.steam=[])).push(steam);}
+  }
+  const staff={group:g,arms,head:headPivot,lids,role,propPivot,body,phase:role==='bartender'?.7:2.1,near:false,blinkAt:2.2,blinkUntil:0};
+  serviceStaff.push(staff);return staff;
+ }
+ makeStaff(8.7,-2.9,0x8bb8a2,false,'bartender');makeStaff(10.4,-5.2,0xd58b79,true,'chef');
  makeStaff(8.7,-2.9,0x8bb8a2,false);makeStaff(10.4,-5.2,0xd58b79,true);
  // Host podium and a friendly reservation bell.
  box(1.45,1.2,.85,1.4,.62,10.2,clayMat(0x98605e),dining,.15);box(1.52,.12,.92,1.4,1.26,10.2,cream,dining,.08);cyl(.09,.12,.12,1.4,1.4,10.2,brass,dining);
@@ -234,7 +282,48 @@ if(mount){
   else if(nearest){prompt.textContent='E / TAP TO PLAY  ·  '+nearest.userData.name;interact.hidden=false;interact.textContent='PLAY '+nearest.userData.name+' ↗';}
   else{prompt.textContent='EXPLORE THE DISTRICT · APPROACH A CABINET OR SERVICE';interact.hidden=true;}
   cabinets.forEach((c,i)=>{const pulse=.75+Math.sin(t*2.1+i*.8)*.22;c.userData.lamp.intensity=1.4+pulse*1.1;c.position.y=Math.sin(t*1.3+i)*.012;});
-  host.rotation.z=Math.sin(t*1.2)*.035;host.position.y=Math.sin(t*2)*.025;serviceStaff.forEach((staff,i)=>{staff.rotation.z=Math.sin(t*1.3+i*1.7)*.025;staff.position.y=Math.sin(t*2.4+i)*.018;});pink.intensity=30+Math.sin(t*1.4)*5;cyan.intensity=28+Math.cos(t*1.1)*5;
+  // The prize host breathes, blinks and gives a distinct welcome wave when approached.
+  const hostDistance=player.position.distanceTo(host.position);
+  const hostNear=hostDistance<4.8;
+  if(hostNear&&hostWelcomeUntil<t)hostWelcomeUntil=t+2.8;
+  if(t>=hostBlinkAt){hostBlinkUntil=t+.14;hostBlinkAt=t+3.1+Math.abs(Math.sin(t*2.3))*1.8;}
+  const hostBlink=hostBlinkUntil>t?Math.sin(Math.PI*(t-(hostBlinkUntil-.14))/.14):0;
+  hostEyeLids.forEach(lid=>lid.scale.y=.015+Math.max(0,hostBlink)*.085);
+  host.position.y=Math.sin(t*1.8)*.018;hostBody.scale.y=1.2+Math.sin(t*1.7)*.012;
+  host.rotation.y=hostNear?Math.atan2(player.position.x-host.position.x,player.position.z-host.position.z)*.12:Math.sin(t*.42)*.035;
+  hostArms.forEach((arm,i)=>{arm.rotation.x=Math.sin(t*1.35+i*1.4)*.035;arm.rotation.z=(i===0?-.12:.12)+Math.sin(t*1.1+i)*.025;});
+  if(hostWelcomeUntil>t){const wave=Math.sin(t*11)*.18;hostArms[1].rotation.z=-1.85+wave;hostArms[1].rotation.x=-.2;host.rotation.z=Math.sin(t*8)*.018;}
+  else host.rotation.z=Math.sin(t*.8)*.012;
+  // Staff routines have different rhythms; nearby guests make them look up and acknowledge them.
+  serviceStaff.forEach((staff,i)=>{
+   const g=staff.group,dx=player.position.x-g.position.x,dz=player.position.z-g.position.z,dist=Math.hypot(dx,dz),near=dist<4.4;
+   staff.near=near;staff.phase+=dt*(near?1.25:1);
+   staff.head.rotation.y=near?clamp(Math.atan2(dx,dz)*.42,-.55,.55):Math.sin(t*.55+i)*.08;
+   staff.head.rotation.x=Math.sin(t*.9+i)*.018;
+   if(t>=staff.blinkAt){staff.blinkUntil=t+.13;staff.blinkAt=t+2.6+Math.abs(Math.sin(t*1.7+i))*2;}
+   const blink=staff.blinkUntil>t?Math.sin(Math.PI*(t-(staff.blinkUntil-.13))/.13):0;
+   staff.lids.forEach(lid=>lid.scale.y=.012+Math.max(0,blink)*.075);
+   g.position.y=Math.sin(t*1.9+i)*.012;
+   staff.body.scale.y=1.15+Math.sin(t*1.6+i)*.012;
+   staff.arms[0].rotation.z=-.12+Math.sin(t*1.4+staff.phase)*.025;
+   if(staff.role==='bartender'){
+    // Repeated circular polishing strokes, then a small glass lift toward a guest.
+    const polish=Math.sin(staff.phase*2.4);
+    staff.arms[1].rotation.z=near?-1.05+Math.sin(t*4)*.1:-.48+polish*.16;
+    staff.arms[1].rotation.x=-.18+Math.cos(staff.phase*2.4)*.1;
+    staff.propPivot.rotation.z=Math.sin(staff.phase*2.4)*.28;
+    staff.propPivot.rotation.x=near?-.25:Math.sin(t*1.8)*.08;
+   }else{
+    // Slow stirring, a gentle lean into the pot and a quick glance up at guests.
+    staff.arms[1].rotation.z=-.72+Math.sin(staff.phase*1.7)*.22;
+    staff.arms[1].rotation.x=-.35+Math.cos(staff.phase*1.7)*.12;
+    staff.arms[0].rotation.z=near?-.48+Math.sin(t*3)*.08:-.2+Math.sin(staff.phase*1.1)*.08;
+    staff.propPivot.rotation.z=Math.sin(staff.phase*1.7)*.22;
+    staff.head.rotation.x+=near?-.035:Math.sin(t*1.1)*.015;
+    (g.userData.steam||[]).forEach((steam,j)=>{steam.position.y=1.28+j*.04+((t*0.22+j*.13)% .42);steam.material.opacity=.12+(.12*Math.sin(t*2+j));});
+   }
+  });
+  pink.intensity=30+Math.sin(t*1.4)*5;cyan.intensity=28+Math.cos(t*1.1)*5;
  }
  function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.04),t=clock.elapsedTime;update(dt,t);renderer.render(scene,camera);}
  animate();
