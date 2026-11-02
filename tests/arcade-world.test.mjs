@@ -26,7 +26,7 @@ test('player avatar is a detailed articulated clay character, not a flat SVG/blo
  for(const feature of ['const head=new THREE.Group()','const mouthCurve=new THREE.CatmullRomCurve3','const arms=[],legs=[]','function makeArm(side)','function makeLeg(side)','eyeWhite','irisMat','hairCap'])assert.ok(world.includes(feature),'missing sculpted avatar feature '+feature);
  assert.match(world,/new THREE\.CapsuleGeometry\(\.135/);
  assert.match(world,/new THREE\.TubeGeometry\(mouthCurve/);
- assert.match(world,/legs\.forEach\(\(leg,i\)=>leg\.rotation\.x=Math\.sin\(walk\+i\*Math\.PI\)\*\.48\)/);
+ assert.match(world,/legs\.forEach\(\(leg,i\)=>leg\.rotation\.x=Math\.sin\(walk\+i\*Math\.PI\)\*\.56\*stride\)/);
 });
 test('walk-up restaurant services are detected and take priority over cabinet prompts',()=>{
  assert.match(world,/activeService=null;let serviceDistance=3\.5;for\(const service of services\)/);
@@ -214,13 +214,13 @@ test('computer players can navigate pointer-led games with arrows and activate w
 test('mobile arcade movement eases joystick input and accelerates smoothly instead of snapping',()=>{
  assert.match(world,/targetX:0,targetY:0/);
  assert.match(world,/Math\.exp\(-dt\*22\)/);
- assert.match(world,/motion\.x\+\=\(x\*5\.1-motion\.x\)\*response/);
+ assert.match(world,/targetX=x\*4\.65,targetZ=z\*4\.65,response=1-Math\.exp\(-dt\*\(len>\.06\?10\.5:7\.8\)\)/);
  assert.match(world,/touch\.targetX=touch\.targetY=0/);
  assert.match(world,/Math\.min\(devicePixelRatio\|\|1,mobileDevice\?1\.2:1\.5/);
  assert.match(world,/antialias:!mobileDevice/);
  assert.match(world,/renderer\.shadowMap\.enabled=!mobileDevice/);
  assert.match(world,/cameraTarget\.set\(player\.position\.x/);
- assert.match(world,/camera\.position\.lerp\(cameraTarget,1-Math\.exp\(-7\.2\*dt\)\)/);
+ assert.match(world,/camera\.position\.lerp\(cameraTarget,1-Math\.exp\(-4\.8\*dt\)\)/);
 });
 
 test('approaching a cabinet previews its genre, gameplay loop, challenge and controls before interaction range',()=>{
