@@ -109,9 +109,11 @@ if(game==='whack'){const i=Math.round((mouse.x-230)/220)+Math.floor((mouse.y-180
 if(game==='target'){const i=objects.findIndex(o=>Math.hypot(o.x-mouse.x,o.y-mouse.y)<o.r+8);if(i>=0){const o=objects.splice(i,1)[0];scoreBy((o.gold?60:Math.round(42-o.r)));sound(o.gold?900:500,.09,'triangle');addParticles(o.x,o.y,o.gold?'#f4d27a':'#e7a1b5');}}
 if(game==='memory'&&seqPhase==='input'){const i=(mouse.x>450?1:0)+(mouse.y>300?2:0);if(i===sequence[seqPos]){seqPos++;sound(360+i*120,.12,'sine');if(seqPos>=sequence.length){scoreBy(sequence.length*15);round++;seqClock=.55;seqPhase='pause';setTimeout(()=>{if(running){nextSequence();draw();}},550);}}else{sound(100,.2,'sawtooth');finish();}}
 if(game==='rhythm'){const lane=clamp(Math.round((mouse.x-200)/165),0,3);hitRhythm(lane);}
+if(game==='chef'){const i=clamp(Math.floor((mouse.x-190)/145),0,3);if(i===(p.ticketTarget||[1,3,0])[p.step]){p.step++;scoreBy(15+(p.combo||0)*3);if(p.step>=3){p.ticket++;p.step=0;p.ticketClock=0;p.combo++;p.ticketTarget=Array.from({length:3},()=>Math.floor(Math.random()*4));if(p.ticket>=5){scoreBy(80);finish(true);}}}else{p.combo=0;sound(110,.1,'sawtooth');}}
+if(game==='mixology')pourMix();
 if(game==='stack')dropStack();
 if(game==='pinball'&&!p.launched){p.launched=true;p.vx=rand(-65,65);p.vy=-460;sound(180,.15,'sawtooth');}else if(game==='pinball'&&mouse.y>400){p.vy=-Math.abs(p.vy)-330;p.vx+=(mouse.x<450?-85:85);sound(280,.06);}
-if(game==='claw')grabClaw();
+if(game==='claw')grabClaw();if(game==='mixology')pourMix();
 if(game==='airhockey'){mouse.y=clamp(mouse.y,300,430);}
 }
 function onMove(e){pointer(e);if(game==='sushi'&&running)p.x=clamp(mouse.x,190,710);if(game==='meteor'&&running)p.x=clamp(mouse.x,190,710);if(game==='airhockey') {mouse.x=clamp(mouse.x,160,740);mouse.y=clamp(mouse.y,295,430);}if(game==='skeeball'&&p.drag){p.ballX=clamp(mouse.x,150,750);p.ballY=415;}}
