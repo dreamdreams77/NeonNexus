@@ -213,10 +213,14 @@ test('computer players can navigate pointer-led games with arrows and activate w
 });
 test('mobile arcade movement eases joystick input and accelerates smoothly instead of snapping',()=>{
  assert.match(world,/targetX:0,targetY:0/);
- assert.match(world,/Math\.exp\(-dt\*17\)/);
+ assert.match(world,/Math\.exp\(-dt\*22\)/);
  assert.match(world,/motion\.x\+\=\(x\*5\.1-motion\.x\)\*response/);
  assert.match(world,/touch\.targetX=touch\.targetY=0/);
- assert.match(world,/Math\.min\(devicePixelRatio\|\|1,matchMedia/);
+ assert.match(world,/Math\.min\(devicePixelRatio\|\|1,mobileDevice\?1\.2:1\.5/);
+ assert.match(world,/antialias:!mobileDevice/);
+ assert.match(world,/renderer\.shadowMap\.enabled=!mobileDevice/);
+ assert.match(world,/cameraTarget\.set\(player\.position\.x/);
+ assert.match(world,/camera\.position\.lerp\(cameraTarget,1-Math\.exp\(-7\.2\*dt\)\)/);
 });
 
 test('approaching a cabinet previews its genre, gameplay loop, challenge and controls before interaction range',()=>{
@@ -227,7 +231,7 @@ test('approaching a cabinet previews its genre, gameplay loop, challenge and con
  assert.match(world,/let dmin=4\.1,discovered=null,discoverDistance=7\.6/);
  assert.match(world,/else if\(discovered\)\{prompt\.textContent='GAME PREVIEW/);
  assert.match(world,/discoveryRing\.visible=!!discovered/);
- assert.match(world,/if\(discovered&&!activeService\)/);
+ assert.match(world,/if\(discovered&&!activeService&&!activeTableGame\)/);
 });
 test('storybook environment has painted wall art, handmade planters and drifting light-catching dust',()=>{
  assert.match(world,/function muralTexture\(\)/);
@@ -250,7 +254,8 @@ test('all eighteen cabinets show their own animated gameplay vignette rather tha
  assert.match(world,/preview\.frame\+\+/);
 });
 test('cabinet screen animation is throttled and limited to nearby machines for mobile performance',()=>{
- assert.match(world,/previewSet=previewEnabled\?new Set\(cabinets\.map/);
+ assert.match(world,/previewSet=previewSetCache/);
+ assert.match(world,/nextPreviewRefresh=t\+\.25/);
  assert.match(world,/slice\(0,4\)/);
  assert.match(world,/previewSet\.has\(c\)/);
  assert.match(world,/preview\.clock>=\.12/);
@@ -281,4 +286,58 @@ test('cabinet previews stop while a game or service modal is open and respect re
  assert.match(world,/previewEnabled=!reduceMotion&&document\.visibilityState==='visible'/);
  assert.match(world,/\(!gameOverlay\|\|gameOverlay\.hidden\)/);
  assert.match(world,/\(!serviceModal\|\|serviceModal\.hidden\)/);
+});
+
+test('the central arcade floor has walk-up air hockey and billiards tables with interaction prompts',()=>{
+ assert.match(world,/function makeAirHockeyTable\(\)/);
+ assert.match(world,/function makeBilliardsTable\(\)/);
+ assert.match(world,/gameTables\.push\(\{gameId:'airhockey'/);
+ assert.match(world,/gameTables\.push\(\{gameId:'billiards'/);
+ assert.match(world,/makeAirHockeyTable\(\);makeBilliardsTable\(\)/);
+ assert.match(world,/function useTableGame\(\)/);
+ assert.match(world,/nexus:table-play/);
+ assert.match(world,/10 TOKEN ENTRY/);
+ assert.match(world,/activeTableGame/);
+});
+test('air hockey and billiards table matches charge a ten-token entry and pay eighteen tokens on victory',()=>{
+ assert.match(game,/function openTableGame\(id\)/);
+ assert.match(game,/stake:10,payout:18/);
+ assert.match(game,/balance<activeTableDuel\.stake/);
+ assert.match(game,/saved\.tokens=balance-activeTableDuel\.stake/);
+ assert.match(game,/win\?p\.tableDuel\.payout:0/);
+ assert.match(game,/ENTRY FEE LOST/);
+ assert.match(game,/nexus:table-play/);
+});
+test('Moonlight Billiards is a CPU eight-ball game with cue physics, collisions, rails, pockets and turns',()=>{
+ assert.match(game,/billiards:\['MOONLIGHT BILLIARDS'/);
+ assert.match(game,/p\.cue=\{x:450,y:365,vx:0,vy:0,number:0,r:10\.5\}/);
+ assert.match(game,/p\.cpuWait/);
+ assert.match(game,/p\.current==='cpu'/);
+ assert.match(game,/type:'poolball'/);
+ assert.match(game,/const pockets=\[\[155,125\]/);
+ assert.match(game,/const impulse=\-\(1\+\.94\)\*rel\*\.5/);
+ assert.match(game,/p\.playerGroup/);
+ assert.match(game,/p\.cpuGroup/);
+ assert.match(game,/b\.number===8/);
+ assert.match(game,/p\.cueScratch/);
+ assert.match(game,/p\.settleClock>\.55/);
+ assert.match(game,/p\.current=p\.current==='player'\?'cpu':'player'/);
+});
+test('billiards supports mouse, touch and keyboard cue aiming and renders a hand-finished table',()=>{
+ assert.match(game,/p\.aiming=true/);
+ assert.match(game,/p\.cue\.vx=dx\/d\*power/);
+ assert.match(game,/if\(e\.key==='Enter'&&keyboardAim\)/);
+ assert.match(game,/case'billiards':/);
+ assert.match(game,/drawPoolBall/);
+ assert.match(game,/ctx\.createRadialGradient\(b\.x-4,b\.y-5/);
+ assert.match(game,/pointerKeys=\['skeeball','airhockey','billiards'/);
+});
+test('mobile rendering reduces GPU cost and world camera smoothing reuses its target vector',()=>{
+ assert.match(world,/antialias:!mobileDevice/);
+ assert.match(world,/renderer\.shadowMap\.enabled=!mobileDevice/);
+ assert.match(world,/renderer\.setPixelRatio\(Math\.min\(devicePixelRatio\|\|1,mobileDevice\?1\.2:1\.5\)\)/);
+ assert.match(world,/const clamp=\(v,a,b\)=>Math\.max\(a,Math\.min\(b,v\)\),clock=new THREE\.Clock\(\),cameraTarget=new THREE\.Vector3\(\)/);
+ assert.match(world,/cameraTarget\.set\(player\.position\.x/);
+ assert.match(world,/if\(\(moteFrame\+\+%2\)===0\)/);
+ assert.match(world,/nextPreviewRefresh=t\+\.25/);
 });
