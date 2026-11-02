@@ -16,7 +16,7 @@ An original arcade-resort experience: explore themed districts, play quick chall
 - Approach an activity and press **E**, or use the on-screen **Interact** button.
 - District cards jump directly into the corresponding world. The district tabs also let you switch spaces.
 - Activities award tokens; each activity can be completed once per local player profile to prevent repeat farming.
-- Dedicated **Neon Hoops** 3D arcade game with a 45-second challenge, drag-to-aim touch/mouse controls, variable shot power, simulated gravity, backboard/rim collisions, rebounds, streak scoring, accuracy tracking, saved best score and token rewards.
+- Dedicated **Neon Hoops** 3D arcade game staged as a handmade clay miniature: procedural thumbprint/grain bump textures, subtly irregular sculpted meshes, a hand-modelled player with a painted face, warm theatrical lighting, soft shadows and 12fps stop-motion-style character motion. Includes a 45-second skill challenge, drag-to-aim controls, variable shot power, simulated gravity, collisions, rebounds and token rewards.
 - Physics engine separated from rendering and covered by automated Node tests.
 - Three starter quests, token wallet and prize-vault redemption.
 - **Persistent local player profile**: wallet, quest progress, best score, claimed bonuses, redeemed prizes and completed district activities save in the browser on that device.
