@@ -40,6 +40,33 @@ if(mount){
  // Repeated timber-like ceiling ribs and hand-painted wall panels.
  for(let z=-24;z<=20;z+=4){const rib=box(24,.22,.28,0,5.3,z,clayMat(0x9b6b69),scene,.1);rib.rotation.z=Math.sin(z)*.006;}
  const sign=box(8,1.25,.35,0,4.45,-25.5,clayMat(0x472f49),scene,.18);
+ // Painted storybook mural: layered brush shapes and hand-drawn stars on warm plaster.
+ function muralTexture(){
+  const c=document.createElement('canvas');c.width=1024;c.height=420;const x=c.getContext('2d');
+  const g=x.createLinearGradient(0,0,1024,420);g.addColorStop(0,'#594052');g.addColorStop(.52,'#80586a');g.addColorStop(1,'#39485a');x.fillStyle=g;x.fillRect(0,0,1024,420);
+  for(let i=0;i<170;i++){x.strokeStyle=['rgba(255,220,174,.10)','rgba(43,30,48,.12)','rgba(236,157,142,.10)'][i%3];x.lineWidth=2+(i%4);x.beginPath();const px=(i*83)%1024,py=(i*47)%420;x.moveTo(px,py);x.quadraticCurveTo(px+18,py-12,px+42,py+((i%2)?10:-8));x.stroke();}
+  x.fillStyle='#d99a83';x.beginPath();x.moveTo(0,340);x.quadraticCurveTo(190,240,360,330);x.quadraticCurveTo(540,210,720,315);x.quadraticCurveTo(900,230,1024,300);x.lineTo(1024,420);x.lineTo(0,420);x.fill();
+  x.fillStyle='#394454';for(let i=0;i<13;i++){const px=35+i*82,h=55+(i*37)%100;x.fillRect(px,330-h,28,h);x.fillRect(px-8,320-h,44,12);}
+  for(let i=0;i<34;i++){const px=(i*137)%1024,py=30+(i*61)%245;x.fillStyle=i%3?'#f8d49c':'#8ed2c7';x.globalAlpha=.55+(i%4)*.1;x.beginPath();x.arc(px,py,2+(i%3),0,Math.PI*2);x.fill();}x.globalAlpha=1;
+  x.strokeStyle='#f5c99a';x.lineWidth=5;x.beginPath();x.arc(810,120,58,.25,Math.PI*1.8);x.stroke();x.beginPath();x.arc(810,120,43,.2,Math.PI*1.7);x.stroke();
+  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;
+ }
+ const muralMat=new THREE.MeshBasicMaterial({map:muralTexture(),transparent:false});
+ for(const x of [-8.7,0,8.7]){const mural=new THREE.Mesh(new THREE.PlaneGeometry(5.3,2.15),muralMat);mural.position.set(x,3.35,-25.66);scene.add(mural);}
+ // Potted clay foliage breaks up the repeated cabinet lines with handmade silhouettes.
+ function makePlanter(x,z,flip=1){
+  const pot=new THREE.Group();pot.position.set(x,0,z);scene.add(pot);
+  const vessel=new THREE.Mesh(new THREE.CylinderGeometry(.42,.3,.58,11),clayMat(0xb87969));vessel.position.y=.29;pot.add(vessel);
+  const rim=new THREE.Mesh(new THREE.TorusGeometry(.37,.065,8,18),clayMat(0xe0a17e));rim.rotation.x=Math.PI/2;rim.position.y=.55;pot.add(rim);
+  for(let i=0;i<7;i++){const a=i*2.399,reach=.22+(i%3)*.12,leaf=sphere(.22,Math.cos(a)*reach,.75+(i%3)*.12,Math.sin(a)*reach,clayMat([0x6c9d79,0x82ae83,0x91b78b][i%3]),pot,.48,1.45,.72);leaf.rotation.z=Math.cos(a)*.45*flip;leaf.rotation.x=Math.sin(a)*.32;}
+  for(let i=0;i<3;i++){const stem=cyl(.018,.025,.52,Math.cos(i*2.1)*.12, .84,Math.sin(i*2.1)*.12,clayMat(0x557e66),pot);stem.rotation.z=(i-1)*.24*flip;}
+ }
+ for(const z of [-17,-8,1,10,19]){makePlanter(-10.7,z,-1);makePlanter(10.7,z,1);}
+ // Dust motes catch the practical lights and add depth between the player and scenery.
+ const motePositions=new Float32Array(90*3);
+ for(let i=0;i<90;i++){motePositions[i*3]=(Math.random()-.5)*21;motePositions[i*3+1]=.5+Math.random()*4.4;motePositions[i*3+2]=-23+Math.random()*44;}
+ const moteGeo=new THREE.BufferGeometry();moteGeo.setAttribute('position',new THREE.BufferAttribute(motePositions,3));
+ const motes=new THREE.Points(moteGeo,new THREE.PointsMaterial({color:0xffdfb6,size:.055,transparent:true,opacity:.42,depthWrite:false}));scene.add(motes);
  const signMat=mat(0xffc47f,.35,.05,0xff9d62,1.2);box(7.5,.09,.12,0,5.03,-20.25,signMat);
  function textTexture(title,sub,color){
   const c=document.createElement('canvas');c.width=512;c.height=256;const x=c.getContext('2d');
@@ -60,6 +87,26 @@ if(mount){
   ['KITCHEN RUSH','chef','KITCHEN','13',0xd58d9a],['SUSHI CATCH','sushi','PRECISION','14',0x86b9a7],['MIXOLOGY MASTER','mixology','TIMING','15',0xc29bd1],
   ['PULSE RUNNER','pulse','ACTION','16',0x7de2d0],['BARRELSTORM MOTO','moto','MOTORCROSS','17',0xe58c70],['MOONSHARD LEGEND','moonquest','ADVENTURE','18',0xb1a2df]
  ];
+ const gameGuide={
+  hoops:{label:'SPORT · TIMING',description:'Sink satisfying shots into a moving hoop. Read the arc, adjust your power and build a scoring streak.',challenge:'Aim · release timing · combo shots',controls:'Drag / aim and release'},
+  skeeball:{label:'PRECISION · PHYSICS',description:'Roll clay balls up the lane and land them in the highest-value rings before your turns run out.',challenge:'Power control · bank shots · accuracy',controls:'Drag to set power, release to roll'},
+  airhockey:{label:'VERSUS · REFLEX',description:'Defend your goal, predict the return and outscore a reactive opponent in a fast rally.',challenge:'Positioning · rebounds · quick reactions',controls:'Move your paddle; arrows + Enter also work'},
+  whack:{label:'REFLEX · ARCADE',description:'Spot the cheeky moon moles as they pop up, then bonk the right one before it disappears.',challenge:'Reaction speed · target selection',controls:'Tap / click a mole'},
+  target:{label:'MARKSMAN · AIM',description:'Track drifting targets and fire clean shots. Accuracy and streaks matter more than wild clicking.',challenge:'Precision · target tracking · streaks',controls:'Aim with pointer or arrow keys; Enter fires'},
+  memory:{label:'MEMORY · PATTERN',description:'Watch the glowing sequence, remember its order and repeat it without breaking the chain.',challenge:'Recall · focus · growing sequences',controls:'Tap / click the pads'},
+  rhythm:{label:'RHYTHM · BEAT',description:'Follow the beat cues and hit each note in time to keep your musical combo alive.',challenge:'Timing windows · rhythm · consistency',controls:'Tap / click on the beat'},
+  meteor:{label:'SURVIVAL · DODGE',description:'Stay alive as the meteor shower intensifies. Read the falling hazards and slip through safe gaps.',challenge:'Movement · awareness · survival',controls:'Arrow keys / WASD or touch'},
+  racer:{label:'RACING · LANE CONTROL',description:'Thread a high-speed tunnel, dodge traffic and collect tokens without losing your racing line.',challenge:'Steering · hazard reads · risk/reward',controls:'Arrow keys / WASD or touch'},
+  stack:{label:'TIMING · BUILDER',description:'Drop each moving clay block as cleanly as you can. Every imperfect landing makes the tower trickier.',challenge:'Release timing · precision · balance',controls:'Tap / click or press Enter'},
+  pinball:{label:'CLASSIC · PINBALL',description:'Keep the ball alive, light up targets and chain bumper hits for a bigger score.',challenge:'Flipper timing · rebounds · combos',controls:'Left / right arrows or tap flippers'},
+  claw:{label:'PRIZES · SKILL',description:'Line up the claw, commit to a grab and see whether you can snag a rare prize.',challenge:'Positioning · timing · patience',controls:'Arrows to position; Enter to grab'},
+  chef:{label:'KITCHEN · MULTITASK',description:'Read incoming kitchen tickets, prepare the right ingredients and keep orders moving under pressure.',challenge:'Sequence memory · speed · accuracy',controls:'Tap / click ingredients'},
+  sushi:{label:'PRECISION · CATCH',description:'Slide the tray beneath falling ingredients and catch the right pieces to build a perfect plate.',challenge:'Tracking · movement · streaks',controls:'Move with arrows / WASD or touch'},
+  mixology:{label:'TIMING · MIXOLOGY',description:'Pour each drink into the sweet spot. Too little or too much costs the round and your combo.',challenge:'Meter timing · consistency · pressure',controls:'Tap / click to stop the pour'},
+  pulse:{label:'ACTION · PLATFORMER',description:'Run, jump and blast through a dangerous energy facility, then face the reactor guardian.',challenge:'Platforming · combat · boss patterns',controls:'Arrows / WASD move · jump · fire'},
+  moto:{label:'MOTORCROSS · RACING',description:'Ride a handmade stunt track, launch off ramps, clear gaps and dodge rolling barrels.',challenge:'Throttle · lean · jump timing',controls:'Hold / arrows to accelerate · jump'},
+  moonquest:{label:'ADVENTURE · EXPLORATION',description:'Explore moonlit ruins, fight guardians, collect three moonshards and challenge the Moonkeep boss.',challenge:'Exploration · sword combat · upgrades',controls:'Arrows / WASD move · attack / guard'}
+ };
  const accents=[0xffa46f,0x77d0c3,0x82c8ed,0xe9bd80,0xb5a0ed,0xef9cbd,0xffc77d,0xed8b78,0x7fd1db,0xd7bd83,0xc3a1e8,0xf0a0a8];
  const cabinets=[];
  function makeCabinet(def,i,side,z){
@@ -83,7 +130,8 @@ if(mount){
   const edgeMat=new THREE.MeshStandardMaterial({color:color,emissive:color,emissiveIntensity:.8,roughness:.5});
   for(const x of [-.73,.73]){const edge=box(.045,2.25,.055,x,1.48,.54,edgeMat,g,.02);edge.rotation.z=x*.025;}
   const lamp=new THREE.PointLight(color,1.8,3.2);lamp.position.set(0,2.2,.9);g.add(lamp);
-  g.userData={name,id,genre,index:i,screen,screenTex,marquee:marqScreen,lamp,baseY:1.42};
+  const discoveryRing=new THREE.Mesh(new THREE.RingGeometry(.92,1.12,48),new THREE.MeshBasicMaterial({color:color,transparent:true,opacity:.62,side:THREE.DoubleSide,depthWrite:false}));discoveryRing.rotation.x=-Math.PI/2;discoveryRing.position.set(side*5.2,.035,z);discoveryRing.visible=false;scene.add(discoveryRing);
+  g.userData={name,id,genre,index:i,screen,screenTex,marquee:marqScreen,lamp,discoveryRing,baseY:1.42};
   cabinets.push(g);
   // Hand-painted floor decal, small and slightly rotated.
   const decal=box(1.9,.025,1.1,side*5.2,.005,z+ (side===-1?1.2:-1.2),mat(0x9b7180,.95),scene,.2);decal.rotation.y=(i%2)*.035;
@@ -243,6 +291,7 @@ if(mount){
  makeLeg(-1);makeLeg(1);
  const keys=new Set(),touch={x:0,y:0,targetX:0,targetY:0},motion={x:0,z:0};let nearest=null,activeService=null,walk=0,nextBlink=2.4,blinkUntil=0,gesture='idle',gestureStarted=0,gestureUntil=0;
  const prompt=document.querySelector('#arcade-world-prompt'),interact=document.querySelector('#arcade-interact'),pad=document.querySelector('#arcade-touch-pad'),knob=document.querySelector('#arcade-joystick');
+ const discovery=document.querySelector('#cabinet-discovery'),discoveryTitle=document.querySelector('#discovery-title'),discoveryGenre=document.querySelector('#discovery-genre'),discoveryDescription=document.querySelector('#discovery-description'),discoveryChallenge=document.querySelector('#discovery-challenge'),discoveryControls=document.querySelector('#discovery-controls');
  function triggerGesture(type,duration=1.35){gesture=type;gestureStarted=clock.elapsedTime;gestureUntil=gestureStarted+duration;}
  function useCabinet(){if(!nearest)return;triggerGesture('excited',1.1);window.dispatchEvent(new CustomEvent('nexus:arcade-play',{detail:{gameId:nearest.userData.id}}));}
  function useService(){if(!activeService)return;triggerGesture('wave',1.55);window.dispatchEvent(new CustomEvent('nexus:service-open',{detail:{service:activeService.type,table:activeService.table||null}}));}
@@ -284,12 +333,18 @@ if(mount){
    }
   }else{gesture='idle';hands.forEach(hand=>{hand.rotation.z*=.8;});}
   camera.position.lerp(new THREE.Vector3(player.position.x,player.position.y+23,player.position.z+17),1-Math.exp(-3.8*dt));camera.lookAt(player.position.x,0,player.position.z-1.5);
-  nearest=null;let dmin=4.1;for(const c of cabinets){const d=player.position.distanceTo(c.position);if(d<dmin){dmin=d;nearest=c;}}
+  nearest=null;let dmin=4.1,discovered=null,discoverDistance=7.6;for(const c of cabinets){const d=player.position.distanceTo(c.position);if(d<discoverDistance){discoverDistance=d;discovered=c;}if(d<dmin){dmin=d;nearest=c;}}
   activeService=null;let serviceDistance=3.5;for(const service of services){const d=player.position.distanceTo(service.position);if(d<serviceDistance){serviceDistance=d;activeService=service;}}
   if(activeService){prompt.textContent='E / TAP TO INTERACT  ·  '+activeService.name;interact.hidden=false;interact.textContent=activeService.type==='table'?'SIT AT TABLE '+activeService.table+' ↗':activeService.name.split(' · ')[0]+' ↗';}
   else if(nearest){prompt.textContent='E / TAP TO PLAY  ·  '+nearest.userData.name;interact.hidden=false;interact.textContent='PLAY '+nearest.userData.name+' ↗';}
+  else if(discovered){prompt.textContent='GAME PREVIEW · '+discovered.userData.name+' · WALK CLOSER TO PLAY';interact.hidden=true;}
   else{prompt.textContent='EXPLORE THE DISTRICT · APPROACH A CABINET OR SERVICE';interact.hidden=true;}
-  cabinets.forEach((c,i)=>{const pulse=.75+Math.sin(t*2.1+i*.8)*.22;c.userData.lamp.intensity=1.4+pulse*1.1;c.position.y=Math.sin(t*1.3+i)*.012;});
+  if(discovered&&!activeService){
+   const data=gameGuide[discovered.userData.id]||{label:discovered.userData.genre,description:'Step up and discover this arcade challenge.',challenge:'Skill · score · high-score chase',controls:'Follow the on-screen instructions'};
+   discovery.hidden=false;discoveryTitle.textContent=discovered.userData.name;discoveryGenre.textContent=data.label;discoveryDescription.textContent=data.description;discoveryChallenge.textContent=data.challenge;discoveryControls.textContent=data.controls;
+  }else discovery.hidden=true;
+  cabinets.forEach((c,i)=>{const pulse=.75+Math.sin(t*2.1+i*.8)*.22;c.userData.lamp.intensity=1.4+pulse*1.1;c.position.y=Math.sin(t*1.3+i)*.012;c.userData.discoveryRing.visible=!!discovered&&discovered===c&&!activeService;c.userData.discoveryRing.material.opacity=.35+Math.sin(t*3.2+i)*.16;});
+  const motesAttr=moteGeo.attributes.position;for(let i=0;i<90;i++){const y=motesAttr.getY(i)+dt*(.025+(i%4)*.012);motesAttr.setY(i,y>5?0.45:y);}motesAttr.needsUpdate=true;
   // The prize host breathes, blinks and gives a distinct welcome wave when approached.
   const hostDistance=player.position.distanceTo(host.position);
   const hostNear=hostDistance<4.8;
