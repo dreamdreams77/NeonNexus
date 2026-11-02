@@ -766,3 +766,9 @@ test('floor and carpet are designed patterns, not random noise',async()=>{
  assert.doesNotMatch(pq,/rand\(\)/);assert.doesNotMatch(pq,/paperGrain/);assert.match(pq,/const tones=\[/);
  assert.match(art,/function carpetMotif\(\)/);assert.match(art,/half-drop repeat/);assert.doesNotMatch(art,/neon confetti: squiggles/);
 });
+
+test('north end: illustrated welcome desk and a composed back wall replace the sculpted counter, murals and frames',async()=>{
+ const spr=await readFile(new URL('../lobby-sprites.js',import.meta.url),'utf8');
+ assert.match(spr,/function drawWelcomeDesk\(/);assert.match(spr,/function paintBackWall\(/);assert.match(spr,/win\(420\);win\(W-420\)/);
+ assert.match(world,/for\(const ch of prizeGroup\.children\)ch\.visible=false/);assert.match(world,/paintBackWall\(\)/);assert.match(world,/findPlane\(24,5\.7\)/);
+});

@@ -2,7 +2,7 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.m
 import * as ART from './lobby-art.js';
 import { stepVelocity, turnToward } from './movement.js';
 import { createCrowd } from './lobby-crowd.js';
-import { createActor, CAST, createCabinetSprite, paintGalleryWall, paintGalleryFloor, createPlantSprite, paintTableTop, paintStoolTop, paintBarTop, createPokerSprite, paintAirTable, paintPoolTable, paintDisc, paintSoftShadow, drawWheel, WHEEL_W, WHEEL_H, paintBackBar, createHostStandSprite, paintCounterFront, paintGarland, paintWallCap, drawSconce, SCONCE_W, SCONCE_H, drawStool, STOOL_W, STOOL_H, makeSpriteFromCanvas, canvasFrom, drawPrizeCounter, PCOUNTER_W, PCOUNTER_H, paintGalleryFacade } from './lobby-sprites.js';
+import { createActor, CAST, createCabinetSprite, paintGalleryWall, paintGalleryFloor, createPlantSprite, paintTableTop, paintStoolTop, paintBarTop, createPokerSprite, paintAirTable, paintPoolTable, paintDisc, paintSoftShadow, drawWheel, WHEEL_W, WHEEL_H, paintBackBar, createHostStandSprite, paintCounterFront, paintGarland, paintWallCap, drawSconce, SCONCE_W, SCONCE_H, drawStool, STOOL_W, STOOL_H, makeSpriteFromCanvas, canvasFrom, drawPrizeCounter, PCOUNTER_W, PCOUNTER_H, paintGalleryFacade, drawWelcomeDesk, DESK_W, DESK_H, paintBackWall } from './lobby-sprites.js';
 import { RoundedBoxGeometry } from 'https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/geometries/RoundedBoxGeometry.js';
 
 const mount=document.querySelector('#arcade-world');
@@ -396,6 +396,9 @@ if(mount){
  const prizeGroup=new THREE.Group();prizeGroup.position.set(0,0,-23.4);scene.add(prizeGroup);
  box(4.3,1.4,1.4,0,.7,0,clayMat(0x795064),prizeGroup,.18);box(4.5,.12,1.5,0,1.46,0,mat(0xffc77e,.4,0,0xff9e5b,.8),prizeGroup,.06);
  for(let i=0;i<7;i++){const x=-1.55+(i%4)*1.02,y=1.9+Math.floor(i/4)*.2;const plush=sphere(.36,x,y,.12,clayMat([0xd58f94,0x8dc4ae,0x9d94cb,0xe6b66e][i%4]),prizeGroup,1,.9,.82);sphere(.08,x-.12,y+.05,.42,mat(0x32283b),prizeGroup);sphere(.08,x+.12,y+.05,.42,mat(0x32283b),prizeGroup);}
+ // Illustrated welcome desk replaces the sculpted counter and clay plush mound.
+ for(const ch of prizeGroup.children)ch.visible=false;
+ {const s=makeSpriteFromCanvas(THREE,canvasFrom(DESK_W,DESK_H,drawWelcomeDesk),{height:2.6,anisotropy:mobileDevice?2:4,tilt:-.45,baseOffset:.1});prizeGroup.add(s.root);}
  // Hand-sculpted host character with eyes, cheeks and a gentle idle sway.
  const host=new THREE.Group();host.position.set(0,0,-21.3);scene.add(host);
  const hostBody=sphere(.42,0,.92,0,clayMat(0xd98e82),host,.85,1.2,.72);
@@ -882,6 +885,11 @@ visitorProfiles.forEach((profile,i)=>{const g=new THREE.Group();const [x,z]=visi
   festoonRope.visible=false;festoonBulbs.forEach(b=>{if(b.bulb&&b.bulb.parent)b.bulb.parent.visible=false;if(b.flag)b.flag.visible=false;});
   scene.children.forEach(o=>{if(o.isMesh&&o.geometry&&o.geometry.type==='PlaneGeometry'&&o.geometry.parameters&&Math.abs(o.geometry.parameters.width-.34)<.001&&Math.abs(o.geometry.parameters.height-.48)<.001)o.visible=false;});
   const gl=makeSpriteFromCanvas(THREE,paintGarland(),{height:1.7,anisotropy:mobileDevice?2:4,tilt:-.5});gl.root.position.set(0,3.45,3.8);scene.add(gl.root);
+  // back wall: one illustrated composition (windows, drapes, posters, wainscot) replaces murals, frames and wallpaper tiling
+  const findPlane=(pw,ph)=>scene.children.find(o=>o.isMesh&&o.geometry.type==='PlaneGeometry'&&Math.abs(o.geometry.parameters.width-pw)<.01&&Math.abs(o.geometry.parameters.height-ph)<.01&&o.position.z<-25);
+  const wallN=findPlane(24,5.7),brand=findPlane(7.6,1.32);
+  scene.children.forEach(o=>{if(o===wallN||o===brand)return;if(o.position&&o.position.z<-25.25&&o.position.z>-25.8&&o.position.y>1&&o.position.y<5.2&&(o.isMesh||o.isGroup))o.visible=false;});
+  wallN.material=new THREE.MeshBasicMaterial({map:artTex(paintBackWall(),{aniso:4}),toneMapped:false});
   // carved wall caps along both side walls
   const capCanvas=paintWallCap(2000,120);
   for(const x of [-12.2,12.2]){const tex=artTex(capCanvas,{aniso:4,repeat:[2,1]});const cap=new THREE.Mesh(new THREE.PlaneGeometry(50,.72),new THREE.MeshBasicMaterial({map:tex,toneMapped:false}));cap.rotation.x=-Math.PI/2;cap.rotation.z=Math.PI/2;cap.position.set(x,5.72,-1);scene.add(cap);}

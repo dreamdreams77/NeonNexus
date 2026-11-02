@@ -146,3 +146,12 @@ body.intro-open{overflow:hidden}
 .reduce-motion .nx-intro,.reduce-motion .intro-bar i{transition:none}
 @media(prefers-reduced-motion:reduce){.intro-bg i,.neon-title span,.intro-bar i{animation:none}.nx-intro,.intro-bar i{transition:none}}
 @media(max-width:480px){.intro-actions button{width:100%}}
+
+/* Phones: the discovery card stays compact so it never hides the lobby art or the walkway. */
+@media (max-width:700px){
+ .cabinet-discovery{max-width:min(62vw,250px);padding:10px 12px;border-radius:14px}
+ .cabinet-discovery h2{font-size:17px;margin:2px 0 4px}
+ .cabinet-discovery p{font-size:11.5px;line-height:1.35;margin:0 0 6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+ .cabinet-discovery .discovery-meta{display:none}
+ .cabinet-discovery .discovery-kicker,.cabinet-discovery small{font-size:9.5px}
+}

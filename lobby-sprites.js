@@ -333,7 +333,7 @@ export function createActor(THREE,design,{anisotropy=4,height=2.05,res=1}={}){
 }
 
 // ───────── cabinet illustrations (side profile, facing right) ─────────
-import { drawEmblem } from './lobby-art.js';
+import { drawEmblem, paintPoster } from './lobby-art.js';
 export const CAB_W=160,CAB_H=224;
 // Push a colour toward a richer, brighter version of itself so cabinets pop against the carpet.
 function vivid(h,sat=1.45,lift=.04){const[r,g,b]=hexRgb(h).map(v=>v/255),mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2;let hh=0,ss=0;if(mx!==mn){const d=mx-mn;ss=l>.5?d/(2-mx-mn):d/(mx+mn);hh=mx===r?(g-b)/d+(g<b?6:0):mx===g?(b-r)/d+2:(r-g)/d+4;hh/=6;}
@@ -827,5 +827,51 @@ export function paintGalleryFacade(W=512,H=300){
  x.fillStyle='#26161d';x.fillRect(0,H-14,W,14);
  for(let i=0;i<14;i++){x.fillStyle=i%2?'#fff0b0':'#ffb27a';x.shadowColor='#ffd98a';x.shadowBlur=8;x.beginPath();x.arc(18+i*37,12,4,0,6.3);x.fill();}x.shadowBlur=0;
  x.strokeStyle=INK;x.lineWidth=4;x.strokeRect(2,2,W-4,H-4);
+ return c;
+}
+
+// ───────── north end: welcome desk and illustrated back wall ─────────
+export const DESK_W=380,DESK_H=230;
+export function drawWelcomeDesk(ctx){
+ const sg=ctx.createRadialGradient(190,222,2,190,222,170);sg.addColorStop(0,'rgba(20,8,28,.4)');sg.addColorStop(1,'rgba(20,8,28,0)');ctx.fillStyle=sg;ctx.beginPath();ctx.ellipse(190,222,170,10,0,0,6.3);ctx.fill();
+ // plush mascots sitting on the counter top
+ [['bear',70,1],['bunny',122,.95],['star',176,.9],['cat',228,.95],['moon',282,.9],['robot',326,.85]].forEach(([k,x,s])=>drawPrizeItem(ctx,k,x,108,s));
+ paintShape(ctx,rrect(20,104,340,16,6),'#ffc77e',{box:[20,104,340,16],ow:3,hi:.7});
+ ctx.save();ctx.shadowColor='#ff9e5b';ctx.shadowBlur=16;ctx.fillStyle='#ffd9a0';ctx.fillRect(28,118,324,3);ctx.restore();
+ const body=P(p=>{p.moveTo(28,120);p.lineTo(352,120);p.lineTo(344,216);p.lineTo(36,216);p.closePath();});paintShape(ctx,body,'#795064',{box:[28,120,324,96],ow:3.4});
+ ctx.save();ctx.clip(body);for(let i=0;i<5;i++){paintShape(ctx,rrect(42+i*62,134,52,70,8),'#8a5f74',{box:[42+i*62,134,52,70],ow:2,hi:.4});}ctx.restore();
+ paintShape(ctx,rrect(96,146,188,42,12),'#2a1c34',{box:[96,146,188,42],ow:3});
+ ctx.font='700 13px Fredoka, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#e8c9a4';ctx.fillText('WELCOME TO',190,158);
+ ctx.font='700 20px Fredoka, "Arial Rounded MT Bold", sans-serif';ctx.shadowColor='#ff5fa8';ctx.shadowBlur=10;ctx.fillStyle='#ffd0e8';ctx.fillText('NEON NEXUS',190,177);ctx.shadowBlur=0;
+ // token dispenser + lamp
+ paintShape(ctx,rrect(318,58,32,48,6),'#5fa8a0',{box:[318,58,32,48],ow:2.6});paintShape(ctx,P(p=>p.arc(334,74,8,0,6.3)),'#ffd96a',{box:[326,66,16,16],ow:2,hi:.8});paintShape(ctx,rrect(324,90,20,6,2),'#2a1c34',{ow:1.4});
+ line(ctx,[[40,104],[40,64]],3.4,'#c99a52');paintShape(ctx,P(p=>{p.moveTo(26,64);p.lineTo(54,64);p.lineTo(48,48);p.lineTo(32,48);p.closePath();}),'#ffd0e8',{box:[26,48,28,16],ow:2.4,hi:.7});
+}
+export function paintBackWall(W=2400,H=570){
+ const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+ const wp=x.createLinearGradient(0,0,0,H*.62);wp.addColorStop(0,'#2e1f3a');wp.addColorStop(1,'#4d3156');x.fillStyle=wp;x.fillRect(0,0,W,H);
+ for(let gx=0;gx<W;gx+=60)for(let gy=0;gy<H*.62;gy+=60){x.strokeStyle='rgba(232,184,103,.18)';x.lineWidth=1.6;x.beginPath();x.moveTo(gx+30,gy+6);x.lineTo(gx+54,gy+30);x.lineTo(gx+30,gy+54);x.lineTo(gx+6,gy+30);x.closePath();x.stroke();x.fillStyle='rgba(255,200,130,.22)';x.beginPath();x.arc(gx+30,gy+30,3,0,6.3);x.fill();}
+ // two arched windows onto the night city
+ const win=(cx)=>{const w=360,top=60,bot=330;const arch=P(p=>{p.moveTo(cx-w/2,bot);p.lineTo(cx-w/2,top+w/2);p.arc(cx,top+w/2,w/2,Math.PI,0);p.lineTo(cx+w/2,bot);p.closePath();});
+  x.save();x.clip(arch);const sky=x.createLinearGradient(0,top,0,bot);sky.addColorStop(0,'#1a1840');sky.addColorStop(.6,'#3a2a62');sky.addColorStop(1,'#7a3f6a');x.fillStyle=sky;x.fillRect(cx-w/2,top,w,bot-top);
+  for(let i=0;i<40;i++){x.fillStyle='rgba(255,250,220,'+(.4+(i%3)*.2)+')';x.beginPath();x.arc(cx-w/2+((i*73)%w),top+((i*41)%160),1+(i%3)*.6,0,6.3);x.fill();}
+  paintShape(x,P(p=>p.arc(cx+w*.22,top+80,30,0,6.3)),'#f6e2a0',{box:[cx+w*.22-30,top+50,60,60],ow:0,hi:.8,sh:.1});
+  const hs=[120,170,90,210,140,180,110,150];hs.forEach((hh,i)=>{const bw=w/8,bx=cx-w/2+i*bw;x.fillStyle=i%2?'#241a3e':'#2c2048';x.fillRect(bx,bot-hh,bw-2,hh);for(let r=0;r<hh/22;r++)for(let k=0;k<2;k++){if((i+r+k)%3===0)continue;x.fillStyle=(i+r)%4?'#ffd98a':'#9ff4ec';x.fillRect(bx+8+k*18,bot-hh+12+r*22,8,10);}});
+  x.restore();
+  x.lineWidth=16;x.strokeStyle='#8a5a3a';x.stroke(arch);x.lineWidth=4;x.strokeStyle='#e8c47a';x.stroke(arch);x.lineWidth=3;x.strokeStyle='#2a1a2d';x.stroke(arch);
+  line(x,[[cx,top+4],[cx,bot]],6,'#8a5a3a');line(x,[[cx-w/2,top+w/2],[cx+w/2,top+w/2]],6,'#8a5a3a');
+  // drapes
+  for(const s of [-1,1]){const dx=cx+s*(w/2+16);paintShape(x,P(p=>{p.moveTo(dx-s*4,top-10);p.quadraticCurveTo(dx+s*40,top+120,dx+s*14,bot+30);p.lineTo(dx+s*52,bot+30);p.quadraticCurveTo(dx+s*70,top+120,dx+s*40,top-10);p.closePath();}),'#8a2f4a',{box:[dx-40,top-10,110,bot-top+40],ow:3,hi:.35});}
+  paintShape(x,rrect(cx-w/2-60,top-24,w+120,22,8),'#c99a52',{box:[cx-w/2-60,top-24,w+120,22],ow:2.6,hi:.6});
+ };
+ win(420);win(W-420);
+ // framed posters flanking the centre sign
+ const poster=(cx,i)=>{const pc=paintPoster(i);paintShape(x,rrect(cx-78,138,156,204,6),'#c99560',{box:[cx-78,138,156,204],ow:3});x.drawImage(pc,cx-68,148,136,184);};
+ poster(820,0);poster(W-820,2);poster(1030,6);poster(W-1030,4);
+ // chair rail + wainscot
+ const rail=Math.round(H*.62);x.fillStyle='#c99560';x.fillRect(0,rail,W,16);x.fillStyle='rgba(255,236,200,.55)';x.fillRect(0,rail,W,2.5);x.fillStyle='#2a1a2d';x.fillRect(0,rail+16,W,3);
+ x.fillStyle='#5a3a34';x.fillRect(0,rail+19,W,H-rail-19);
+ for(let px=16;px<W-16;px+=148)paintShape(x,rrect(px,rail+34,132,H-rail-70,8),'#6e4639',{box:[px,rail+34,132,H-rail-70],ow:2.4,hi:.35});
+ x.fillStyle='#26161d';x.fillRect(0,H-18,W,18);x.fillStyle='rgba(255,215,170,.3)';x.fillRect(0,H-18,W,2);
  return c;
 }
