@@ -70,6 +70,18 @@ if(mount){
   for(let i=0;i<3;i++){const stem=cyl(.018,.025,.52,Math.cos(i*2.1)*.12, .84,Math.sin(i*2.1)*.12,clayMat(0x557e66),pot);stem.rotation.z=(i-1)*.24*flip;}
  }
  for(const z of [-17,-8,1,10,19]){makePlanter(-10.7,z,-1);makePlanter(10.7,z,1);}
+ // Hand-built wall sconces repeat the warm/cool lighting language in the walkable world.
+ function makeSconce(side,z){
+  const fixture=new THREE.Group();fixture.position.set(side*11.78,3.55,z);scene.add(fixture);
+  const brass=mat(0x9e704e,.34,.68),glass=mat(0xffd39b,.24,.08,0xffa45d,1.7);
+  box(.16,.72,.48,0,0,0,clayMat(0x594052),fixture,.06);
+  box(.2,.1,.54,0,.34,0,brass,fixture,.035);
+  const arm=cyl(.045,.055,.28,side*.13,.02,0,brass,fixture);arm.rotation.z=Math.PI/2;
+  sphere(.17,side*.29,.02,0,glass,fixture,1,.92,.9);
+  const halo=new THREE.Mesh(new THREE.TorusGeometry(.205,.024,8,20),brass);halo.position.set(side*.29,.02,0);halo.rotation.y=Math.PI/2;fixture.add(halo);
+  if(!mobileDevice){const glow=new THREE.PointLight(0xffbd83,1.35,5.5,2);glow.position.set(side*.36,.02,0);fixture.add(glow);}
+ }
+ for(const z of [-15,-3,9,21])for(const side of [-1,1])makeSconce(side,z);
  // Dust motes catch the practical lights and add depth between the player and scenery.
  const motePositions=new Float32Array(90*3);
  for(let i=0;i<90;i++){motePositions[i*3]=(Math.random()-.5)*21;motePositions[i*3+1]=.5+Math.random()*4.4;motePositions[i*3+2]=-23+Math.random()*44;}
