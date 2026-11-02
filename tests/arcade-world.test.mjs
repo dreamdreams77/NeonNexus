@@ -756,7 +756,7 @@ test('host stand is illustrated and character sheets render at higher resolution
 test('finishing pass: counter front, garland, wall caps, sconces, stools, prize exchange and gallery facade are illustrated',async()=>{
  const spr=await readFile(new URL('../lobby-sprites.js',import.meta.url),'utf8');
  for(const f of ['paintCounterFront','paintGarland','paintWallCap','drawSconce','drawStool','drawPrizeCounter','paintGalleryFacade','makeSpriteFromCanvas','canvasFrom'])assert.match(spr,new RegExp('function '+f+'\\('));
- assert.match(world,/paintCounterFront\(\)/);assert.match(world,/festoonRope\.visible=false/);assert.match(world,/paintWallCap\(2000,120\)/);assert.match(world,/drawSconce\(g\)/);assert.match(world,/drawStool\(g,/);assert.match(world,/drawPrizeCounter\),\{height:3\.0/);assert.match(world,/paintGalleryFacade\(\)/);
+ assert.match(world,/paintCounterFront\(\)/);assert.match(world,/festoonRope\.visible=false/);assert.match(world,/paintWallCap\(2000,120,mobileDevice\?\.5:1\)/);assert.match(world,/drawSconce\(g\)/);assert.match(world,/drawStool\(g,/);assert.match(world,/drawPrizeCounter\),\{height:3\.0/);assert.match(world,/paintGalleryFacade\(\)/);
  assert.doesNotMatch(spr,/paintShape\([^;]*'rgba\(/);
 });
 
@@ -770,7 +770,7 @@ test('floor and carpet are designed patterns, not random noise',async()=>{
 test('north end: illustrated welcome desk and a composed back wall replace the sculpted counter, murals and frames',async()=>{
  const spr=await readFile(new URL('../lobby-sprites.js',import.meta.url),'utf8');
  assert.match(spr,/function drawWelcomeDesk\(/);assert.match(spr,/function paintBackWall\(/);assert.match(spr,/win\(420\);win\(W-420\)/);
- assert.match(world,/for\(const ch of prizeGroup\.children\)ch\.visible=false/);assert.match(world,/paintBackWall\(\)/);assert.match(world,/findPlane\(24,5\.7\)/);
+ assert.match(world,/for\(const ch of prizeGroup\.children\)ch\.visible=false/);assert.match(world,/paintBackWall\(2400,570,mobileDevice\?\.5:1\)/);assert.match(world,/findPlane\(24,5\.7\)/);
 });
 
 test('retired sculpted geometry is detached from the scene; named regulars keep stored rig references',async()=>{

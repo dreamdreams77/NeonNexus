@@ -535,9 +535,9 @@ export function paintStoolTop(){
  x.strokeStyle='rgba(255,240,205,.55)';x.lineWidth=2.4;x.beginPath();x.arc(48,48,19,.5,4.4);x.stroke();paintShape(x,P(q=>q.arc(48,48,5,0,6.3)),'#f0c58d',{ow:2});
  return c;
 }
+const plantTexCache=new Map();
 export function createPlantSprite(THREE,kind,{anisotropy=4,height=1.9}={}){
- const c=document.createElement('canvas');c.width=PLANT_W;c.height=PLANT_H;drawPlant(c.getContext('2d'),kind);
- const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=anisotropy;tex.minFilter=THREE.LinearMipmapLinearFilter;
+ let tex=plantTexCache.get(kind);if(!tex){const c=document.createElement('canvas');c.width=PLANT_W;c.height=PLANT_H;drawPlant(c.getContext('2d'),kind);tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=anisotropy;tex.minFilter=THREE.LinearMipmapLinearFilter;plantTexCache.set(kind,tex);}
  const mesh=new THREE.Mesh(new THREE.PlaneGeometry(height*PLANT_W/PLANT_H,height),new THREE.MeshBasicMaterial({map:tex,transparent:true,alphaTest:.04,toneMapped:false}));mesh.position.y=height/2-height*(6/PLANT_H);
  const tilt=new THREE.Group();tilt.rotation.x=-.5;tilt.add(mesh);const root=new THREE.Group();root.add(tilt);return{root,mesh};
 }
@@ -732,8 +732,8 @@ export function paintCounterFront(){
  paintShape(x,rrect(W/2-90,12,180,30,10),'#2a1c34',{box:[W/2-90,12,180,30],ow:2.4});x.font='700 18px Fredoka, "Arial Rounded MT Bold", sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillStyle='#ffd98a';x.shadowColor='#ffb347';x.shadowBlur=8;x.fillText('★ GLOW BAR ★',W/2,28);x.shadowBlur=0;
  return c;
 }
-export function paintGarland(W=2400,H=200){
- const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+export function paintGarland(W=2400,H=200,res=1){
+ const c=document.createElement('canvas');c.width=Math.round(W*res);c.height=Math.round(H*res);const x=c.getContext('2d');x.scale(res,res);
  const y=t=>26+Math.sin(t*Math.PI)*58; // catenary-ish sag
  // rope
  x.strokeStyle='#5a3a2c';x.lineWidth=5;x.lineCap='round';x.beginPath();for(let i=0;i<=80;i++){const t=i/80;i?x.lineTo(t*W,y(t)):x.moveTo(0,y(0));}x.stroke();
@@ -754,8 +754,8 @@ export function paintGarland(W=2400,H=200){
  }
  return c;
 }
-export function paintWallCap(W=4000,H=120){
- const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+export function paintWallCap(W=4000,H=120,res=1){
+ const c=document.createElement('canvas');c.width=Math.round(W*res);c.height=Math.round(H*res);const x=c.getContext('2d');x.scale(res,res);
  const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#8a5a40');g.addColorStop(.5,'#6a4232');g.addColorStop(1,'#4a2c26');x.fillStyle=g;x.fillRect(0,0,W,H);
  for(let i=0;i<10;i++){x.strokeStyle=`rgba(${i%2?'255,210,170':'30,10,10'},.12)`;x.lineWidth=2;x.beginPath();x.moveTo(0,i*12+4);x.bezierCurveTo(W*.3,i*12,W*.7,i*12+8,W,i*12+4);x.stroke();}
  // carved dentil band and brass inlay
@@ -847,8 +847,8 @@ export function drawWelcomeDesk(ctx){
  paintShape(ctx,rrect(318,58,32,48,6),'#5fa8a0',{box:[318,58,32,48],ow:2.6});paintShape(ctx,P(p=>p.arc(334,74,8,0,6.3)),'#ffd96a',{box:[326,66,16,16],ow:2,hi:.8});paintShape(ctx,rrect(324,90,20,6,2),'#2a1c34',{ow:1.4});
  line(ctx,[[40,104],[40,64]],3.4,'#c99a52');paintShape(ctx,P(p=>{p.moveTo(26,64);p.lineTo(54,64);p.lineTo(48,48);p.lineTo(32,48);p.closePath();}),'#ffd0e8',{box:[26,48,28,16],ow:2.4,hi:.7});
 }
-export function paintBackWall(W=2400,H=570){
- const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+export function paintBackWall(W=2400,H=570,res=1){
+ const c=document.createElement('canvas');c.width=Math.round(W*res);c.height=Math.round(H*res);const x=c.getContext('2d');x.scale(res,res);
  const wp=x.createLinearGradient(0,0,0,H*.62);wp.addColorStop(0,'#2e1f3a');wp.addColorStop(1,'#4d3156');x.fillStyle=wp;x.fillRect(0,0,W,H);
  for(let gx=0;gx<W;gx+=60)for(let gy=0;gy<H*.62;gy+=60){x.strokeStyle='rgba(232,184,103,.18)';x.lineWidth=1.6;x.beginPath();x.moveTo(gx+30,gy+6);x.lineTo(gx+54,gy+30);x.lineTo(gx+30,gy+54);x.lineTo(gx+6,gy+30);x.closePath();x.stroke();x.fillStyle='rgba(255,200,130,.22)';x.beginPath();x.arc(gx+30,gy+30,3,0,6.3);x.fill();}
  // two arched windows onto the night city

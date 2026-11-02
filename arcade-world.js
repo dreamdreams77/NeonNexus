@@ -375,7 +375,7 @@ if(mount){
   }
   [-21,-16.5,-12,-7.5,-3,1.5,6,10.5,15,19.5].forEach((z,i)=>hangPoster(-11.82,z,i,(i%3-1)*.012));
   [-21.5,-17,13,17.5,21.5].forEach((z,i)=>hangPoster(11.82,z,i+3,(i%3-1)*.01));
-  const plaque=(text,color,x,y,z,ry,w=2.4)=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(w,w/4),neonMat(ART.paintNeon(text,color,{plaque:false}),true));m.position.set(x,y,z);m.rotation.y=ry;scene.add(m);artAnimators.push(t=>m.material.color.setScalar(.82+.18*Math.sin(t*3+x+z)));return m;};
+  const plaque=(text,color,x,y,z,ry,w=2.4)=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(w,w/4),neonMat(ART.paintNeon(text,color,mobileDevice?{plaque:false,w:512,h:128}:{plaque:false}),true));m.position.set(x,y,z);m.rotation.y=ry;scene.add(m);artAnimators.push(t=>m.material.color.setScalar(.82+.18*Math.sin(t*3+x+z)));return m;};
   plaque('GAME ON','#5fe0d4',-11.8,4.85,-12,Math.PI/2);plaque('HIGH SCORES','#ffc66b',-11.8,4.85,3,Math.PI/2);plaque('TOKENS','#ff7ab6',-11.8,4.85,-3,Math.PI/2,2.0);
   plaque('OPEN LATE','#a99bff',11.8,4.85,-18,-Math.PI/2);plaque('WINNERS','#7ee08f',11.8,4.85,16,-Math.PI/2);
   // Entrance: brass arch with a tilted neon lintel, painted welcome mat and flanking planters.
@@ -884,14 +884,14 @@ visitorProfiles.forEach((profile,i)=>{const g=new THREE.Group();const [x,z]=visi
   // garland replaces the 3D festoon rope, bulbs and paper flags
   festoonRope.visible=false;festoonBulbs.forEach(b=>{if(b.bulb&&b.bulb.parent)b.bulb.parent.visible=false;if(b.flag)b.flag.visible=false;});
   scene.children.forEach(o=>{if(o.isMesh&&o.geometry&&o.geometry.type==='PlaneGeometry'&&o.geometry.parameters&&Math.abs(o.geometry.parameters.width-.34)<.001&&Math.abs(o.geometry.parameters.height-.48)<.001)o.visible=false;});
-  const gl=makeSpriteFromCanvas(THREE,paintGarland(),{height:1.7,anisotropy:mobileDevice?2:4,tilt:-.5});gl.root.position.set(0,3.45,3.8);scene.add(gl.root);
+  const gl=makeSpriteFromCanvas(THREE,paintGarland(2400,200,mobileDevice?.5:1),{height:1.7,anisotropy:mobileDevice?2:4,tilt:-.5});gl.root.position.set(0,3.45,3.8);scene.add(gl.root);
   // back wall: one illustrated composition (windows, drapes, posters, wainscot) replaces murals, frames and wallpaper tiling
   const findPlane=(pw,ph)=>scene.children.find(o=>o.isMesh&&o.geometry.type==='PlaneGeometry'&&Math.abs(o.geometry.parameters.width-pw)<.01&&Math.abs(o.geometry.parameters.height-ph)<.01&&o.position.z<-25);
   const wallN=findPlane(24,5.7),brand=findPlane(7.6,1.32);
   scene.children.forEach(o=>{if(o===wallN||o===brand)return;if(o.position&&o.position.z<-25.25&&o.position.z>-25.8&&o.position.y>1&&o.position.y<5.2&&(o.isMesh||o.isGroup))o.visible=false;});
-  wallN.material=new THREE.MeshBasicMaterial({map:artTex(paintBackWall(),{aniso:4}),toneMapped:false});
+  wallN.material=new THREE.MeshBasicMaterial({map:artTex(paintBackWall(2400,570,mobileDevice?.5:1),{aniso:4}),toneMapped:false});
   // carved wall caps along both side walls
-  const capCanvas=paintWallCap(2000,120);
+  const capCanvas=paintWallCap(2000,120,mobileDevice?.5:1);
   for(const x of [-12.2,12.2]){const tex=artTex(capCanvas,{aniso:4,repeat:[2,1]});const cap=new THREE.Mesh(new THREE.PlaneGeometry(50,.72),new THREE.MeshBasicMaterial({map:tex,toneMapped:false}));cap.rotation.x=-Math.PI/2;cap.rotation.z=Math.PI/2;cap.position.set(x,5.72,-1);scene.add(cap);}
   // sculpted sconces -> illustrated sconces with painted glow
   scene.children.forEach(o=>{if(o.isGroup&&Math.abs(Math.abs(o.position.x)-11.78)<.01&&Math.abs(o.position.y-3.55)<.01)o.visible=false;});
