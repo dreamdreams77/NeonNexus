@@ -62,14 +62,35 @@ if(mount){
  const muralMat=new THREE.MeshBasicMaterial({map:muralTexture(),transparent:false});
  for(const x of [-8.7,0,8.7]){const mural=new THREE.Mesh(new THREE.PlaneGeometry(5.3,2.15),muralMat);mural.position.set(x,3.35,-25.66);scene.add(mural);}
  // Potted clay foliage breaks up the repeated cabinet lines with handmade silhouettes.
+ const livingLeaves=[],flowerHeads=[];
  function makePlanter(x,z,flip=1){
   const pot=new THREE.Group();pot.position.set(x,0,z);scene.add(pot);
   const vessel=new THREE.Mesh(new THREE.CylinderGeometry(.42,.3,.58,11),clayMat(0xb87969));vessel.position.y=.29;pot.add(vessel);
   const rim=new THREE.Mesh(new THREE.TorusGeometry(.37,.065,8,18),clayMat(0xe0a17e));rim.rotation.x=Math.PI/2;rim.position.y=.55;pot.add(rim);
-  for(let i=0;i<7;i++){const a=i*2.399,reach=.22+(i%3)*.12,leaf=sphere(.22,Math.cos(a)*reach,.75+(i%3)*.12,Math.sin(a)*reach,clayMat([0x6c9d79,0x82ae83,0x91b78b][i%3]),pot,.48,1.45,.72);leaf.rotation.z=Math.cos(a)*.45*flip;leaf.rotation.x=Math.sin(a)*.32;}
-  for(let i=0;i<3;i++){const stem=cyl(.018,.025,.52,Math.cos(i*2.1)*.12, .84,Math.sin(i*2.1)*.12,clayMat(0x557e66),pot);stem.rotation.z=(i-1)*.24*flip;}
+  for(let i=0;i<7;i++){
+   const a=i*2.399,reach=.22+(i%3)*.12,leaf=sphere(.22,Math.cos(a)*reach,.75+(i%3)*.12,Math.sin(a)*reach,clayMat([0x6c9d79,0x82ae83,0x91b78b][i%3]),pot,.48,1.45,.72);
+   leaf.rotation.z=Math.cos(a)*.45*flip;leaf.rotation.x=Math.sin(a)*.32;
+   livingLeaves.push({leaf,base:leaf.rotation.z,phase:x*.7+z*.23+i*.91,amount:.035+(i%3)*.012});
+  }
+  for(let i=0;i<3;i++){
+   const a=i*2.1,fx=Math.cos(a)*.12,fz=Math.sin(a)*.12,stem=cyl(.018,.025,.52,fx,.84,fz,clayMat(0x557e66),pot);stem.rotation.z=(i-1)*.24*flip;
+   const blossom=new THREE.Group();blossom.position.set(fx*1.8,1.14+(i%2)*.12,fz*1.8);pot.add(blossom);
+   const petalMat=clayMat([0xe9a3a0,0xf0c982,0xb9a6d8][(i+Math.round(x))%3]);
+   for(let p=0;p<5;p++){const a2=p*Math.PI*2/5,petal=sphere(.075,Math.cos(a2)*.075,Math.sin(a2)*.075,0,petalMat,blossom,.72,1.15,.48);petal.rotation.z=a2;}
+   sphere(.045,0,0,.035,clayMat(0xf3d58d),blossom,1,.9,.8);
+   flowerHeads.push({blossom,phase:x*.4+z*.3+i,base:blossom.rotation.z});
+  }
  }
  for(const z of [-17,-8,1,10,19]){makePlanter(-10.7,z,-1);makePlanter(10.7,z,1);}
+ // Soft woven rugs and stitched borders make the bar and prize lounge feel furnished.
+ function makeRug(x,z,w,d,base,accent){
+  const rug=new THREE.Group();rug.position.set(x,-.065,z);scene.add(rug);
+  const edge=new THREE.Mesh(new THREE.CylinderGeometry(w*.5,w*.5,.035,48),clayMat(accent));edge.scale.z=d/w;edge.position.y=.015;rug.add(edge);
+  const field=new THREE.Mesh(new THREE.CylinderGeometry(w*.46,w*.46,.025,48),clayMat(base));field.scale.z=d/w;field.position.y=.039;rug.add(field);
+  for(let n=-2;n<=2;n++){const stitch=box(.055,.012,d*.78,n*w*.16,.058,0,clayMat(accent),rug,.018);stitch.rotation.y=Math.PI/2;}
+  const medallion=new THREE.Mesh(new THREE.CircleGeometry(Math.min(w,d)*.19,24),clayMat(accent));medallion.rotation.x=-Math.PI/2;medallion.position.y=.057;rug.add(medallion);
+ }
+ makeRug(0,7.2,6.6,3.1,0x846071,0xd9ad80);makeRug(8.5,4.4,5.2,2.7,0x5f6977,0xd4a16e);makeRug(-7.7,2.2,4.4,2.5,0x6e806f,0xd7b184);
  // Hand-built wall sconces repeat the warm/cool lighting language in the walkable world.
  function makeSconce(side,z){
   const fixture=new THREE.Group();fixture.position.set(side*11.78,3.55,z);scene.add(fixture);
@@ -653,6 +674,8 @@ visitorProfiles.forEach((profile,i)=>{const g=new THREE.Group();const [x,z]=visi
    const preview=c.userData.preview,screenDistance=player.position.distanceTo(c.position);
    if(preview&&previewSet.has(c)){preview.clock+=dt;if(preview.clock>=.12){preview.clock=0;preview.frame++;drawCabinetPreview(preview,preview.frame);}}else if(preview){preview.clock=0;}
   });
+  livingLeaves.forEach(({leaf,base,phase,amount})=>{leaf.rotation.z=base+Math.sin(t*1.35+phase)*amount;leaf.rotation.x+=Math.sin(t*.8+phase)*.0007;});
+  flowerHeads.forEach(({blossom,phase,base})=>{blossom.rotation.z=base+Math.sin(t*1.1+phase)*.045;blossom.rotation.x=Math.cos(t*.9+phase)*.025;});
   if((moteFrame++%2)===0){const motesAttr=moteGeo.attributes.position;for(let i=0;i<90;i++){const y=motesAttr.getY(i)+dt*2*(.025+(i%4)*.012);motesAttr.setY(i,y>5?0.45:y);}motesAttr.needsUpdate=true;}
   // The prize host breathes, blinks and gives a distinct welcome wave when approached.
   const hostDistance=player.position.distanceTo(host.position);
