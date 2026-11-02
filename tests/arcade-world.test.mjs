@@ -576,3 +576,19 @@ test('each arcade cabinet has its own animated sculpted crest with restrained li
  assert.match(world,/c\.userData\.crestLight\.intensity=\.25\+pulse\*\.22/);
  assert.match(world,/crest,crestRing,crestCore,crestDots,crestLight/);
 });
+
+
+test('cabinet mastery is represented by seven physical trophy pips that refresh from saved progress',()=>{
+ assert.match(world,/const masteryRing=new THREE\.Mesh\(new THREE\.TorusGeometry\(\.112/);
+ assert.match(world,/const masteryPips=\[\]/);
+ assert.match(world,/for\(let pip=0;pip<7;pip\+\+\)/);
+ assert.match(world,/nextMasteryRefresh=t\+1\.25/);
+ assert.match(world,/save\.arcadeMastery\|\|\{\}/);
+ assert.match(world,/c\.userData\.masteryPips\.forEach/);
+ assert.match(world,/level>=7\?0xffd18a/);
+});
+
+test('scoring produces restrained visual sparkles and a pitch-scaled arcade chime',()=>{
+ assert.match(game,/function scoreBy\(n\).*addParticles\(mouse\.x,mouse\.y,n>=25\?/);
+ assert.match(game,/sound\(Math\.min\(860,340\+n\*5\),\.055,'sine',\.018\)/);
+});
