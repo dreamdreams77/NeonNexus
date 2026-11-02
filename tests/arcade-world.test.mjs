@@ -409,3 +409,8 @@ test('Kitchen Rush also awards separate prize tickets while preserving the token
  assert.match(immersive,/saved\.tickets=\(Number\(saved\.tickets\)\|\|0\)\+ticketsEarned/);
  assert.match(immersive,/ticketNode\.textContent=saved\.tickets/);
 });
+
+test('ticket and token payouts preserve a genuinely empty token wallet instead of restoring starter funds',()=>{
+ assert.match(game,/saved\.tokens=\(Number\(saved\.tokens\?\?250\)\|\|0\)\+earned/);
+ assert.match(immersive,/saved\.tokens=\(Number\(saved\.tokens\?\?250\)\|\|0\)\+earned/);
+});
