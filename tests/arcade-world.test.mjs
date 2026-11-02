@@ -566,3 +566,13 @@ test('premium experience prizes have bespoke 3D display models and the lucky whe
  assert.match(world,/Eight enamelled prize sectors/);
  assert.match(world,/wheelHub=new THREE\.Mesh/);
 });
+
+
+test('each arcade cabinet has its own animated sculpted crest with restrained lighting and motion',()=>{
+ assert.match(world,/const crest=new THREE\.Group\(\);crest\.position\.set\(\.51,\.83,\.79\)/);
+ assert.match(world,/new THREE\.TorusGeometry\(\.145,\.018,8,28\)/);
+ assert.match(world,/crestDots\.forEach\(\(dot,n\)=>\{/);
+ assert.match(world,/c\.userData\.crestRing\.rotation\.z=t\*\(\.28\+i%3\*\.06\)/);
+ assert.match(world,/c\.userData\.crestLight\.intensity=\.25\+pulse\*\.22/);
+ assert.match(world,/crest,crestRing,crestCore,crestDots,crestLight/);
+});
