@@ -125,7 +125,7 @@ if(game==='pulse'){
 }
 if(game==='moto'){
  const accel=keys.ArrowUp||keys.w||p.touchAccelerate,brake=keys.ArrowDown||keys.s,left=keys.ArrowLeft||keys.a,right=keys.ArrowRight||keys.d;
- p.speed=clamp(p.speed+(accel?235:brake?-310:-55)*dt,0,430);p.distance+=p.speed*dt;p.camera=Math.max(0,p.distance-100);
+ p.speed=clamp(p.speed+(accel?235:brake?-310:-55)*dt,0,430);p.distance+=p.speed*dt;p.camera=Math.max(0,p.distance-100);while(p.spawnCursor<p.distance+1500){const x=p.spawnCursor;objects.push({type:Math.random()<.28?'ramp':Math.random()<.24?'gap':'barrel',x,y:Math.random()<.5?405:420,hit:false});if(Math.random()<.35)objects.push({type:'token',x:x+65,y:285-Math.random()*90});p.spawnCursor+=150;}
  p.angle+=(right?1:left?-1:0)*dt*1.8;p.angle=clamp(p.angle,-.65,.65);p.wheel+=p.speed*dt*.045;
  const ground=365+Math.sin((p.distance+p.x)*.012)*9,inGap=objects.some(o=>o.type==='gap'&&p.camera+p.x>o.x&&p.camera+p.x<o.x+80);p.vy+=1100*dt;p.y+=p.vy*dt;
  if(!inGap&&p.y>ground-35){p.y=ground-35;p.vy=0;p.air=0;}else if(inGap&&p.y>505){p.hp--;p.distance+=160;p.y=300;p.vy=-190;p.speed*=.65;p.invuln=.8;if(p.hp<=0){finish();return;}}
