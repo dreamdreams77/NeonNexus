@@ -11,7 +11,7 @@ const [html,game,world,immersive,css]=await Promise.all([
 ]);
 const ids=['skeeball','airhockey','whack','target','memory','rhythm','meteor','racer','stack','pinball','claw','chef','sushi','mixology','pulse','moto','moonquest','ringtoss','gemdig'];
 
-test('arcade opens as one walkable RPG district with all seventeen mini-game cabinets and no game catalogue below it',()=>{
+test('arcade opens as one walkable RPG district with all nineteen mini-game cabinets and no game catalogue below it',()=>{
  for(const id of ids)assert.ok(world.includes("'"+id+"'"),'missing world cabinet '+id);
  assert.match(world,/\['NEON HOOPS','hoops'/);
  assert.match(html,/id="arcade-world"/);
@@ -243,7 +243,7 @@ test('storybook environment has painted wall art, handmade planters and drifting
  assert.match(css,/Cabinet discovery: an editorial mini-preview/);
 });
 
-test('all eighteen cabinets show their own animated gameplay vignette rather than a static title card',()=>{
+test('all twenty cabinets show their own animated gameplay vignette rather than a static title card',()=>{
  assert.match(world,/function makeCabinetPreview\(id,color\)/);
  assert.match(world,/function drawCabinetPreview\(p,frame\)/);
  assert.match(world,/new THREE\.CanvasTexture\(canvas\)/);
@@ -282,7 +282,7 @@ test('animated preview scenes map one-to-one to the twenty registered cabinet ga
  assert.equal(new Set(previewIds).size,20,'preview IDs must not be duplicated');
 });
 test('new carnival cabinets have dedicated game logic, UI and 3D preview scenes',()=>{for(const id of ['ringtoss','gemdig']){assert.ok(game.includes(id+':['));assert.ok(world.includes("['"+(id==='ringtoss'?'COMET RING TOSS':'MOON GEM DIG')+"','"+id+"'"));assert.match(game,new RegExp("case'"+id+"':"));}});
-test('walk-up jukebox, weighted lucky wheel, expanded drink menu and RPG visitors are wired',()=>{for(const item of ['Ginger Beer','Wine','Gin and Tonic','jukebox','wheel','npc','PLAY · 5 TOKENS','SPIN · 25 TOKENS','1,000 tickets'])assert.ok(game.includes(item)||world.includes(item),'missing '+item);assert.match(world,/visitorProfiles/);assert.match(world,/services\.push\(\{type:'npc'/);});
+test('walk-up jukebox, weighted lucky wheel, expanded drink menu and RPG visitors are wired',()=>{for(const item of ['Ginger Beer','Wine','Gin and Tonic','jukebox','wheel','npc','PLAY · 5 TOKENS','SPIN · 25 TOKENS','1,000 tickets'])assert.ok(game.includes(item)||world.includes(item),'missing '+item);assert.match(world,/visitorProfiles/);assert.match(world,/services\.push\(\{type:'npc'/);assert.match(game,/0 tickets 50\.5%/);assert.match(game,/max:50\.5,tickets:0/);assert.match(game,/max:99\.95,tickets:500/);});
 test('cabinet previews stop while a game or service modal is open and respect reduced-motion settings',()=>{
  assert.match(world,/const gameOverlay=document\.querySelector\('#overlay'\),serviceModal=document\.querySelector\('#service-modal'\),reduceMotion=matchMedia\('\(prefers-reduced-motion: reduce\)'\)\.matches/);
  assert.match(world,/previewEnabled=!reduceMotion&&document\.visibilityState==='visible'/);
