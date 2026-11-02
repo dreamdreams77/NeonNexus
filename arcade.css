@@ -83,3 +83,12 @@ html,body{width:100%;height:100%;min-height:100%;overflow:hidden}body{min-height
 .overlay[data-game] #stage{border-color:var(--game-accent,#986c69);box-shadow:0 7px 0 color-mix(in srgb,var(--game-accent,#986c69) 55%,#342b38),inset 0 0 0 2px #fff8}
 .overlay[data-game] .game-controls button{background:var(--game-accent,#b85f62);box-shadow:0 4px color-mix(in srgb,var(--game-accent,#81434c) 65%,#302532)}
 .overlay[data-game] .stats b{color:var(--game-ink,#372a36)}
+
+/* Hand-built video poker cards and pay table inside the Glow Bar service panel. */
+.poker-hand{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:18px 0 12px}
+.poker-card{min-width:0;min-height:132px;border:2px solid #c4a77d;border-radius:12px;background:linear-gradient(145deg,#fff9e9,#ead9b9);color:#392e40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;box-shadow:0 4px 0 #b99b73,inset 0 2px #fff;font:700 19px Fredoka;cursor:pointer}
+.poker-card.red{color:#b64f55}.poker-card strong{font-size:34px;line-height:1}.poker-card span{font-size:24px}.poker-card small{font-size:8px;letter-spacing:.8px;color:#7c6b65}.poker-card.held{transform:translateY(-5px);border-color:#bd7659;background:linear-gradient(145deg,#ffe6b5,#e9b98b);box-shadow:0 8px 0 #a96654,inset 0 2px #fff}
+.poker-card:disabled{cursor:default}.poker-empty{grid-column:1/-1;text-align:center;padding:28px 10px;color:#765c5b;background:#fff0d6;border-radius:14px}
+.poker-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.poker-deal{grid-column:1/-1}
+.poker-paytable{margin-top:14px;padding:14px;border-radius:14px;background:#49394b;color:#f7e5c6;display:grid;gap:6px}.poker-paytable>b{font-size:11px;letter-spacing:1.3px;color:#f4c987;margin-bottom:3px}.poker-paytable span{display:flex;justify-content:space-between;border-bottom:1px solid #ffffff20;padding:4px 0;font-size:12px}.poker-paytable strong{color:#f5d38d}.poker-paytable small{color:#d4bdac;font-size:10px;margin-top:5px}
+@media(max-width:520px){.poker-hand{gap:4px}.poker-card{min-height:108px;border-radius:9px}.poker-card span{font-size:18px}.poker-card strong{font-size:26px}.poker-card small{font-size:6px;letter-spacing:0}.poker-actions{grid-template-columns:1fr}}
