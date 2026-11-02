@@ -2,8 +2,8 @@
   const $ = (s) => document.querySelector(s);
   const SAVE_KEY = 'neon-nexus-player-v1';
   const saved = (() => { try { return JSON.parse(localStorage.getItem(SAVE_KEY) || '{}'); } catch { return {}; } })();
-  const state = { tokens: Number.isFinite(saved.tokens) ? saved.tokens : 250, entered: !!saved.entered, played: !!saved.played, vault: !!saved.vault, best: Number(saved.best) || 0, redeemed: Array.isArray(saved.redeemed) ? saved.redeemed : [], prizeDropClaimed: !!saved.prizeDropClaimed, score: 0, time: 30, timer: null, activeGame: false };
-  const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify({tokens:state.tokens,entered:state.entered,played:state.played,vault:state.vault,best:state.best,redeemed:state.redeemed,prizeDropClaimed:state.prizeDropClaimed})); } catch { toast('Progress could not be saved on this device.'); } };
+  const state = { tokens: Number.isFinite(saved.tokens) ? saved.tokens : 250, entered: !!saved.entered, played: !!saved.played, vault: !!saved.vault, best: Number(saved.best) || 0, redeemed: Array.isArray(saved.redeemed) ? saved.redeemed : [], prizeDropClaimed: !!saved.prizeDropClaimed, completedActivities: Array.isArray(saved.completedActivities) ? saved.completedActivities : [], score: 0, time: 30, timer: null, activeGame: false };
+  const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify({tokens:state.tokens,entered:state.entered,played:state.played,vault:state.vault,best:state.best,redeemed:state.redeemed,prizeDropClaimed:state.prizeDropClaimed,completedActivities:state.completedActivities})); } catch { toast('Progress could not be saved on this device.'); } };
   const modal = $('#modal'), modalTitle = $('#modal-title'), modalCopy = $('#modal-copy'), modalKicker = $('#modal-kicker'), modalContent = $('#modal-content'), modalAction = $('#modal-action');
   const toast = (message) => { const el = $('#toast'); el.textContent = message; el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 2300); };
   const updateWallet = () => { $('#token-count').textContent = state.tokens; persist(); };
@@ -38,9 +38,12 @@
     vault:['THE PRIZE VAULT','Your wins. Your rewards.','Trade tokens for collectibles, cosmetics and special access. Your first rewards are ready below.']
   };
   document.querySelectorAll('[data-district]').forEach(btn => btn.addEventListener('click', () => {
-    const d = districts[btn.dataset.district];
-    if(btn.dataset.district === 'vault' && !state.vault){ state.vault = true; state.tokens += 25; updateWallet(); updateQuests(); }
-    openModal('DISTRICT ACCESS / '+btn.dataset.district.toUpperCase(), d[0], d[1]+' '+d[2], '<div class="game-play"><div class="game-score">'+(btn.dataset.district === 'vault' ? '+25 ◆' : '✦')+'</div><div class="game-clock">'+(btn.dataset.district === 'vault' ? 'TREASURE HUNTER QUEST COMPLETE' : 'NEW EXPERIENCES UNLOCKING SOON')+'</div></div>', 'BACK TO THE RESORT');
+    const id=btn.dataset.district, d=districts[id];
+    if(id==='atrium'){document.querySelector('#walkable-atrium').scrollIntoView({behavior:'smooth'});return;}
+    const tab=document.querySelector('[data-world="'+id+'"]');
+    if(tab){tab.click();document.querySelector('#district-worlds').scrollIntoView({behavior:'smooth'});return;}
+    if(id==='vault'&&!state.vault){state.vault=true;state.tokens+=25;updateWallet();updateQuests();}
+    openModal('DISTRICT ACCESS / '+id.toUpperCase(),d[0],d[1]+' '+d[2],'','BACK TO THE RESORT');
   }));
   function startGame(){
     closeModal(); state.score = 0; state.time = 30; state.activeGame = true;
@@ -84,7 +87,22 @@
     }
     openModal('GRAND ATRIUM / ARCADE CABINET', machine.name || 'Arcade machine', machine.desc || 'This cabinet is being prepared for its first game. Explore Neon Hoops in the meantime.', '<div class="game-play"><div class="game-score">COMING SOON</div><div class="game-clock">NEW ORIGINAL ARCADE EXPERIENCES ARE IN DEVELOPMENT</div></div>', 'BACK TO THE ATRIUM');
   });
-  document.querySelectorAll('[data-prize]').forEach(btn => btn.addEventListener('click', () => {
+
+  const activityRewards = {'combat-target-1':10,'combat-target-2':10,'combat-target-3':10,'velocity-finish':25,'velocity-garage':5,'arcade-skee':10,'arcade-hockey':10,'arcade-claw':10,'social-host':5,'social-order':10,'vault-display-1':3,'vault-display-2':3,'vault-display-3':3,'vault-display-4':3,'vault-display-5':3,'vault-bonus':15};
+  window.addEventListener('nexus:district-activity', event => {
+    const {district,activity,label}=event.detail||{};
+    if(!activity)return;
+    if(state.completedActivities.includes(activity)){
+      openModal(district.toUpperCase()+' / DISTRICT ACTIVITY','You’ve already explored this one.','This activity has already been completed on your player profile. Try another point of interest in this district.','', 'KEEP EXPLORING');
+      return;
+    }
+    const reward=activityRewards[activity]||5;
+    state.completedActivities.push(activity);state.tokens+=reward;
+    if(district==='vault'&&!state.vault){state.vault=true;updateQuests();}
+    updateWallet();
+    openModal(district.toUpperCase()+' / ACTIVITY COMPLETE','Nice discovery!',''+(label||'You completed a district activity')+'. You earned '+reward+' tokens. Your progress is saved on this device.','<div class="game-play"><div class="game-score">+'+reward+' ◆</div><div class="game-clock">TOKENS ADDED · ACTIVITY SAVED</div></div>','BACK TO EXPLORING');
+  });
+\n  document.querySelectorAll('[data-prize]').forEach(btn => btn.addEventListener('click', () => {
     const cost = Number(btn.dataset.cost), name = btn.dataset.prize;
     if(state.tokens < cost){ toast('You need '+(cost-state.tokens)+' more tokens for '+name+'.'); return; }
     openModal('PRIZE VAULT / REDEMPTION', 'Redeem '+name+'?', 'This will use '+cost+' tokens from your wallet. This prototype keeps rewards in your local session.', '<div class="game-play"><div class="game-score">'+cost+' ◆</div><div class="game-clock">AVAILABLE BALANCE: '+state.tokens+' TOKENS</div></div>', 'CONFIRM REDEMPTION', () => {
