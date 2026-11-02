@@ -250,12 +250,35 @@ test('all eighteen cabinets show their own animated gameplay vignette rather tha
  assert.match(world,/preview\.frame\+\+/);
 });
 test('cabinet screen animation is throttled and limited to nearby machines for mobile performance',()=>{
- assert.match(world,/screenDistance<19/);
+ assert.match(world,/previewSet=previewEnabled\?new Set\(cabinets\.map/);
+ assert.match(world,/slice\(0,4\)/);
+ assert.match(world,/previewSet\.has\(c\)/);
  assert.match(world,/preview\.clock>=\.12/);
  assert.match(world,/preview\.clock=0/);
+ assert.match(world,/document\.visibilityState==='visible'/);
+ assert.match(world,/!reduceMotion/);
+ assert.match(world,/gameOverlay\.hidden/);
+ assert.match(world,/serviceModal\.hidden/);
  assert.match(world,/texture\.anisotropy=Math\.min\(4,renderer\.capabilities\.getMaxAnisotropy\(\)\)/);
 });
 test('direct cabinet screen clicks obey the same 4.1-unit interaction range as proximity prompts',()=>{
  assert.match(world,/player\.position\.distanceTo\(o\.position\)<4\.1/);
  assert.doesNotMatch(world,/player\.position\.distanceTo\(o\.position\)<5\.8/);
+});
+
+test('animated preview scenes map one-to-one to the eighteen registered cabinet game IDs',()=>{
+ const definitions=world.match(/const definitions=\[([\s\S]*?)\n \];/);
+ assert.ok(definitions,'cabinet definitions should be present');
+ const definitionIds=[...definitions[1].matchAll(/\['[^']+','([^']+)'/g)].map(m=>m[1]).sort();
+ const renderer=world.match(/function drawCabinetPreview\(p,frame\)\{([\s\S]*?)\n \}/);
+ assert.ok(renderer,'preview renderer should be present');
+ const previewIds=[...renderer[1].matchAll(/case'([^']+)':/g)].map(m=>m[1]).sort();
+ assert.deepEqual(previewIds,definitionIds,'each registered cabinet must have exactly one preview scene');
+ assert.equal(new Set(previewIds).size,18,'preview IDs must not be duplicated');
+});
+test('cabinet previews stop while a game or service modal is open and respect reduced-motion settings',()=>{
+ assert.match(world,/const gameOverlay=document\.querySelector\('#overlay'\),serviceModal=document\.querySelector\('#service-modal'\),reduceMotion=matchMedia\('\(prefers-reduced-motion: reduce\)'\)\.matches/);
+ assert.match(world,/previewEnabled=!reduceMotion&&document\.visibilityState==='visible'/);
+ assert.match(world,/\(!gameOverlay\|\|gameOverlay\.hidden\)/);
+ assert.match(world,/\(!serviceModal\|\|serviceModal\.hidden\)/);
 });
