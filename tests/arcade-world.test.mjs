@@ -2,10 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 
-const [html,game,world]=await Promise.all([
+const [html,game,world,immersive]=await Promise.all([
  readFile(new URL('../arcade.html',import.meta.url),'utf8'),
  readFile(new URL('../arcade.js',import.meta.url),'utf8'),
- readFile(new URL('../arcade-world.js',import.meta.url),'utf8')
+ readFile(new URL('../arcade-world.js',import.meta.url),'utf8'),
+ readFile(new URL('../arcade-game3d.js',import.meta.url),'utf8')
 ]);
 const ids=['skeeball','airhockey','whack','target','memory','rhythm','meteor','racer','stack','pinball','claw','chef','sushi','mixology'];
 
@@ -76,8 +77,8 @@ test('Kitchen Rush runs as a dedicated Three.js claymation room with 3D ingredie
  assert.match(game,/nexus:game3d-start/);
  assert.match(game,/nexus:game3d-stop/);
  assert.match(game,/if\(game==='chef'\)\{window\.dispatchEvent/);
- assert.match((await readFile(new URL('../arcade-game3d.js',import.meta.url),'utf8')),/new THREE\.WebGLRenderer/);
- const immersive=await readFile(new URL('../arcade-game3d.js',import.meta.url),'utf8');
+ assert.match(immersive,/new THREE\.WebGLRenderer/);
+ 
  for(const feature of ['PerspectiveCamera','Raycaster','KITCHEN TICKET','THE NEXUS KITCHEN','misses>=3','arcadeBest\.chef','ingredients'])assert.ok(immersive.includes(feature),'missing 3D gameplay feature '+feature);
 });
 test('three new cabinets have distinct kitchen, catching and timing gameplay loops',()=>{
