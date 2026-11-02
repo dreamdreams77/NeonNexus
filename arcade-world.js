@@ -142,6 +142,12 @@ if(mount){
  function drawCabinetPreview(p,frame){
   const c=p.ctx,id=p.id,w=384,h=256,accent=p.color;
   const bg=c.createLinearGradient(0,0,w,h);bg.addColorStop(0,'#302a43');bg.addColorStop(.58,'#51405b');bg.addColorStop(1,'#252d43');c.fillStyle=bg;c.fillRect(0,0,w,h);
+  // Hand-painted pigment: broken brush strokes, paper flecks and uneven ink edges.
+  let seed=(id.split('').reduce((a,ch)=>a+ch.charCodeAt(0),frame+31)*7919)%2147483647;
+  const rnd=()=>{seed=(seed*16807)%2147483647;return(seed-1)/2147483646;};
+  for(let n=0;n<520;n++){const x=rnd()*w,y=rnd()*h,alpha=.018+rnd()*.055;c.fillStyle=rnd()>.5?'rgba(255,229,190,'+alpha+')':'rgba(20,18,34,'+alpha+')';c.beginPath();c.ellipse(x,y,.5+rnd()*3,.35+rnd()*1.2,rnd()*Math.PI,0,Math.PI*2);c.fill();}
+  for(let n=0;n<28;n++){const x=rnd()*w,y=rnd()*h;c.strokeStyle=n%2?'rgba(255,220,176,.12)':'rgba(25,18,34,.12)';c.lineWidth=1+rnd()*2;c.beginPath();c.moveTo(x,y);c.quadraticCurveTo(x+5+rnd()*12,y-4+rnd()*8,x+14+rnd()*20,y+rnd()*5);c.stroke();}
+
   c.globalAlpha=.2;c.strokeStyle='#f5d6b0';c.lineWidth=2;
   for(let i=0;i<16;i++){const y=(i*37+frame*1.8)%h;c.beginPath();c.moveTo(0,y);c.quadraticCurveTo(90,y-8,190,y+3);c.stroke();}
   c.globalAlpha=1;
@@ -180,6 +186,36 @@ if(mount){
   // A little imperfect brush frame keeps the screens from reading as sterile UI.
   c.strokeStyle='#f4d5ad';c.globalAlpha=.5;c.lineWidth=3;c.beginPath();c.moveTo(5,6);c.lineTo(378,4);c.lineTo(380,250);c.lineTo(4,252);c.closePath();c.stroke();c.globalAlpha=1;
   p.texture.needsUpdate=true;
+ }
+ // Small sculpted cabinet emblems: each machine carries a physical clue to its own game.
+ function addCabinetSculpture(g,id,color){
+  const accent=clayMat(color),cream=clayMat(0xf2d6aa),dark=clayMat(0x403447),gold=mat(0xe6b879,.38,.32);
+  const ball=(x,y,z,r,m=accent)=>sphere(r,x,y,z,m,g,1,.92,.86);
+  const bar=(x,y,z,w,h,d,m=accent)=>box(w,h,d,x,y,z,m,g,.035);
+  const ring=(x,y,z,r,m=gold)=>{const q=new THREE.Mesh(new THREE.TorusGeometry(r,.035,8,22),m);q.position.set(x,y,z);g.add(q);return q;};
+  switch(id){
+   case'hoops':ring(0,2.22,.69,.22);bar(0,1.99,.7,.36,.035,.035,cream);for(let n=-1;n<=1;n++)bar(n*.09,1.85,.7,.018,.23,.018,cream);break;
+   case'skeeball':for(let n=0;n<3;n++)ring(0,2.12+n*.07,.69,.12+n*.075,[accent,gold,cream][n]);break;
+   case'airhockey':bar(0,2.1,.68,.44,.28,.07,clayMat(0x9bcfc9));ball(0,2.1,.75,.075,cream);break;
+   case'billiards':for(let n=0;n<3;n++)ball((n-1)*.13,2.1,.72,.075,[clayMat(0xd98a79),clayMat(0xe5c17b),dark][n]);break;
+   case'whack':ball(0,2.12,.7,.17,clayMat(0x9bbd88));ball(-.06,2.15,.83,.022,dark);ball(.06,2.15,.83,.022,dark);break;
+   case'target':for(let n=0;n<3;n++)ring(0,2.12,.7,.2-n*.055,[cream,accent,gold][n]);break;
+   case'memory':for(let n=0;n<4;n++)bar((n%2-.5)*.22,2.05+Math.floor(n/2)*.13,.7,.16,.1,.045,[clayMat(0xd58eaa),clayMat(0x83c6b3),clayMat(0xe6bd78),clayMat(0x8e9dce)][n]);break;
+   case'rhythm':for(let n=0;n<3;n++)ball((n-1)*.17,2.12,.72,.075,[accent,cream,gold][n]);break;
+   case'meteor':ball(0,2.1,.7,.19,clayMat(0xd17e70));for(let n=0;n<3;n++)ball((n-1)*.1,2.1,.86,.025,cream);break;
+   case'racer':bar(0,2.1,.7,.34,.19,.07,dark);bar(-.09,2.13,.75,.09,.07,.015,cream);bar(.09,2.13,.75,.09,.07,.015,cream);break;
+   case'stack':for(let n=0;n<3;n++)bar(0,1.99+n*.1,.7,.3-n*.035,.07,.08,[accent,cream,gold][n]);break;
+   case'pinball':ball(0,2.12,.7,.13,cream);ring(0,2.12,.72,.19,accent);break;
+   case'claw':bar(0,2.12,.7,.05,.25,.05,gold);for(let n=-1;n<=1;n++)bar(n*.09,1.99,.7,.035,.13,.04,cream);break;
+   case'chef':ball(0,2.08,.7,.18,cream);bar(0,2.22,.7,.2,.045,.08,accent);break;
+   case'sushi':for(let n=0;n<3;n++){ball((n-1)*.14,2.1,.7,.09,cream);ball((n-1)*.14,2.13,.78,.045,[accent,gold,clayMat(0x8fc7b3)][n]);}break;
+   case'mixology':bar(0,2.08,.7,.2,.24,.08,clayMat(0x9a82b4));ring(0,2.23,.7,.1,cream);break;
+   case'pulse':bar(0,2.08,.7,.3,.08,.08,accent);ball(0,2.22,.7,.09,cream);break;
+   case'moto':ring(-.12,2.1,.7,.1,dark);ring(.12,2.1,.7,.1,dark);bar(0,2.18,.7,.24,.045,.06,accent);break;
+   case'moonquest':ball(0,2.1,.7,.15,clayMat(0x9e9bc9));ring(0,2.1,.72,.21,gold);break;
+   case'ringtoss':for(let n=0;n<3;n++)ring((n-1)*.16,2.08,.7,.075,[accent,cream,gold][n]);break;
+   case'gemdig':bar(0,2.1,.7,.3,.17,.07,clayMat(0x8c7867));ball(0,2.1,.76,.09,clayMat(0x8ce0d0));break;
+  }
  }
  const cabinets=[];
  function makeCabinet(def,i,side,z){
@@ -222,6 +258,7 @@ if(mount){
   const masteryPips=[];
   for(let pip=0;pip<7;pip++){const angle=Math.PI*.12+pip*(Math.PI*.76/6),dot=new THREE.Mesh(new THREE.SphereGeometry(.022,10,8),new THREE.MeshStandardMaterial({color:0x574454,emissive:0x211b2a,emissiveIntensity:.12,roughness:.3,metalness:.2}));dot.position.set(-.48+Math.cos(angle)*.087,.69+Math.sin(angle)*.087,.625);g.add(dot);masteryPips.push(dot);}
   const lamp=new THREE.PointLight(color,1.8,3.2);lamp.position.set(0,2.2,.9);g.add(lamp);
+  addCabinetSculpture(g,id,color);
   const discoveryRing=new THREE.Mesh(new THREE.RingGeometry(.92,1.12,48),new THREE.MeshBasicMaterial({color:color,transparent:true,opacity:.62,side:THREE.DoubleSide,depthWrite:false}));discoveryRing.rotation.x=-Math.PI/2;discoveryRing.position.set(side*5.2,.035,z);discoveryRing.visible=false;scene.add(discoveryRing);
   g.userData={name,id,genre,index:i,screen,screenTex,preview,marquee:marqScreen,lamp,discoveryRing,crest,crestRing,crestCore,crestDots,crestLight,masteryPips,masteryRing,masteryLevel:0,baseY:1.42};
   cabinets.push(g);
