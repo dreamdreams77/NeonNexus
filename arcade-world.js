@@ -144,6 +144,7 @@ if(mount){
  stitch([[-.36,-.28,.2],[-.28,-.37,.24],[-.18,-.39,.25]],.008,0xb4d7c6);
  cyl(.12,.14,.22,0,1.51,.005,skin,player);
  const head=new THREE.Group();head.position.set(0,1.88,.015);player.add(head);
+ const arms=[],legs=[],hands=[],blinkLids=[],hairCurls=[];
  sphere(.345,0,0,0,skin,head,1,.99,.88);sphere(.28,0,-.045,-.12,skinLight,head,1,.94,.76);
  for(const side of [-1,1]){
   sphere(.092,side*.326,-.015,-.005,skin,head,.72,1,.72);sphere(.039,side*.35,-.018,.047,clayMat(0xd68f83),head,.6,.85,.5);
