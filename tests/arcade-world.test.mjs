@@ -217,3 +217,23 @@ test('mobile arcade movement eases joystick input and accelerates smoothly inste
  assert.match(world,/touch\.targetX=touch\.targetY=0/);
  assert.match(world,/Math\.min\(devicePixelRatio\|\|1,matchMedia/);
 });
+
+test('approaching a cabinet previews its genre, gameplay loop, challenge and controls before interaction range',()=>{
+ assert.match(html,/id="cabinet-discovery"/);
+ for(const field of ['discovery-title','discovery-genre','discovery-description','discovery-challenge','discovery-controls'])assert.ok(html.includes('id="'+field+'"'),'missing discovery field '+field);
+ for(const id of ids.concat(['hoops']))assert.ok(world.includes(id+':{label:'),'missing player-facing guide for '+id);
+ assert.match(world,/discoverDistance=7\.6/);
+ assert.match(world,/let dmin=4\.1,discovered=null,discoverDistance=7\.6/);
+ assert.match(world,/else if\(discovered\)\{prompt\.textContent='GAME PREVIEW/);
+ assert.match(world,/discoveryRing\.visible=!!discovered/);
+ assert.match(world,/if\(discovered&&!activeService\)/);
+});
+test('storybook environment has painted wall art, handmade planters and drifting light-catching dust',()=>{
+ assert.match(world,/function muralTexture\(\)/);
+ assert.match(world,/new THREE\.PlaneGeometry\(5\.3,2\.15\)/);
+ assert.match(world,/function makePlanter\(x,z,flip=1\)/);
+ assert.match(world,/new THREE\.CylinderGeometry\(\.42,\.3,\.58,11\)/);
+ assert.match(world,/const motes=new THREE\.Points/);
+ assert.match(world,/motesAttr\.needsUpdate=true/);
+ assert.match(css,/Cabinet discovery: an editorial mini-preview/);
+});
