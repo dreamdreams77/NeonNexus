@@ -31,3 +31,13 @@ test('each mini-game defines a distinct instruction set and scoring mechanics',(
  for(const id of ids)assert.ok(game.includes(id+':['),'missing game definition '+id);
  for(const mechanic of ['scoreBy','finish','nextSequence','dropStack','grabClaw','hitRhythm'])assert.ok(game.includes(mechanic));
 });
+
+test('air hockey uses predictive goalie movement, physical paddle returns and rally scoring',()=>{
+ assert.match(game,/projected arrival/);
+ assert.match(game,/p\.aiMood=incoming\?'intercept':'guard'/);
+ assert.match(game,/q\.y>375&&q\.y<430/);
+ assert.match(game,/p\.rally\+\+/);
+ assert.match(game,/const speed=Math\.hypot\(q\.vx,q\.vy\),cap=570/);
+ assert.match(game,/p\.goal>=5/);
+ assert.match(game,/p\.botGoal>=5/);
+});
