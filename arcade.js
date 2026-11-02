@@ -33,7 +33,7 @@ function scoreBy(n){score+=n;$('#score').textContent=score;popText('+'+n,mouse.x
 function popText(t,x,y,c){particles.push({text:t,x,y,vy:-35,life:.8,c});}
 function addParticles(x,y,c,n=8){for(let i=0;i<n;i++)particles.push({x,y,vx:rand(-100,100),vy:rand(-150,30),life:rand(.3,.8),r:rand(2,6),c});}
 function reset(){score=0;time=40;objects=[];particles=[];p={x:450,y:420,lane:1,miss:0,hearts:3,balls:3,blocks:0,width:170,cx:450,clawX:200,clawY:125,clawDir:1,ballX:450,ballY:450,vx:0,vy:0,launched:false,drag:false,combo:0,goal:0,playerX:450,playerY:390,prevX:450,prevW:170,hitFlash:0};sequence=[];seqPos=0;seqPhase='show';seqClock=0;combo=0;round=0;last=performance.now();$('#score').textContent='0';$('#time').textContent='40';$('#result').textContent='';}
-function open(id){game=id;const d=games[id];$('#game-title').textContent=d[0];$('#game-help').textContent=d[1];$('#control-hint').textContent=d[2];$('#game-type').textContent=d[3];overlay.hidden=false;$('#start').textContent='START GAME';reset();draw();window.dispatchEvent(new CustomEvent('nexus:game3d-open',{detail:{gameId:id}}));}
+function open(id){game=id;keyboardAim=false;const d=games[id],pointerKeys=['skeeball','airhockey','whack','target','memory','stack','pinball','claw','chef','mixology'],pcHint=pointerKeys.includes(id)?' · PC: ARROWS + ENTER':' · PC: ARROW KEYS';$('#game-title').textContent=d[0];$('#game-help').textContent=d[1];$('#control-hint').textContent=d[2]+pcHint;$('#game-type').textContent=d[3];overlay.hidden=false;$('#start').textContent='START GAME';reset();draw();window.dispatchEvent(new CustomEvent('nexus:game3d-open',{detail:{gameId:id}}));}
 window.nexusPlayArcadeGame=open;
 function buildMoonRoom(room){
  const layouts=[
