@@ -22,7 +22,7 @@ An original arcade-resort experience: explore themed districts, play quick chall
 - **Persistent local player profile**: wallet, quest progress, best score, claimed bonuses, redeemed prizes and completed district activities save in the browser on that device.
 - Responsive layouts, keyboard-accessible dialogs and reduced-motion support.
 
-## Controls
+## Arcade game collection\n\nThe dedicated [Nexus Arcade](./arcade.html) hub contains twelve distinct cabinet experiences: Neon Hoops, Cosmic Skee-Ball, Comet Air Hockey, Moon Moles, Bubble Blaster, Prism Sequence, Beat Foundry, Meteor Mayhem, Turbo Tunnels, Clay Stack, Starlight Pinball and Lucky Claw. Each has its own controls, scoring rules and round flow, with touch and keyboard support where applicable. Arcade rewards are added to the local player token wallet.\n\n## Controls
 
 - Desktop: **WASD** or **arrow keys** to walk; **E** to use a nearby activity.
 - Mobile: drag the on-screen joystick to move; approach an activity and tap **Interact**.
