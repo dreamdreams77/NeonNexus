@@ -1,9 +1,12 @@
 (() => {
   const $ = (s) => document.querySelector(s);
-  const state = { tokens: 250, entered: false, played: false, vault: false, best: 0, score: 0, time: 30, timer: null, activeGame: false };
+  const SAVE_KEY = 'neon-nexus-player-v1';
+  const saved = (() => { try { return JSON.parse(localStorage.getItem(SAVE_KEY) || '{}'); } catch { return {}; } })();
+  const state = { tokens: Number.isFinite(saved.tokens) ? saved.tokens : 250, entered: !!saved.entered, played: !!saved.played, vault: !!saved.vault, best: Number(saved.best) || 0, redeemed: Array.isArray(saved.redeemed) ? saved.redeemed : [], prizeDropClaimed: !!saved.prizeDropClaimed, score: 0, time: 30, timer: null, activeGame: false };
+  const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify({tokens:state.tokens,entered:state.entered,played:state.played,vault:state.vault,best:state.best,redeemed:state.redeemed,prizeDropClaimed:state.prizeDropClaimed})); } catch { toast('Progress could not be saved on this device.'); } };
   const modal = $('#modal'), modalTitle = $('#modal-title'), modalCopy = $('#modal-copy'), modalKicker = $('#modal-kicker'), modalContent = $('#modal-content'), modalAction = $('#modal-action');
   const toast = (message) => { const el = $('#toast'); el.textContent = message; el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 2300); };
-  const updateWallet = () => $('#token-count').textContent = state.tokens;
+  const updateWallet = () => { $('#token-count').textContent = state.tokens; persist(); };
   const updateQuests = () => {
     const done = [state.entered, state.played, state.vault].filter(Boolean).length;
     $('.quest-count').textContent = done + ' / 3';
@@ -63,11 +66,29 @@
     openModal('ARCADE RESULTS / NEON HOOPS','That’s a wrap!', 'You scored '+state.score+' points and earned '+earned+' tokens. '+(state.score >= 100 ? 'Bonus tokens for breaking 100!' : 'Play again and beat your best.'), '<div class="game-play"><div class="game-score">+'+earned+' ◆</div><div class="game-clock">TOKENS ADDED TO YOUR WALLET · BEST '+state.best+'</div></div>', 'PLAY AGAIN', startGame);
   }
   $('#play-btn').addEventListener('click', startGame);
+  $('#best-score').textContent = state.best;
+  document.querySelectorAll('[data-prize]').forEach(btn => {
+    if (state.redeemed.includes(btn.dataset.prize)) { btn.textContent = 'REDEEMED'; btn.disabled = true; }
+  });
+  window.addEventListener('nexus:machine', event => {
+    const machine = event.detail || {};
+    if (machine.name === 'NEON HOOPS') { startGame(); return; }
+    if (machine.name === 'PRIZE DROP') {
+      if (!state.prizeDropClaimed) {
+        state.prizeDropClaimed = true; state.tokens += 15; updateWallet();
+        openModal('GRAND ATRIUM / PRIZE DROP', 'A little bonus!', 'You found a hidden 15-token bonus inside the Prize Drop machine. Come back another visit for more surprises.', '<div class="game-play"><div class="game-score">+15 ◆</div><div class="game-clock">BONUS SAVED TO YOUR PLAYER PROFILE</div></div>', 'KEEP EXPLORING');
+      } else {
+        openModal('GRAND ATRIUM / PRIZE DROP', 'Already collected!', 'You have claimed this visit’s bonus. Your reward is saved to this device.', '', 'GOT IT');
+      }
+      return;
+    }
+    openModal('GRAND ATRIUM / ARCADE CABINET', machine.name || 'Arcade machine', machine.desc || 'This cabinet is being prepared for its first game. Explore Neon Hoops in the meantime.', '<div class="game-play"><div class="game-score">COMING SOON</div><div class="game-clock">NEW ORIGINAL ARCADE EXPERIENCES ARE IN DEVELOPMENT</div></div>', 'BACK TO THE ATRIUM');
+  });
   document.querySelectorAll('[data-prize]').forEach(btn => btn.addEventListener('click', () => {
     const cost = Number(btn.dataset.cost), name = btn.dataset.prize;
     if(state.tokens < cost){ toast('You need '+(cost-state.tokens)+' more tokens for '+name+'.'); return; }
     openModal('PRIZE VAULT / REDEMPTION', 'Redeem '+name+'?', 'This will use '+cost+' tokens from your wallet. This prototype keeps rewards in your local session.', '<div class="game-play"><div class="game-score">'+cost+' ◆</div><div class="game-clock">AVAILABLE BALANCE: '+state.tokens+' TOKENS</div></div>', 'CONFIRM REDEMPTION', () => {
-      state.tokens -= cost; updateWallet(); closeModal(); toast(name+' redeemed! Enjoy your reward.'); btn.textContent = 'REDEEMED'; btn.disabled = true;
+      state.tokens -= cost; state.redeemed.push(name); updateWallet(); closeModal(); toast(name+' redeemed! Enjoy your reward.'); btn.textContent = 'REDEEMED'; btn.disabled = true;
     });
   }));
   updateWallet(); updateQuests();
