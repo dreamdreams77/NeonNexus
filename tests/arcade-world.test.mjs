@@ -436,3 +436,16 @@ test('redeemed prizes become physical gallery shelf displays and refresh immedia
  assert.match(game,/prizeView='haul'/);
  assert.match(game,/WALKABLE PRIZE GALLERY/);
 });
+
+test('prize gallery uses distinct detailed 3D collectible sculpts instead of generic placeholder blobs',()=>{
+ for(const id of ['sticker-pack','keychain','mystery-capsule','moon-moth','comet-bear','slime-kit','puzzle-cube','robot-kit','star-projector','mini-speaker','gaming-headset','retro-handheld','clay-figure','grand-prize'])assert.ok(world.includes("id==='"+id+"'"),'missing dedicated 3D model for '+id);
+ assert.match(world,/function makePrizeModel\(p,id\)/);
+ assert.match(world,/function artPlush\(p,id\)/);
+ assert.match(world,/new THREE\.LatheGeometry/);
+ assert.match(world,/new THREE\.TubeGeometry/);
+ assert.match(world,/new THREE\.ExtrudeGeometry/);
+ assert.match(world,/new THREE\.MeshPhysicalMaterial/);
+ assert.match(world,/prizeArt\.gold/);
+ assert.match(world,/artBox\(group,0,\.045,0/);
+ assert.match(world,/OWNED × /);
+});
