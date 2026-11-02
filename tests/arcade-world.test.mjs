@@ -8,9 +8,9 @@ const [html,game,world,immersive]=await Promise.all([
  readFile(new URL('../arcade-world.js',import.meta.url),'utf8'),
  readFile(new URL('../arcade-game3d.js',import.meta.url),'utf8')
 ]);
-const ids=['skeeball','airhockey','whack','target','memory','rhythm','meteor','racer','stack','pinball','claw','chef','sushi','mixology'];
+const ids=['skeeball','airhockey','whack','target','memory','rhythm','meteor','racer','stack','pinball','claw','chef','sushi','mixology','pulse','moto','moonquest'];
 
-test('arcade opens as one walkable RPG district with all fourteen cabinets and no game catalogue below it',()=>{
+test('arcade opens as one walkable RPG district with all seventeen mini-game cabinets and no game catalogue below it',()=>{
  for(const id of ids)assert.ok(world.includes("'"+id+"'"),'missing world cabinet '+id);
  assert.match(world,/\['NEON HOOPS','hoops'/);
  assert.match(html,/id="arcade-world"/);
@@ -99,7 +99,7 @@ test('Kitchen Rush runs as a dedicated Three.js claymation room with 3D ingredie
  
  for(const feature of ['PerspectiveCamera','Raycaster','KITCHEN TICKET','THE NEXUS KITCHEN','misses>=3','arcadeBest\.chef','ingredients'])assert.ok(immersive.includes(feature),'missing 3D gameplay feature '+feature);
 });
-test('three new cabinets have distinct kitchen, catching and timing gameplay loops',()=>{
+test('kitchen, catching and timing cabinets have distinct gameplay loops',()=>{
  for(const id of ['chef','sushi','mixology']){assert.ok(game.includes(id+':['));assert.ok(game.includes("case'"+id+"'"));}
  assert.match(game,/ticketTarget/);
  assert.match(game,/catchStreak/);
@@ -141,4 +141,32 @@ test('host, bartender and chef have distinct articulated claymation routines and
  assert.match(world,/staff\.propPivot\.rotation\.z=Math\.sin\(staff\.phase\*1\.7\)/);
  assert.match(world,/g\.userData\.steam/);
  assert.match(world,/staff\.lids\.forEach/);
+});
+
+test('three new original cabinets have distinct action-platformer, motorcycle and adventure gameplay',()=>{
+ for(const id of ['pulse','moto','moonquest']){assert.ok(game.includes(id+':['),'missing game definition '+id);assert.ok(game.includes("case'"+id+"':"),'missing game draw '+id);}
+ assert.match(game,/type:'platform'/);
+ assert.match(game,/type:'boss'/);
+ assert.match(game,/p\.energy--/);
+ assert.match(game,/type==='ramp'/);
+ assert.match(game,/type==='gap'/);
+ assert.match(game,/type==='barrel'/);
+ assert.match(game,/p\.shards>=3/);
+ assert.match(game,/type==='shard'/);
+ assert.match(game,/p\.swing>0/);
+ assert.match(world,/\['PULSE RUNNER','pulse','ACTION','16'/);
+ assert.match(world,/\['BARRELSTORM MOTO','moto','MOTORCROSS','17'/);
+ assert.match(world,/\['MOONSHARD LEGEND','moonquest','ADVENTURE','18'/);
+ assert.match(world,/const side=i<9\?-1:1,slot=i%9/);
+});
+test('restaurant NPCs change expression and react to order creation, readiness and delivery',()=>{
+ assert.match(world,/const cheeks=\[sphere/);
+ assert.match(world,/const brows=\[sphere/);
+ assert.match(world,/staff\.smile\.scale\.y=reacting\?1\.5/);
+ assert.match(world,/nexus:order-created/);
+ assert.match(world,/nexus:order-ready/);
+ assert.match(world,/nexus:order-served/);
+ assert.match(game,/new CustomEvent\('nexus:order-created'/);
+ assert.match(game,/new CustomEvent\('nexus:order-ready'/);
+ assert.match(game,/new CustomEvent\('nexus:order-served'/);
 });
