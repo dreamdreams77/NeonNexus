@@ -291,7 +291,7 @@ if(mount){
  makeLeg(-1);makeLeg(1);
  const keys=new Set(),touch={x:0,y:0,targetX:0,targetY:0},motion={x:0,z:0};let nearest=null,activeService=null,walk=0,nextBlink=2.4,blinkUntil=0,gesture='idle',gestureStarted=0,gestureUntil=0;
  const prompt=document.querySelector('#arcade-world-prompt'),interact=document.querySelector('#arcade-interact'),pad=document.querySelector('#arcade-touch-pad'),knob=document.querySelector('#arcade-joystick');
- const discovery=document.querySelector('#cabinet-discovery'),discoveryTitle=document.querySelector('#discovery-title'),discoveryGenre=document.querySelector('#discovery-genre'),discoveryDescription=document.querySelector('#discovery-description'),discoveryChallenge=document.querySelector('#discovery-challenge'),discoveryControls=document.querySelector('#discovery-controls');
+ const discovery=document.querySelector('#cabinet-discovery'),discoveryTitle=document.querySelector('#discovery-title'),discoveryGenre=document.querySelector('#discovery-genre'),discoveryDescription=document.querySelector('#discovery-description'),discoveryChallenge=document.querySelector('#discovery-challenge'),discoveryControls=document.querySelector('#discovery-controls'),discoveryAction=document.querySelector('#discovery-action');
  function triggerGesture(type,duration=1.35){gesture=type;gestureStarted=clock.elapsedTime;gestureUntil=gestureStarted+duration;}
  function useCabinet(){if(!nearest)return;triggerGesture('excited',1.1);window.dispatchEvent(new CustomEvent('nexus:arcade-play',{detail:{gameId:nearest.userData.id}}));}
  function useService(){if(!activeService)return;triggerGesture('wave',1.55);window.dispatchEvent(new CustomEvent('nexus:service-open',{detail:{service:activeService.type,table:activeService.table||null}}));}
@@ -341,7 +341,7 @@ if(mount){
   else{prompt.textContent='EXPLORE THE DISTRICT · APPROACH A CABINET OR SERVICE';interact.hidden=true;}
   if(discovered&&!activeService){
    const data=gameGuide[discovered.userData.id]||{label:discovered.userData.genre,description:'Step up and discover this arcade challenge.',challenge:'Skill · score · high-score chase',controls:'Follow the on-screen instructions'};
-   discovery.hidden=false;discoveryTitle.textContent=discovered.userData.name;discoveryGenre.textContent=data.label;discoveryDescription.textContent=data.description;discoveryChallenge.textContent=data.challenge;discoveryControls.textContent=data.controls;
+   discovery.hidden=false;discoveryTitle.textContent=discovered.userData.name;discoveryGenre.textContent=data.label;discoveryDescription.textContent=data.description;discoveryChallenge.textContent=data.challenge;discoveryControls.textContent=data.controls;discoveryAction.textContent=nearest&&nearest===discovered?'E / TAP TO START':'WALK CLOSER TO UNLOCK PLAY';
   }else discovery.hidden=true;
   cabinets.forEach((c,i)=>{const pulse=.75+Math.sin(t*2.1+i*.8)*.22;c.userData.lamp.intensity=1.4+pulse*1.1;c.position.y=Math.sin(t*1.3+i)*.012;c.userData.discoveryRing.visible=!!discovered&&discovered===c&&!activeService;c.userData.discoveryRing.material.opacity=.35+Math.sin(t*3.2+i)*.16;});
   const motesAttr=moteGeo.attributes.position;for(let i=0;i<90;i++){const y=motesAttr.getY(i)+dt*(.025+(i%4)*.012);motesAttr.setY(i,y>5?0.45:y);}motesAttr.needsUpdate=true;
