@@ -9,6 +9,7 @@ const [html,game,world,immersive,css]=await Promise.all([
  readFile(new URL('../arcade-game3d.js',import.meta.url),'utf8'),
  readFile(new URL('../arcade.css',import.meta.url),'utf8')
 ]);
+const movementSrc=await readFile(new URL('../movement.js',import.meta.url),'utf8');
 const ids=['skeeball','airhockey','whack','target','memory','rhythm','meteor','racer','stack','pinball','claw','chef','sushi','mixology','pulse','moto','moonquest','ringtoss','gemdig'];
 
 test('arcade opens as one walkable RPG district with all nineteen mini-game cabinets and no game catalogue below it',()=>{
@@ -214,7 +215,7 @@ test('computer players can navigate pointer-led games with arrows and activate w
 test('mobile arcade movement eases joystick input and accelerates smoothly instead of snapping',()=>{
  assert.match(world,/targetX:0,targetY:0/);
  assert.match(world,/Math\.exp\(-dt\*22\)/);
- assert.match(world,/targetX=x\*4\.65,targetZ=z\*4\.65,response=1-Math\.exp\(-dt\*\(len>\.06\?10\.5:7\.8\)\)/);
+ assert.match(movementSrc,/1-Math\.exp\(-dt\*\(len>p\.deadzone\?p\.accel:p\.decel\)\)/);
  assert.match(world,/touch\.targetX=touch\.targetY=0/);
  assert.match(world,/Math\.min\(devicePixelRatio\|\|1,mobileDevice\?1\.2:1\.5/);
  assert.match(world,/antialias:!mobileDevice/);
@@ -628,8 +629,8 @@ test('walk-up air hockey and billiards have a clear physical gap and grounded ta
 });
 
 test('player movement uses eased acceleration, soft stopping and a smoother camera follow',()=>{
- assert.match(world,/targetX=x\*4\.65,targetZ=z\*4\.65/);
- assert.match(world,/len>\.06\?10\.5:7\.8/);
+ assert.match(world,/stepVelocity\(motion,x,z,dt\)/);
+ assert.match(movementSrc,/speed:4\.65,accel:10\.5,decel:7\.8/);
  assert.match(world,/camera\.position\.lerp\(cameraTarget,1-Math\.exp\(-4\.8\*dt\)\)/);
  assert.match(world,/const stride=Math\.min\(1,speed\/4\.65\)/);
 });
@@ -671,3 +672,12 @@ test('rewards scale with cabinet difficulty and personal bests; air hockey has a
  assert.match(html,/id="level-select"/);
  assert.match(game,/cpuLevel\(\)/);
 });
+
+test('lobby is built from the painted art layer: parquet, carpet, walls, neon, posters, cabinet art, jukebox',async()=>{
+ const art=await readFile(new URL('../lobby-art.js',import.meta.url),'utf8');
+ for(const fn of ['paintParquet','paintCarpet','paintWall','paintNeon','paintMarquee','paintCabinetBody','paintPoster','paintJukebox','paintRug','paintMat'])assert.match(art,new RegExp('export function '+fn));
+ for(const call of ['ART.paintParquet()','ART.paintCarpet(','ART.paintWall()','ART.paintNeon(\'NEON NEXUS\'','ART.paintMarquee(','ART.paintCabinetBody(','ART.paintPoster(','ART.paintJukebox()','ART.paintRug(','ART.paintMat()'])assert.ok(world.includes(call),call);
+ assert.match(world,/function addInk/);
+ for(const id of ids.concat('hoops','billiards'))if(id!=='billiards')assert.match(art,new RegExp('\\b'+id+'\\(x,cx,cy,s,r\\)'),'motif '+id);
+});
+test('debug camera hook is opt-in only',()=>{assert.match(world,/location\.search\.includes\('debug'\)/);});
