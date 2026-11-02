@@ -271,7 +271,7 @@ test('direct cabinet screen clicks obey the same 4.1-unit interaction range as p
  assert.doesNotMatch(world,/player\.position\.distanceTo\(o\.position\)<5\.8/);
 });
 
-test('animated preview scenes map one-to-one to the eighteen registered cabinet game IDs',()=>{
+test('animated preview scenes map one-to-one to the twenty registered cabinet game IDs',()=>{
  const definitions=world.match(/const definitions=\[([\s\S]*?)\n \];/);
  assert.ok(definitions,'cabinet definitions should be present');
  const definitionIds=[...definitions[1].matchAll(/\['[^']+','([^']+)'/g)].map(m=>m[1]).sort();
@@ -279,8 +279,10 @@ test('animated preview scenes map one-to-one to the eighteen registered cabinet 
  assert.ok(renderer,'preview renderer should be present');
  const previewIds=[...renderer[1].matchAll(/case'([^']+)':/g)].map(m=>m[1]).sort();
  assert.deepEqual(previewIds,definitionIds,'each registered cabinet must have exactly one preview scene');
- assert.equal(new Set(previewIds).size,18,'preview IDs must not be duplicated');
+ assert.equal(new Set(previewIds).size,20,'preview IDs must not be duplicated');
 });
+test('new carnival cabinets have dedicated game logic, UI and 3D preview scenes',()=>{for(const id of ['ringtoss','gemdig']){assert.ok(game.includes(id+':['));assert.ok(world.includes("['"+(id==='ringtoss'?'COMET RING TOSS':'MOON GEM DIG')+"','"+id+"'"));assert.match(game,new RegExp("case'"+id+"':"));}});
+test('walk-up jukebox, weighted lucky wheel, expanded drink menu and RPG visitors are wired',()=>{for(const item of ['Ginger Beer','Wine','Gin and Tonic','jukebox','wheel','npc','PLAY · 5 TOKENS','SPIN · 25 TOKENS','1,000 tickets'])assert.ok(game.includes(item)||world.includes(item),'missing '+item);assert.match(world,/visitorProfiles/);assert.match(world,/services\.push\(\{type:'npc'/);});
 test('cabinet previews stop while a game or service modal is open and respect reduced-motion settings',()=>{
  assert.match(world,/const gameOverlay=document\.querySelector\('#overlay'\),serviceModal=document\.querySelector\('#service-modal'\),reduceMotion=matchMedia\('\(prefers-reduced-motion: reduce\)'\)\.matches/);
  assert.match(world,/previewEnabled=!reduceMotion&&document\.visibilityState==='visible'/);
