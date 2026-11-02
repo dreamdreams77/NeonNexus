@@ -14,7 +14,7 @@ stack:['CLAY STACK','Drop each moving slab onto the tower. Misalignment trims th
 pinball:['STARLIGHT PINBALL','Launch with SPACE. Hold ← and → to flip. Keep the ball alive; you have three balls.','SPACE · ← → / touch flippers','CLASSIC'],
 claw:['LUCKY CLAW','The claw swings above the prize pit. Tap to lower it and try to grab a plush.','Tap / SPACE to grab','PRIZE SKILL']
 };
-let game='',running=false,score=0,time=40,last=0,raf=0,objects=[],p={},mouse={x:450,y:400},keys={},audio=null,muted=false,sequence=[],seqPos=0,seqPhase='show',seqClock=0,combo=0,round=0,particles=[];
+let game='',running=false,score=0,time=40,last=0,raf=0,objects=[],p={},mouse={x:450,y:400},swipeStartX=0,keys={},audio=null,muted=false,sequence=[],seqPos=0,seqPhase='show',seqClock=0,combo=0,round=0,particles=[];
 const rand=(a,b)=>a+Math.random()*(b-a),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function sound(freq=440,dur=.08,type='sine',vol=.035){if(muted)return;try{audio=audio||new(window.AudioContext||window.webkitAudioContext)();if(audio.state==='suspended')audio.resume();const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.setValueAtTime(freq,audio.currentTime);g.gain.setValueAtTime(vol,audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+dur);o.connect(g);g.connect(audio.destination);o.start();o.stop(audio.currentTime+dur);}catch{}}
 function scoreBy(n){score+=n;$('#score').textContent=score;popText('+'+n,mouse.x,mouse.y,'#ffe08a');}
@@ -78,19 +78,19 @@ function pointer(e){const r=canvas.getBoundingClientRect();mouse.x=(e.clientX-r.
 function hitRhythm(lane){const i=objects.findIndex(o=>o.lane===lane&&Math.abs(o.y-390)<55);if(i>=0){objects.splice(i,1);combo++;scoreBy(10+Math.min(30,combo*2));sound(360+combo*18,.08,'triangle');}else{combo=0;sound(100,.05,'square');}}
 function dropStack(){if(!running)return;if(p.blocks===0){p.blocks=1;p.blockX=p.x;p.width=170;scoreBy(5);return;}const left=Math.max(p.blockX-p.width/2,p.x-p.width/2),right=Math.min(p.blockX+p.width/2,p.x+p.width/2),nw=right-left;if(nw<20){finish();return;}p.blockX=(left+right)/2;p.width=nw;p.blocks++;scoreBy(Math.max(5,Math.round(nw/7)));sound(300+p.blocks*12,.07,'triangle');addParticles(p.blockX,420-p.blocks*27,colors[p.blocks%4],6);if(p.blocks>=14)finish(true);}
 function grabClaw(){if(!running||p.grabbing)return;p.grabbing=true;p.clawY=125;sound(220,.08);}
-function onDown(e){pointer(e);if(!running)return;sound(480,.025);
+function onDown(e){pointer(e);if(!running)return;swipeStartX=mouse.x;sound(480,.025);
 if(game==='skeeball'&&!p.rolling){p.drag=true;p.dragStartY=mouse.y;p.dragX=mouse.x;}
 if(game==='whack'){const i=Math.round((mouse.x-230)/220)+Math.floor((mouse.y-180)/112)*3;const n=objects.findIndex(o=>o.id===i);if(n>=0){objects.splice(n,1);scoreBy(10);sound(560,.07);addParticles(mouse.x,mouse.y,'#9ecb9b',5);}else{p.miss++;sound(120,.07);if(p.miss>=3)finish();}}
 if(game==='target'){const i=objects.findIndex(o=>Math.hypot(o.x-mouse.x,o.y-mouse.y)<o.r+8);if(i>=0){const o=objects.splice(i,1)[0];scoreBy((o.gold?60:Math.round(42-o.r)));sound(o.gold?900:500,.09,'triangle');addParticles(o.x,o.y,o.gold?'#f4d27a':'#e7a1b5');}}
 if(game==='memory'&&seqPhase==='input'){const i=(mouse.x>450?1:0)+(mouse.y>300?2:0);if(i===sequence[seqPos]){seqPos++;sound(360+i*120,.12,'sine');if(seqPos>=sequence.length){scoreBy(sequence.length*15);round++;seqClock=.55;seqPhase='pause';setTimeout(()=>{if(running){nextSequence();draw();}},550);}}else{sound(100,.2,'sawtooth');finish();}}
 if(game==='rhythm'){const lane=clamp(Math.round((mouse.x-200)/165),0,3);hitRhythm(lane);}
 if(game==='stack')dropStack();
-if(game==='pinball'&&!p.launched){p.launched=true;p.vx=rand(-65,65);p.vy=-460;sound(180,.15,'sawtooth');}
+if(game==='pinball'&&!p.launched){p.launched=true;p.vx=rand(-65,65);p.vy=-460;sound(180,.15,'sawtooth');}else if(game==='pinball'&&mouse.y>400){p.vy=-Math.abs(p.vy)-330;p.vx+=(mouse.x<450?-85:85);sound(280,.06);}
 if(game==='claw')grabClaw();
 if(game==='airhockey'){mouse.y=clamp(mouse.y,300,430);}
 }
 function onMove(e){pointer(e);if(game==='meteor'&&running)p.x=clamp(mouse.x,190,710);if(game==='airhockey') {mouse.x=clamp(mouse.x,160,740);mouse.y=clamp(mouse.y,295,430);}if(game==='skeeball'&&p.drag){p.ballX=clamp(mouse.x,150,750);p.ballY=415;}}
-function onUp(e){pointer(e);if(game==='skeeball'&&p.drag&&running){const power=clamp((mouse.y-p.dragStartY)*4,260,680);p.vx=(mouse.x-p.dragX)*2.1;p.vy=-power;p.rolling=true;p.drag=false;sound(190,.1,'triangle');}}
+function onUp(e){pointer(e);if(game==='racer'&&running&&Math.abs(mouse.x-swipeStartX)>25)p.lane=clamp(p.lane+(mouse.x<swipeStartX?1:-1),0,2);if(game==='skeeball'&&p.drag&&running){const power=clamp((mouse.y-p.dragStartY)*4,260,680);p.vx=(mouse.x-p.dragX)*2.1;p.vy=-power;p.rolling=true;p.drag=false;sound(190,.1,'triangle');}}
 function keydown(e){keys[e.key]=true;if(!running)return;if(e.key===' '){e.preventDefault();if(game==='stack')dropStack();if(game==='pinball'&&!p.launched){p.launched=true;p.vy=-460;p.vx=35;sound(180,.15,'sawtooth');}if(game==='claw')grabClaw();}
 if(game==='racer'&&(e.key==='ArrowLeft'||e.key.toLowerCase()==='a'))p.lane=Math.max(0,p.lane-1);
 if(game==='racer'&&(e.key==='ArrowRight'||e.key.toLowerCase()==='d'))p.lane=Math.min(2,p.lane+1);
