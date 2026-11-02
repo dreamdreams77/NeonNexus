@@ -33,13 +33,13 @@ if(mount){
   g.computeVertexNormals();return new THREE.Mesh(g,clayMat(color));
  }
  // Floor and walls are a tiny physical theatre, not a flat gradient.
- const floor=box(25,.5,39,0,-.34,-3,clayMat(0x54404b),scene,.22);
- for(let z=-20;z<=15;z+=2){for(let x=-11;x<=11;x+=2){const tile=box(1.92,.035,1.92,x,-.055,z,mat(((x+z)/2)%2===0?0x725363:0x604756,.96),scene,.035);tile.receiveShadow=true;}}
- box(.6,6,39,-12.2,2.7,-3,clayMat(0x463447),scene,.18);box(.6,6,39,12.2,2.7,-3,clayMat(0x463447),scene,.18);
- box(24,.5,.6,0,5.7,-21,clayMat(0x594052),scene,.18);
+ const floor=box(25,.5,50,0,-.34,-1,clayMat(0x54404b),scene,.22);
+ for(let z=-25;z<=23;z+=2){for(let x=-11;x<=11;x+=2){const tile=box(1.92,.035,1.92,x,-.055,z,mat(((x+z)/2)%2===0?0x725363:0x604756,.96),scene,.035);tile.receiveShadow=true;}}
+ box(.6,6,50,-12.2,2.7,-1,clayMat(0x463447),scene,.18);box(.6,6,50,12.2,2.7,-1,clayMat(0x463447),scene,.18);
+ box(24,.5,.6,0,5.7,-26,clayMat(0x594052),scene,.18);
  // Repeated timber-like ceiling ribs and hand-painted wall panels.
- for(let z=-19;z<=13;z+=4){const rib=box(24,.22,.28,0,5.3,z,clayMat(0x9b6b69),scene,.1);rib.rotation.z=Math.sin(z)*.006;}
- const sign=box(8,1.25,.35,0,4.45,-20.5,clayMat(0x472f49),scene,.18);
+ for(let z=-24;z<=20;z+=4){const rib=box(24,.22,.28,0,5.3,z,clayMat(0x9b6b69),scene,.1);rib.rotation.z=Math.sin(z)*.006;}
+ const sign=box(8,1.25,.35,0,4.45,-25.5,clayMat(0x472f49),scene,.18);
  const signMat=mat(0xffc47f,.35,.05,0xff9d62,1.2);box(7.5,.09,.12,0,5.03,-20.25,signMat);
  function textTexture(title,sub,color){
   const c=document.createElement('canvas');c.width=512;c.height=256;const x=c.getContext('2d');
@@ -56,7 +56,7 @@ if(mount){
   ['BUBBLE BLASTER','target','MARKSMAN','05',0x9f91c9],['PRISM SEQUENCE','memory','MEMORY','06',0xd58eaa],
   ['BEAT FOUNDRY','rhythm','RHYTHM','07',0xd89b69],['METEOR MAYHEM','meteor','SURVIVAL','08',0xc77d70],
   ['TURBO TUNNELS','racer','RACING','09',0x72a9ba],['CLAY STACK','stack','TIMING','10',0xb6a16f],
-  ['STARLIGHT PINBALL','pinball','CLASSIC','11',0x9e80bb],['LUCKY CLAW','claw','PRIZES','12',0xd58d9a]
+  ['STARLIGHT PINBALL','pinball','CLASSIC','11',0x9e80bb],['LUCKY CLAW','claw','PRIZES','12',0xd58d9a],\n  ['KITCHEN RUSH','chef','KITCHEN','13',0xd58d9a],['SUSHI CATCH','sushi','PRECISION','14',0x86b9a7],['MIXOLOGY MASTER','mixology','TIMING','15',0xc29bd1]
  ];
  const accents=[0xffa46f,0x77d0c3,0x82c8ed,0xe9bd80,0xb5a0ed,0xef9cbd,0xffc77d,0xed8b78,0x7fd1db,0xd7bd83,0xc3a1e8,0xf0a0a8];
  const cabinets=[];
@@ -86,13 +86,13 @@ if(mount){
   // Hand-painted floor decal, small and slightly rotated.
   const decal=box(1.9,.025,1.1,side*5.2,.005,z+ (side===-1?1.2:-1.2),mat(0x9b7180,.95),scene,.2);decal.rotation.y=(i%2)*.035;
  }
- definitions.forEach((d,i)=>{const side=i<6?-1:1,slot=i%6;makeCabinet(d,i,side,-14+slot*4.5);});
+ definitions.forEach((d,i)=>{const side=i<8?-1:1,slot=i%8;makeCabinet(d,i,side,-16+slot*4.5);});
  // Plush prize mound and a little ticket counter make the far wall a destination.
- const prizeGroup=new THREE.Group();prizeGroup.position.set(0,0,-18.4);scene.add(prizeGroup);
+ const prizeGroup=new THREE.Group();prizeGroup.position.set(0,0,-23.4);scene.add(prizeGroup);
  box(4.3,1.4,1.4,0,.7,0,clayMat(0x795064),prizeGroup,.18);box(4.5,.12,1.5,0,1.46,0,mat(0xffc77e,.4,0,0xff9e5b,.8),prizeGroup,.06);
  for(let i=0;i<7;i++){const x=-1.55+(i%4)*1.02,y=1.9+Math.floor(i/4)*.2;const plush=sphere(.36,x,y,.12,clayMat([0xd58f94,0x8dc4ae,0x9d94cb,0xe6b66e][i%4]),prizeGroup,1,.9,.82);sphere(.08,x-.12,y+.05,.42,mat(0x32283b),prizeGroup);sphere(.08,x+.12,y+.05,.42,mat(0x32283b),prizeGroup);}
  // Hand-sculpted host character with eyes, cheeks and a gentle idle sway.
- const host=new THREE.Group();host.position.set(0,0,-16.3);scene.add(host);
+ const host=new THREE.Group();host.position.set(0,0,-21.3);scene.add(host);
  const hostBody=sphere(.42,0,.92,0,clayMat(0xd98e82),host,.85,1.2,.72);
  sphere(.36,0,1.62,.02,clayMat(0xeac09e),host,1,.95,.86);
  for(const x of [-.13,.13])sphere(.045,x,1.69,.31,mat(0x33283b),host);
@@ -142,7 +142,7 @@ if(mount){
  function update(dt,t){
   let x=((keys.has('d')||keys.has('arrowright'))?1:0)-((keys.has('a')||keys.has('arrowleft'))?1:0)+touch.x;
   let z=((keys.has('s')||keys.has('arrowdown'))?1:0)-((keys.has('w')||keys.has('arrowup'))?1:0)+touch.y;
-  const len=Math.hypot(x,z);if(len>.08){x/=Math.max(1,len);z/=Math.max(1,len);player.position.x=clamp(player.position.x+x*5.1*dt,-9.7,9.7);player.position.z=clamp(player.position.z+z*5.1*dt,-18.5,15);player.rotation.y=Math.atan2(x,z);walk+=dt*9;hoodie.position.y=1.04+Math.abs(Math.sin(walk))*.045;player.children.slice(-2).forEach((leg,i)=>leg.rotation.x=Math.sin(walk+i*Math.PI)*.24);}else{hoodie.position.y=1.04+Math.sin(t*2.1)*.018;player.children.slice(-2).forEach((leg)=>leg.rotation.x*=.86);}
+  const len=Math.hypot(x,z);if(len>.08){x/=Math.max(1,len);z/=Math.max(1,len);player.position.x=clamp(player.position.x+x*5.1*dt,-9.7,9.7);player.position.z=clamp(player.position.z+z*5.1*dt,-23.5,22);player.rotation.y=Math.atan2(x,z);walk+=dt*9;hoodie.position.y=1.04+Math.abs(Math.sin(walk))*.045;player.children.slice(-2).forEach((leg,i)=>leg.rotation.x=Math.sin(walk+i*Math.PI)*.24);}else{hoodie.position.y=1.04+Math.sin(t*2.1)*.018;player.children.slice(-2).forEach((leg)=>leg.rotation.x*=.86);}
   camera.position.lerp(new THREE.Vector3(player.position.x*.72,5.5,player.position.z+8.6),1-Math.exp(-3.8*dt));camera.lookAt(player.position.x*.72,1.45,player.position.z-2.4);
   nearest=null;let dmin=4.1;for(const c of cabinets){const d=player.position.distanceTo(c.position);if(d<dmin){dmin=d;nearest=c;}}
   if(nearest){prompt.textContent='E / TAP TO PLAY  ·  '+nearest.userData.name;interact.hidden=false;interact.textContent='PLAY '+nearest.userData.name+' ↗';}else{prompt.textContent='WALK UP TO ANY CABINET TO PLAY';interact.hidden=true;}
