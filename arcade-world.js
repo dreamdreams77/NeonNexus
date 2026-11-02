@@ -113,6 +113,10 @@ if(mount){
  for(let i=0;i<3;i++){cyl(.08,.08,.45,7.1+i*1.7,4.5,-1.7,brass,dining);sphere(.32,7.1+i*1.7,4.22,-1.7,mat(0xffca85,.4,0,0xffa64f,.8),dining,1,.28,1);}
  const barSign=box(3.6,.7,.18,8.8,4.35,-2.4,clayMat(0x513749),dining,.12);
  const barTexture=textTexture('THE GLOW BAR','KITCHEN · JUICE · MOCKTAILS','#ffc88a');const barPlane=new THREE.Mesh(new THREE.PlaneGeometry(3.3,.52),new THREE.MeshBasicMaterial({map:barTexture}));barPlane.position.set(8.8,4.35,-2.29);dining.add(barPlane);
+ // Tiny clay staff animate behind the open counter.
+ const serviceStaff=[];
+ function makeStaff(x,z,shirt,hat){const g=new THREE.Group();g.position.set(x,0,z);dining.add(g);sphere(.31,0,1.55,0,clayMat(0xe7b997),g,.95,1,.88);sphere(.33,0,1.27,0,clayMat(shirt),g,.95,1.15,.8);for(const ex of [-.1,.1])sphere(.035,ex,1.6,.27,mat(0x302638),g);if(hat){cyl(.2,.24,.12,0,1.91,0,cream,g);sphere(.2,0,2.02,0,cream,g,1,.7,1);}else sphere(.34,0,1.83,-.03,clayMat(0x574052),g,1,.34,.9);serviceStaff.push(g);}
+ makeStaff(8.7,-2.9,0x8bb8a2,false);makeStaff(10.4,-5.2,0xd58b79,true);
  // Host podium and a friendly reservation bell.
  box(1.45,1.2,.85,1.4,.62,10.2,clayMat(0x98605e),dining,.15);box(1.52,.12,.92,1.4,1.26,10.2,cream,dining,.08);cyl(.09,.12,.12,1.4,1.4,10.2,brass,dining);
  const hostSign=box(2.4,.55,.16,1.4,2.25,10.15,clayMat(0x594052),dining,.1);const hostTex=textTexture('HOST','PLEASE WAIT TO BE SEATED','#ffe0ae');const hostPlane=new THREE.Mesh(new THREE.PlaneGeometry(2.2,.42),new THREE.MeshBasicMaterial({map:hostTex}));hostPlane.position.set(1.4,2.25,10.25);dining.add(hostPlane);
@@ -149,7 +153,7 @@ if(mount){
   nearest=null;let dmin=4.1;for(const c of cabinets){const d=player.position.distanceTo(c.position);if(d<dmin){dmin=d;nearest=c;}}
   if(nearest){prompt.textContent='E / TAP TO PLAY  ·  '+nearest.userData.name;interact.hidden=false;interact.textContent='PLAY '+nearest.userData.name+' ↗';}else{prompt.textContent='WALK UP TO ANY CABINET TO PLAY';interact.hidden=true;}
   cabinets.forEach((c,i)=>{const pulse=.75+Math.sin(t*2.1+i*.8)*.22;c.userData.lamp.intensity=1.4+pulse*1.1;c.position.y=Math.sin(t*1.3+i)*.012;});
-  host.rotation.z=Math.sin(t*1.2)*.035;host.position.y=Math.sin(t*2)*.025;pink.intensity=30+Math.sin(t*1.4)*5;cyan.intensity=28+Math.cos(t*1.1)*5;
+  host.rotation.z=Math.sin(t*1.2)*.035;host.position.y=Math.sin(t*2)*.025;serviceStaff.forEach((staff,i)=>{staff.rotation.z=Math.sin(t*1.3+i*1.7)*.025;staff.position.y=Math.sin(t*2.4+i)*.018;});pink.intensity=30+Math.sin(t*1.4)*5;cyan.intensity=28+Math.cos(t*1.1)*5;
  }
  function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.04),t=clock.elapsedTime;update(dt,t);renderer.render(scene,camera);}
  animate();
