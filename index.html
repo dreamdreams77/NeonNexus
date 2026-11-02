@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#080b18">
+  <meta name="description" content="Neon Nexus — a living arcade resort. Play, explore, compete and make the night yours.">
+  <title>Neon Nexus — The night is yours</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="ambient ambient-a"></div><div class="ambient ambient-b"></div>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="Neon Nexus home"><span class="brand-mark">N<span>✦</span></span><span>NEON<span class="brand-light">NEXUS</span></span></a>
+    <nav class="desktop-nav" aria-label="Main navigation">
+      <a class="active" href="#districts">Explore</a><a href="#arcade">Arcade</a><a href="#prizes">Prize vault</a>
+    </nav>
+    <div class="top-actions"><div class="wallet"><span class="coin">◆</span><strong id="token-count">250</strong><span class="wallet-label">TOKENS</span></div><button class="profile" id="profile-btn" aria-label="Player profile">A</button></div>
+  </header>
+
+  <main>
+    <section class="welcome" id="welcome">
+      <div class="welcome-copy">
+        <div class="eyebrow"><span class="pulse"></span> YOUR ALL-ACCESS PASS IS READY</div>
+        <h1>THE NIGHT<br>IS <span class="gradient-text">YOURS.</span></h1>
+        <p class="hero-desc">One world. A thousand ways to play. Step into a living arcade resort built around your next great story.</p>
+        <div class="hero-actions"><button class="primary-btn" id="enter-btn">ENTER THE NEXUS <span>↗</span></button><a class="text-link" href="#districts">Take a look around <span>↓</span></a></div>
+        <div class="hero-stats"><div><strong>06</strong><span>WORLDS TO EXPLORE</span></div><i></i><div><strong>∞</strong><span>WAYS TO PLAY</span></div><i></i><div><strong>01</strong><span>UNFORGETTABLE NIGHT</span></div></div>
+      </div>
+      <div class="hero-art" aria-label="Abstract neon resort illustration">
+        <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+        <div class="hero-sun"></div><div class="hero-building"><div class="building-top">NEXUS</div><div class="building-lines"></div><div class="building-door"></div></div>
+        <div class="hero-floor"></div><div class="floating-tag tag-left">PLAY YOUR WAY <b>✦</b></div><div class="floating-tag tag-right"><b>✧</b> LIVE THE MOMENT</div>
+        <div class="hero-caption"><span>01 / 06</span><span>THE GRAND ATRIUM</span></div>
+      </div>
+    </section>
+
+    <section class="section intro-section" id="districts">
+      <div class="section-heading"><div><div class="eyebrow">FIND YOUR NEXT OBSESSION</div><h2>Six districts.<br><span class="muted">One endless night.</span></h2></div><p>From high-speed thrills to laid-back hangouts, every corner has something waiting for you.</p></div>
+      <div class="district-grid">
+        <button class="district-card atrium" data-district="atrium"><span class="district-number">01 / HOME BASE</span><span class="district-icon">✦</span><div><h3>Grand Atrium</h3><p>Your space. Your style. Your people.</p><span class="explore-label">EXPLORE DISTRICT ↗</span></div></button>
+        <button class="district-card combat" data-district="combat"><span class="district-number">02 / ACTION</span><span class="district-icon">⌖</span><div><h3>Combat District</h3><p>Step into the mission. Make your mark.</p><span class="explore-label">EXPLORE DISTRICT ↗</span></div></button>
+        <button class="district-card velocity" data-district="velocity"><span class="district-number">03 / SPEED</span><span class="district-icon">➤</span><div><h3>Velocity Boulevard</h3><p>Find the line. Own the track.</p><span class="explore-label">EXPLORE DISTRICT ↗</span></div></button>
+        <button class="district-card arcade" data-district="arcade"><span class="district-number">04 / CLASSICS</span><span class="district-icon">▦</span><div><h3>Classic Arcade</h3><p>One more round. One more high score.</p><span class="explore-label">EXPLORE DISTRICT ↗</span></div></button>
+        <button class="district-card social" data-district="social"><span class="district-number">05 / UNWIND</span><span class="district-icon">◒</span><div><h3>Food & Social</h3><p>Good food. Better company.</p><span class="explore-label">EXPLORE DISTRICT ↗</span></div></button>
+        <button class="district-card vault" data-district="vault"><span class="district-number">06 / REWARDS</span><span class="district-icon">◇</span><div><h3>The Prize Vault</h3><p>Turn your wins into something real.</p><span class="explore-label">EXPLORE DISTRICT ↗</span></div></button>
+      </div>
+    </section>
+
+    <section class="feature-band" id="arcade">
+      <div class="feature-copy"><div class="eyebrow">QUICK PLAY / NO QUEUE</div><h2>Got a minute?<br><span class="gradient-text">Make it count.</span></h2><p>Take a shot at Neon Hoops. Sink as many baskets as you can before the buzzer and earn tokens for the vault.</p><button class="primary-btn" id="play-btn">PLAY NEON HOOPS <span>↗</span></button></div>
+      <div class="game-preview"><div class="game-top"><span>NEON HOOPS</span><span class="live-dot">● LIVE</span></div><div class="hoop-scene"><div class="score-glow">+250 <small>HIGH SCORE</small></div><div class="hoop-backboard"></div><div class="hoop-ring"></div><div class="hoop-net"></div><div class="basketball">●</div><div class="court-line"></div></div><div class="game-bottom"><span>30 SEC CHALLENGE</span><span>BEST: <b id="best-score">0</b></span></div></div>
+    </section>
+
+    <section class="lower-grid">
+      <article class="panel quest-panel"><div class="panel-head"><div><div class="eyebrow">YOUR NEXT MOVE</div><h3>Tonight's quests</h3></div><span class="quest-count">0 / 3</span></div><div class="quest-list" id="quest-list"><div class="quest"><span class="quest-symbol">◎</span><div><b>First steps</b><small>Enter the Grand Atrium</small></div><span class="quest-reward">+25 ◆</span></div><div class="quest"><span class="quest-symbol">▦</span><div><b>Game on</b><small>Play one round of Neon Hoops</small></div><span class="quest-reward">+50 ◆</span></div><div class="quest"><span class="quest-symbol">◇</span><div><b>Treasure hunter</b><small>Visit the Prize Vault</small></div><span class="quest-reward">+25 ◆</span></div></div></article>
+      <article class="panel vault-panel" id="prizes"><div class="panel-head"><div><div class="eyebrow">A LITTLE SOMETHING FOR YOU</div><h3>Prize vault preview</h3></div><span class="vault-tag">OPEN</span></div><div class="prize-items"><div class="prize-item"><div class="prize-art prize-one">✧</div><b>Holo Badge</b><small>150 tokens</small><button data-prize="Holo Badge" data-cost="150">REDEEM</button></div><div class="prize-item"><div class="prize-art prize-two">◈</div><b>Neon Shades</b><small>300 tokens</small><button data-prize="Neon Shades" data-cost="300">REDEEM</button></div><div class="prize-item"><div class="prize-art prize-three">✦</div><b>VIP Pass</b><small>500 tokens</small><button data-prize="VIP Pass" data-cost="500">REDEEM</button></div></div></article>
+    </section>
+    <footer><a class="brand" href="#"><span class="brand-mark">N<span>✦</span></span><span>NEON<span class="brand-light">NEXUS</span></span></a><span>AN ORIGINAL ARCADE RESORT EXPERIENCE</span><span>© 2026 NEON NEXUS</span></footer>
+  </main>
+
+  <div class="modal-backdrop" id="modal" aria-hidden="true"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><button class="modal-close" id="modal-close" aria-label="Close">×</button><div class="eyebrow" id="modal-kicker">WELCOME TO THE NEXUS</div><h2 id="modal-title">Your night starts here.</h2><p id="modal-copy">Pick a district and make it yours.</p><div id="modal-content"></div><button class="primary-btn modal-action" id="modal-action">LET'S GO <span>↗</span></button></section></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="./app.js"></script>
+</body>
+</html>
