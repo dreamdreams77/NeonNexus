@@ -57,7 +57,8 @@ if(mount){
   ['BEAT FOUNDRY','rhythm','RHYTHM','07',0xd89b69],['METEOR MAYHEM','meteor','SURVIVAL','08',0xc77d70],
   ['TURBO TUNNELS','racer','RACING','09',0x72a9ba],['CLAY STACK','stack','TIMING','10',0xb6a16f],
   ['STARLIGHT PINBALL','pinball','CLASSIC','11',0x9e80bb],['LUCKY CLAW','claw','PRIZES','12',0xd58d9a],
-  ['KITCHEN RUSH','chef','KITCHEN','13',0xd58d9a],['SUSHI CATCH','sushi','PRECISION','14',0x86b9a7],['MIXOLOGY MASTER','mixology','TIMING','15',0xc29bd1]
+  ['KITCHEN RUSH','chef','KITCHEN','13',0xd58d9a],['SUSHI CATCH','sushi','PRECISION','14',0x86b9a7],['MIXOLOGY MASTER','mixology','TIMING','15',0xc29bd1],
+  ['PULSE RUNNER','pulse','ACTION','16',0x7de2d0],['BARRELSTORM MOTO','moto','MOTORCROSS','17',0xe58c70],['MOONSHARD LEGEND','moonquest','ADVENTURE','18',0xb1a2df]
  ];
  const accents=[0xffa46f,0x77d0c3,0x82c8ed,0xe9bd80,0xb5a0ed,0xef9cbd,0xffc77d,0xed8b78,0x7fd1db,0xd7bd83,0xc3a1e8,0xf0a0a8];
  const cabinets=[];
@@ -87,7 +88,7 @@ if(mount){
   // Hand-painted floor decal, small and slightly rotated.
   const decal=box(1.9,.025,1.1,side*5.2,.005,z+ (side===-1?1.2:-1.2),mat(0x9b7180,.95),scene,.2);decal.rotation.y=(i%2)*.035;
  }
- definitions.forEach((d,i)=>{const side=i<8?-1:1,slot=i%8;makeCabinet(d,i,side,-16+slot*4.5);});
+ definitions.forEach((d,i)=>{const side=i<9?-1:1,slot=i%9;makeCabinet(d,i,side,-18.5+slot*4.35);});
  // Plush prize mound and a little ticket counter make the far wall a destination.
  const prizeGroup=new THREE.Group();prizeGroup.position.set(0,0,-23.4);scene.add(prizeGroup);
  box(4.3,1.4,1.4,0,.7,0,clayMat(0x795064),prizeGroup,.18);box(4.5,.12,1.5,0,1.46,0,mat(0xffc77e,.4,0,0xff9e5b,.8),prizeGroup,.06);
