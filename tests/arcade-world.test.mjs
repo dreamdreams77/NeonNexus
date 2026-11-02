@@ -374,8 +374,8 @@ test('tickets are a separate persistent currency from dining tokens and every ca
  assert.match(html,/id="arcade-tickets"/);
  assert.match(game,/const ticketsEarned=Math\.max\(2,Math\.floor\(score\/9\)/);
  assert.match(game,/saved\.tickets=\(Number\(saved\.tickets\)\|\|0\)\+payoutTickets/);
- assert.match(game,/saved\.ticketHistory\.unshift\(\{game,score,amount:ticketsEarned,at:Date\.now\(\)\}\)/);
- assert.match(game,/\+ticketsEarned\+' TICKETS'/);
+ assert.match(game,/saved\.ticketHistory\.unshift\(\{game,score,amount:payoutTickets,baseAmount:ticketsEarned,masteryBonus:masteryTicketBonus,at:Date\.now\(\)\}\)/);
+ assert.match(game,/\+payoutTickets\+' TICKETS/);
  assert.match(game,/function writePlayer\(saved\).*arcade-tickets/);
 });
 test('the prize exchange has varied categories, rarity, ticket prices and limited stock',()=>{
