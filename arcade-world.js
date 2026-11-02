@@ -105,7 +105,8 @@ if(mount){
   ['TURBO TUNNELS','racer','RACING','09',0x72a9ba],['CLAY STACK','stack','TIMING','10',0xb6a16f],
   ['STARLIGHT PINBALL','pinball','CLASSIC','11',0x9e80bb],['LUCKY CLAW','claw','PRIZES','12',0xd58d9a],
   ['KITCHEN RUSH','chef','KITCHEN','13',0xd58d9a],['SUSHI CATCH','sushi','PRECISION','14',0x86b9a7],['MIXOLOGY MASTER','mixology','TIMING','15',0xc29bd1],
-  ['PULSE RUNNER','pulse','ACTION','16',0x7de2d0],['BARRELSTORM MOTO','moto','MOTORCROSS','17',0xe58c70],['MOONSHARD LEGEND','moonquest','ADVENTURE','18',0xb1a2df]
+  ['PULSE RUNNER','pulse','ACTION','16',0x7de2d0],['BARRELSTORM MOTO','moto','MOTORCROSS','17',0xe58c70],['MOONSHARD LEGEND','moonquest','ADVENTURE','18',0xb1a2df],
+  ['COMET RING TOSS','ringtoss','CARNIVAL','19',0xe8bd78],['MOON GEM DIG','gemdig','PUZZLE','20',0x82c9b7]
  ];
  const gameGuide={
   hoops:{label:'SPORT · TIMING',description:'Sink satisfying shots into a moving hoop. Read the arc, adjust your power and build a scoring streak.',challenge:'Aim · release timing · combo shots',controls:'Drag / aim and release'},
@@ -125,7 +126,9 @@ if(mount){
   mixology:{label:'TIMING · MIXOLOGY',description:'Pour each drink into the sweet spot. Too little or too much costs the round and your combo.',challenge:'Meter timing · consistency · pressure',controls:'Tap / click to stop the pour'},
   pulse:{label:'ACTION · PLATFORMER',description:'Run, jump and blast through a dangerous energy facility, then face the reactor guardian.',challenge:'Platforming · combat · boss patterns',controls:'Arrows / WASD move · jump · fire'},
   moto:{label:'MOTORCROSS · RACING',description:'Ride a handmade stunt track, launch off ramps, clear gaps and dodge rolling barrels.',challenge:'Throttle · lean · jump timing',controls:'Hold / arrows to accelerate · jump'},
-  moonquest:{label:'ADVENTURE · EXPLORATION',description:'Explore moonlit ruins, fight guardians, collect three moonshards and challenge the Moonkeep boss.',challenge:'Exploration · sword combat · upgrades',controls:'Arrows / WASD move · attack / guard'}
+  moonquest:{label:'ADVENTURE · EXPLORATION',description:'Explore moonlit ruins, fight guardians, collect three moonshards and challenge the Moonkeep boss.',challenge:'Exploration · sword combat · upgrades',controls:'Arrows / WASD move · attack / guard'},
+  ringtoss:{label:'CARNIVAL · PRECISION',description:'Read the drifting pegs and lead your toss. The centre peg pays more, but each missed ring costs a throw.',challenge:'Aim · moving targets · limited throws',controls:'Tap / click to throw; arrows adjust aim'},
+  gemdig:{label:'PUZZLE · EXCAVATION',description:'Search a buried moon-gem field. Six finds clear the dig, while cracked tiles drain your lantern.',challenge:'Risk · discovery · limited resources',controls:'Tap / click covered tiles'}
  };
  const accents=[0xffa46f,0x77d0c3,0x82c8ed,0xe9bd80,0xb5a0ed,0xef9cbd,0xffc77d,0xed8b78,0x7fd1db,0xd7bd83,0xc3a1e8,0xf0a0a8];
  // Every cabinet gets its own tiny animated gameplay vignette, painted at a deliberate stop-motion cadence.
@@ -168,6 +171,8 @@ if(mount){
    case'pulse':block(25,168,334,20,'#6e6474');for(let i=0;i<4;i++)block(75+i*78,120-(i%2)*34,45,12,'#8cc6b8');block(90+Math.sin(frame*.25)*22,124,25,42,'#83d4c5');ball(290,110+Math.sin(frame*.2)*15,20,'#d77e7c');line(120,145,190,145,'#f2d5a9',4);break;
    case'moto':line(25,192,360,192,'#d5b18a',5);for(let i=0;i<4;i++){const x=(i*115+frame*4)%420-20;ball(x,180,13,'#302c3d');line(x-13,155,x+13,155,'#d58a78',6);}block(190,125+Math.sin(frame*.2)*22,48,25,'#df9b6d');break;
    case'moonquest':block(40,70,304,132,'#3e4d60');for(let i=0;i<3;i++){const x=90+i*100;ball(x,120,13,['#d7c3f4','#9bd8d1','#f0c78b'][i]);}block(175,145+Math.sin(frame*.2)*9,30,40,'#8cc9b8');line(205,142,240,108,'#f5e2bc',5);break;
+   case'ringtoss':for(let i=0;i<3;i++){const x=85+i*105+Math.sin(frame*.08+i)*24;line(x,145,x,195,'#e5c18e',5);c.strokeStyle=['#e8a477','#8bc9ba','#b6a1d8'][i];c.lineWidth=7;c.beginPath();c.ellipse(x,145,18,8,.2,0,Math.PI*2);c.stroke();}break;
+   case'gemdig':for(let i=0;i<4;i++)block(48+i*76,65+(i%2)*62,62,50,['#a37a66','#8a9d83','#b28a78','#789e9a'][i]);for(let i=0;i<3;i++)ball(95+i*95,145,11,'#9ce3d5');break;
    default:block(120,90,145,90,accent);
   }
   c.globalAlpha=1;c.fillStyle='#f8dfbd';c.font='bold 15px Fredoka';c.textAlign='left';c.fillText('NEXUS ARCADE',13,24);
