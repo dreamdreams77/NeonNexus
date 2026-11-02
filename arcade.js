@@ -22,7 +22,8 @@ function popText(t,x,y,c){particles.push({text:t,x,y,vy:-35,life:.8,c});}
 function addParticles(x,y,c,n=8){for(let i=0;i<n;i++)particles.push({x,y,vx:rand(-100,100),vy:rand(-150,30),life:rand(.3,.8),r:rand(2,6),c});}
 function reset(){score=0;time=40;objects=[];particles=[];p={x:450,y:420,lane:1,miss:0,hearts:3,balls:3,blocks:0,width:170,cx:450,clawX:200,clawY:125,clawDir:1,ballX:450,ballY:450,vx:0,vy:0,launched:false,drag:false,combo:0,goal:0,playerX:450,playerY:390,prevX:450,prevW:170,hitFlash:0};sequence=[];seqPos=0;seqPhase='show';seqClock=0;combo=0;round=0;last=performance.now();$('#score').textContent='0';$('#time').textContent='40';$('#result').textContent='';}
 function open(id){game=id;const d=games[id];$('#game-title').textContent=d[0];$('#game-help').textContent=d[1];$('#control-hint').textContent=d[2];$('#game-type').textContent=d[3];overlay.hidden=false;$('#start').textContent='START GAME';reset();draw();}
-window.nexusPlayArcadeGame=open;\nfunction start(){reset();running=true;
+window.nexusPlayArcadeGame=open;
+function start(){reset();running=true;
 if(game==='airhockey'){p.puck={x:450,y:260,vx:rand(-150,150),vy:190};p.botX=450;p.goal=0;p.botGoal=0;}
 if(game==='pinball'){p.ballX=450;p.ballY=458;p.vy=0;makeBumpers();}
 if(game==='claw'){objects=Array.from({length:10},(_,i)=>({x:220+(i%5)*115,y:350+Math.floor(i/5)*55,r:rand(17,24),c:colors[i%4],kind:i%4}));}
