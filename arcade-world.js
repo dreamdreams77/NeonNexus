@@ -568,7 +568,37 @@ const visitorNPCs=[],visitorArms=[],visitorLegs=[];const visitorProfiles=[
 ];
 const visitorSpots=[[-2.8,8.1],[7.2,2.6],[-2.8,-10.2],[6.2,-5.5]];
 const visitorRoutes=[[[-2.8,8.1],[-1.7,8.4],[-2.25,9.05]],[[7.2,2.6],[7.75,1.65],[6.85,1.05]],[[-2.8,-10.2],[-3.65,-9.35],[-1.9,-9.05]],[[6.2,-5.5],[5.55,-6.35],[6.75,-6.8]]];
-visitorProfiles.forEach((profile,i)=>{const g=new THREE.Group();const [x,z]=visitorSpots[i];g.position.set(x,0,z);scene.add(g);const palette=[0xd98c7d,0x83bcb0,0xb09bd1,0xe0b46f],skinTone=[0xe9b99a,0xc98e70,0xf0c9a5,0xb97962];const torsoMat=clayMat(palette[i]),skinMat=clayMat(skinTone[i]),hair=clayMat([0x443344,0x76513e,0x514b63,0x302b3d][i]);const body=sphere(.34,0,.86,0,torsoMat,g,1,1.25,.8);body.rotation.z=(i%2?-.08:.08);sphere(.245,0,1.48,.015,skinMat,g,1,.98,.9);sphere(.25,0,1.67,-.025,hair,g,1,.55,.92);for(const side of [-1,1]){sphere(.035,side*.09,1.51,.225,mat(0x332b3c),g,.9,1,.6);sphere(.025,side*.095,1.52,.245,mat(0xfff1d8),g,.8,.8,.5);const arm=sphere(.12,side*.38,.91,.01,torsoMat,g,.8,1.9,.8);arm.rotation.z=side*.16;visitorArms.push({arm,side,visitor:i});}for(const side of [-1,1]){const leg=sphere(.12,side*.13,.28,.025,clayMat(i%2?0x514354:0x66515a),g,.72,1.45,.8);visitorLegs.push({leg,side,visitor:i});sphere(.115,side*.13,.13,.1,clayMat(0x3d3544),g,.9,.55,1.25);}
+visitorProfiles.forEach((profile,i)=>{const g=new THREE.Group();const [x,z]=visitorSpots[i];g.position.set(x,0,z);scene.add(g);const palette=[0xd98c7d,0x83bcb0,0xb09bd1,0xe0b46f],skinTone=[0xe9b99a,0xc98e70,0xf0c9a5,0xb97962];const torsoMat=clayMat(palette[i]),skinMat=clayMat(skinTone[i]),hair=clayMat([0x443344,0x76513e,0x514b63,0x302b3d][i]);const body=sphere(.34,0,.86,0,torsoMat,g,1,1.25,.8);body.rotation.z=(i%2?-.08:.08);
+  const face=sphere(.245,0,1.48,.015,skinMat,g,1,.98,.9);
+  sphere(.25,0,1.67,-.025,hair,g,1,.55,.92);
+  // Tiny sculpted face details: soft nose, curved smile, expressive brows and warm cheek colour.
+  sphere(.035,0,1.455,.247,clayMat(skinTone[i]),g,.78,.92,.72);
+  const mouthCurve=new THREE.CatmullRomCurve3([new THREE.Vector3(-.065,1.405,.238),new THREE.Vector3(0,1.385,.258),new THREE.Vector3(.065,1.405,.238)]);
+  const smile=new THREE.Mesh(new THREE.TubeGeometry(mouthCurve,10,.009,5,false),clayMat(0x88545a));g.add(smile);
+  for(const side of [-1,1]){
+   sphere(.035,side*.09,1.51,.225,mat(0x332b3c),g,.9,1,.6);
+   sphere(.025,side*.095,1.52,.245,mat(0xfff1d8),g,.8,.8,.5);
+   sphere(.011,side*.095,1.52,.266,mat(0x40313a),g,.8,.9,.6);
+   const brow=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(side*.14,1.575,.235),new THREE.Vector3(side*.09,1.592,.25),new THREE.Vector3(side*.045,1.575,.244)]),7,.012,5,false),hair);g.add(brow);
+   sphere(.045,side*.145,1.445,.19,clayMat([0xe5a18f,0xd99a89,0xe8a9a0,0xc98578][i]),g,1,.58,.22);
+  }
+  // Four different hair silhouettes, rather than one shared cap recoloured four times.
+  if(i===0){for(let n=0;n<5;n++){const a=n*.72-.9;sphere(.105,Math.sin(a)*.19,1.69+Math.cos(a)*.055,-.005,hair,g,1,.92,.9);}sphere(.075,-.2,1.53,.19,hair,g,1,1.2,.8);}
+  if(i===1){for(let n=0;n<3;n++)sphere(.105,-.16+n*.16,1.68+Math.sin(n*1.3)*.035,.14,hair,g,1,.65,.55);}
+  if(i===2){sphere(.12,-.19,1.48,.08,hair,g,1,1.4,.75);sphere(.12,.19,1.48,.08,hair,g,1,1.4,.75);const topKnot=sphere(.105,.12,1.79,-.02,hair,g,1,.9,.9);}
+  if(i===3){sphere(.19,0,1.58,-.08,hair,g,1,.58,.85);for(const side of [-1,1])sphere(.09,side*.2,1.48,.08,hair,g,1,1.4,.8);}
+  // Layered handmade clothing: collar, stitched hem, pocket and individual buttons.
+  const collarMat=clayMat([0xf1c8a4,0xd8eee0,0xe9d7b8,0xc6b5a6][i]);
+  for(const side of [-1,1]){const collar=box(.17,.12,.045,side*.105,1.17,.285,collarMat,g,.025);collar.rotation.z=side*-.24;}
+  const shirtFront=box(.26,.38,.035,0,.86,.287,clayMat([0xc16f69,0x477f7a,0x786b9a,0x8a655e][i]),g,.035);
+  shirtFront.rotation.z=i===1?-.08:.015;
+  const hem=box(.49,.055,.035,0,.59,.268,clayMat([0xf0bd8e,0xe3c28c,0xc8b6d9,0xd4a66f][i]),g,.018);
+  for(let n=0;n<3;n++)sphere(.018,0,.99-n*.105,.312,clayMat(0xf4d49a),g,.8,.8,.5);
+  if(i===0){for(let n=0;n<4;n++)sphere(.018,-.09+(n%2)*.07,1.33-Math.floor(n/2)*.045,.249,clayMat(0x88545a),g,.8,.8,.6);}
+  if(i===1){const glassesMat=clayMat(0xe7c18a);for(const side of [-1,1]){const lens=new THREE.Mesh(new THREE.TorusGeometry(.067,.009,6,16),glassesMat);lens.position.set(side*.095,1.52,.258);g.add(lens);}const bridge=box(.055,.014,.018,0,1.52,.26,glassesMat,g,.006);}
+  if(i===2){const scarf=box(.14,.34,.055,.2,1.04,.31,clayMat(0xe6b978),g,.025);scarf.rotation.z=-.18;}
+  if(i===3){const beard=sphere(.16,.0,1.35,.09,hair,g,1,.52,.65);const lapel=box(.1,.3,.045,.18,.93,.3,clayMat(0xd8c4a4),g,.018);lapel.rotation.z=-.22;}
+  for(const side of [-1,1]){const arm=sphere(.12,side*.38,.91,.01,torsoMat,g,.8,1.9,.8);arm.rotation.z=side*.16;visitorArms.push({arm,side,visitor:i});}for(const side of [-1,1]){const leg=sphere(.12,side*.13,.28,.025,clayMat(i%2?0x514354:0x66515a),g,.72,1.45,.8);visitorLegs.push({leg,side,visitor:i});sphere(.115,side*.13,.13,.1,clayMat(0x3d3544),g,.9,.55,1.25);}
   const badge=sphere(.075,.12,.92,.27,clayMat(0xf0c27c),g,.8,.8,.35);badge.name='visitor-badge';
   // Signature props make every regular readable at a glance, even on a phone-sized view.
   if(i===0){const strap=box(.12,.42,.055,-.28,1.08,.22,clayMat(0x6b4a48),g,.025);strap.rotation.z=-.28;const bag=sculptedBox(.34,.32,.18,0x9a6c78,.07);bag.position.set(-.34,.82,.19);g.add(bag);sphere(.12,-.34,1.0,.3,clayMat(0xe6b66e),g,.9,1,.8);sphere(.055,-.39,1.12,.3,clayMat(0xe6b66e),g);sphere(.055,-.29,1.12,.3,clayMat(0xe6b66e),g);}

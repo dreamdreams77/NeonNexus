@@ -642,3 +642,10 @@ test('visitors have individual looping routes, pause and face nearby players, an
  assert.match(world,/visitorLegs\.filter/);
  assert.match(world,/visitor\.waveUntil/);
 });
+
+test('arcade regulars have expressive individual faces and layered signature outfits',()=>{
+ for(const detail of ['Tiny sculpted face details','new THREE.CatmullRomCurve3([new THREE.Vector3(-.065,1.405,.238)','Four different hair silhouettes','Layered handmade clothing','if(i===0){for(let n=0;n<4;n++)sphere','if(i===1){const glassesMat','if(i===2){const scarf','if(i===3){const beard'])assert.ok(world.includes(detail),'missing character art detail '+detail);
+ assert.match(world,/new THREE\.TorusGeometry\(\.067,\.009,6,16\)/);
+ assert.match(world,/const collarMat=clayMat/);
+ assert.match(world,/const shirtFront=box/);
+});
