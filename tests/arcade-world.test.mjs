@@ -521,3 +521,16 @@ test('Moonlight Billiards cabinet mastery improves controlled cue-shot power',()
  assert.match(game,/p\.masteryLevel>=2\?1\.08:1/);
  assert.match(game,/p\.masteryLevel>=4\?1\.06:1/);
 });
+
+test('visitor NPCs offer persistent character-specific quests with tracked objectives and ticket rewards',()=>{
+ for(const id of ['pip','moxie','juniper','rook'])assert.match(world,new RegExp("questId:'"+id+"'"));
+ for(const term of ['Warm-up Circuit','Find the Pocket','Cabinet Explorer','Rack and Return','visitorQuests','CLAIM REWARD','QUEST IN PROGRESS'])assert.ok(game.includes(term),'missing visitor quest system: '+term);
+ assert.match(game,/latest\.tickets=\(Number\(latest\.tickets\)\|\|0\)\+quest\.reward/);
+});
+
+test('cabinet mastery adds a transparent ticket payout bonus and the prize room offers VIP experience rewards',()=>{
+ assert.match(game,/masteryTicketBonus=Math\.min\(12,Math\.floor\(cabinetLevel\/2\)\*2\)/);
+ assert.match(game,/masteryBonus:masteryTicketBonus/);
+ for(const id of ['vip-night','mastery-medal','golden-key'])assert.ok(game.includes("id:'"+id+"'"));
+ assert.ok(game.includes("'Experiences'"));
+});
