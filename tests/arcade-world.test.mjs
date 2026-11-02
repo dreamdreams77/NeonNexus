@@ -608,3 +608,14 @@ test('Glow Bar has three walk-up video poker machines with a playable five-card 
  assert.match(css,/\.poker-card\.held/);
  assert.match(css,/\.poker-paytable/);
 });
+
+test('arcade district has living garden details and a festive social-square canopy',()=>{
+ assert.match(world,/const livingLeaves,flowerHeads/);
+ assert.match(world,/flowerHeads\.push/);
+ assert.match(world,/livingLeaves\.forEach/);
+ assert.match(world,/makeRug\(0,7\.2/);
+ assert.match(world,/const festoonBulbs=\[\]/);
+ assert.match(world,/new THREE\.TubeGeometry\(festoonCurve/);
+ assert.match(world,/flag\.rotation\.z=Math\.sin/);
+ assert.match(world,/TONIGHT · OPEN PLAY/);
+});
