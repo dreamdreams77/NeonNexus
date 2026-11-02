@@ -19,3 +19,16 @@
 @media(max-width:850px){.world-heading{display:block}.world-controls{justify-content:flex-start;margin-top:16px}.world-frame{height:470px}.world-tip{display:none}}
 @media(max-width:560px){.world-section{padding:8px 20px 58px}.world-frame{height:430px}.touch-pad{display:block}.machine-prompt{bottom:20px;left:auto;right:14px;transform:none;max-width:calc(100% - 150px);white-space:normal;font-size:7px;padding:9px}.interact-machine{bottom:76px;left:auto;right:14px;transform:none}.world-hud{font-size:7px;left:12px;right:12px}.world-controls span{font-size:7px;padding:8px}}
 @media(prefers-reduced-motion:reduce){.world-frame{scroll-behavior:auto}}
+
+/* Five additional explorable districts */
+.district-world-section{max-width:1280px;margin:0 auto;padding:22px 36px 86px}
+.district-world-tabs{display:flex;flex-wrap:wrap;gap:9px;margin:26px 0 18px}
+.district-tab{border:1px solid #34415f;background:#111a30;color:#aebbd4;padding:12px 17px;font-size:9px;font-weight:700;letter-spacing:.8px;cursor:pointer;transition:background .2s,border-color .2s,color .2s}
+.district-tab:hover,.district-tab.active{background:#19344a;border-color:#5ce7f2;color:#d8fcff;box-shadow:0 0 18px #5ce7f21a}
+.district-world-info{display:flex;justify-content:space-between;align-items:end;gap:20px;margin:0 0 18px}
+.district-world-info h3{font:700 27px var(--display);margin:8px 0}
+.district-world-info p{font-size:11px;color:#a7aec5;line-height:1.7;margin:0;max-width:560px}
+.district-world-objective{font-size:8px;letter-spacing:1.2px;color:#c9faff;border:1px solid #386b83;background:#101d32;padding:11px 14px;max-width:240px;text-align:center}
+.district-world-frame{height:540px}
+@media(max-width:850px){.district-world-section{padding:10px 22px 64px}.district-world-info{align-items:flex-start;flex-direction:column}.district-world-frame{height:480px}.district-world-objective{max-width:none}}
+@media(max-width:560px){.district-world-section{padding:8px 20px 56px}.district-world-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.district-tab{padding:12px 8px;font-size:8px}.district-world-frame{height:430px}.district-world-info h3{font-size:23px}.district-world-objective{font-size:7px;align-self:stretch}.district-world-frame .touch-pad{display:block}.district-world-frame .machine-prompt{bottom:20px;left:auto;right:14px;transform:none;max-width:calc(100% - 150px);white-space:normal;font-size:7px;padding:9px}.district-world-frame .interact-machine{bottom:76px;left:auto;right:14px;transform:none}.district-world-frame .world-tip{display:none}}
