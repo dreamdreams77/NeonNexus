@@ -38,7 +38,18 @@
       </div>
     </section>
 
-    <section class="section intro-section" id="districts">
+
+    <section class="world-section" id="walkable-atrium">
+      <div class="world-heading"><div><div class="eyebrow">STEP INSIDE / INTERACTIVE 3D WORLD</div><h2>Welcome to the <span class="gradient-text">Grand Atrium.</span></h2><p>Walk the floor, discover the arcade cabinets and get close to a machine to interact. Your adventure starts here.</p></div><div class="world-controls"><span>⌨ WASD / ARROWS</span><span> E INTERACT</span><span> TOUCH PAD ON MOBILE</span></div></div>
+      <div class="world-frame" id="atrium-world">
+        <div class="world-hud"><span class="world-live"><i></i> LIVE WORLD</span><span>GRAND ATRIUM · LEVEL 01</span></div>
+        <div class="machine-prompt" id="machine-prompt">WASD / ARROWS TO MOVE · EXPLORE THE ATRIUM</div>
+        <div class="touch-pad" id="touch-pad" aria-label="Touch movement joystick"><div class="joystick-knob" id="joystick-knob"></div></div>
+        <button class="interact-machine" id="interact-machine" hidden>INTERACT ↗</button>
+        <div class="world-tip">Move near a cabinet to play · Tap a cabinet when nearby</div>
+      </div>
+    </section>
+\n    <section class="section intro-section" id="districts">
       <div class="section-heading"><div><div class="eyebrow">FIND YOUR NEXT OBSESSION</div><h2>Six districts.<br><span class="muted">One endless night.</span></h2></div><p>From high-speed thrills to laid-back hangouts, every corner has something waiting for you.</p></div>
       <div class="district-grid">
         <button class="district-card atrium" data-district="atrium"><span class="district-number">01 / HOME BASE</span><span class="district-icon">✦</span><div><h3>Grand Atrium</h3><p>Your space. Your style. Your people.</p><span class="explore-label">EXPLORE DISTRICT ↗</span></div></button>
@@ -64,6 +75,6 @@
 
   <div class="modal-backdrop" id="modal" aria-hidden="true"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><button class="modal-close" id="modal-close" aria-label="Close">×</button><div class="eyebrow" id="modal-kicker">WELCOME TO THE NEXUS</div><h2 id="modal-title">Your night starts here.</h2><p id="modal-copy">Pick a district and make it yours.</p><div id="modal-content"></div><button class="primary-btn modal-action" id="modal-action">LET'S GO <span>↗</span></button></section></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="./app.js"></script>
+  <script src="./app.js"></script>\n  <script type="module" src="./world.js"></script>
 </body>
 </html>
