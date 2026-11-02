@@ -24,7 +24,7 @@ function scoreBy(n){score+=n;$('#score').textContent=score;popText('+'+n,mouse.x
 function popText(t,x,y,c){particles.push({text:t,x,y,vy:-35,life:.8,c});}
 function addParticles(x,y,c,n=8){for(let i=0;i<n;i++)particles.push({x,y,vx:rand(-100,100),vy:rand(-150,30),life:rand(.3,.8),r:rand(2,6),c});}
 function reset(){score=0;time=40;objects=[];particles=[];p={x:450,y:420,lane:1,miss:0,hearts:3,balls:3,blocks:0,width:170,cx:450,clawX:200,clawY:125,clawDir:1,ballX:450,ballY:450,vx:0,vy:0,launched:false,drag:false,combo:0,goal:0,playerX:450,playerY:390,prevX:450,prevW:170,hitFlash:0};sequence=[];seqPos=0;seqPhase='show';seqClock=0;combo=0;round=0;last=performance.now();$('#score').textContent='0';$('#time').textContent='40';$('#result').textContent='';}
-function open(id){game=id;const d=games[id];$('#game-title').textContent=d[0];$('#game-help').textContent=d[1];$('#control-hint').textContent=d[2];$('#game-type').textContent=d[3];overlay.hidden=false;$('#start').textContent='START GAME';reset();draw();}
+function open(id){game=id;const d=games[id];$('#game-title').textContent=d[0];$('#game-help').textContent=d[1];$('#control-hint').textContent=d[2];$('#game-type').textContent=d[3];overlay.hidden=false;$('#start').textContent='START GAME';reset();draw();window.dispatchEvent(new CustomEvent('nexus:game3d-open',{detail:{gameId:id}}));}
 window.nexusPlayArcadeGame=open;
 function start(){reset();running=true;
 if(game==='airhockey'){p.puck={x:450,y:270,vx:rand(-110,110),vy:210};p.botX=450;p.playerX=450;p.goal=0;p.botGoal=0;p.rally=0;p.aiMood='guard';p.serveClock=.65;}
@@ -37,7 +37,7 @@ if(game==='memory')nextSequence();
 if(game==='stack'){p.width=170;p.cx=450;p.blocks=0;p.blockX=450;}
 if(game==='whack')spawnMoles();
 if(game==='skeeball'){p.ballX=450;p.ballY=415;}
-raf=requestAnimationFrame(loop);}
+if(game==='chef'){window.dispatchEvent(new CustomEvent('nexus:game3d-start'));return;}raf=requestAnimationFrame(loop);}
 function finish(win=false){if(!running)return;running=false;cancelAnimationFrame(raf);const earned=Math.max(2,Math.floor(score/7)+(win?12:0)+Math.min(15,Math.floor(combo/3)));$('#result').textContent=(win?'CABINET CLEARED! ':'ROUND OVER · ')+score+' POINTS · +'+earned+' TOKENS';$('#start').textContent='PLAY AGAIN';sound(win?880:190,.22,'triangle');try{const key='neon-nexus-player-v1',saved=JSON.parse(localStorage.getItem(key)||'{}');saved.tokens=(Number(saved.tokens)||250)+earned;saved.arcadeBest=saved.arcadeBest||{};saved.arcadeBest[game]=Math.max(Number(saved.arcadeBest[game])||0,score);localStorage.setItem(key,JSON.stringify(saved));$('#arcade-tokens').textContent=saved.tokens;}catch{}}
 function rounded(x,y,w,h,r,c){ctx.fillStyle=c;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill();}
 function circle(x,y,r,c){ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();}
@@ -126,7 +126,7 @@ if(game==='rhythm'){const lanes={d:0,f:1,j:2,k:3};const lane=lanes[e.key.toLower
 function keyup(e){keys[e.key]=false;}
 $('#game-grid').addEventListener('click',e=>{const b=e.target.closest('[data-game]');if(b)open(b.dataset.game);});
 window.addEventListener('nexus:arcade-play',e=>{const id=e.detail?.gameId;if(id==='hoops'){window.location.href='./hoops.html';return;}if(games[id])open(id);});
-$('#start').addEventListener('click',start);$('#close').addEventListener('click',()=>{running=false;cancelAnimationFrame(raf);overlay.hidden=true;});
+$('#start').addEventListener('click',start);$('#close').addEventListener('click',()=>{running=false;cancelAnimationFrame(raf);window.dispatchEvent(new CustomEvent('nexus:game3d-stop'));overlay.hidden=true;});
 canvas.addEventListener('pointerdown',onDown);canvas.addEventListener('pointermove',onMove);canvas.addEventListener('pointerup',onUp);canvas.addEventListener('pointercancel',onUp);
 window.addEventListener('keydown',keydown);window.addEventListener('keyup',keyup);
 const saved=(()=>{try{return JSON.parse(localStorage.getItem('neon-nexus-player-v1')||'{}')}catch{return {}}})();$('#arcade-tokens').textContent=saved.tokens??250;
