@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080b18">
+<title>Neon Hoops — Neon Nexus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./hoops.css">
+</head>
+<body>
+<div id="game-shell">
+  <header class="game-header">
+    <a class="brand" href="./index.html"><span class="brand-mark">N✦</span><span>NEON <i>NEXUS</i></span></a>
+    <div class="game-title"><span>ARCADE ORIGINAL / 001</span><strong>NEON HOOPS</strong></div>
+    <button id="exit-game" class="exit-button">EXIT <span>↗</span></button>
+  </header>
+  <main class="game-layout">
+    <section class="arena-wrap">
+      <div id="arena" aria-label="3D basketball court. Drag to aim and release to shoot.">
+        <canvas id="court"></canvas>
+        <div class="arena-vignette"></div>
+        <div class="hud-top">
+          <div class="hud-chip"><small>SCORE</small><strong id="score">000</strong></div>
+          <div class="hud-chip timer-chip"><small>TIME</small><strong id="timer">45</strong></div>
+          <div class="hud-chip"><small>STREAK</small><strong id="streak">×0</strong></div>
+        </div>
+        <div class="shot-feedback" id="feedback">FIND YOUR RHYTHM</div>
+        <div class="aim-guide" id="aim-guide"><span>DRAG TO AIM</span><i>↑ POWER</i></div>
+        <div class="arena-bottom"><span>01 / THE AFTERHOURS COURT</span><span id="shot-count">SHOTS 00</span></div>
+        <div class="touch-hint" id="touch-hint">PULL UP TO SET POWER · SWIPE SIDEWAYS TO AIM · RELEASE TO SHOOT</div>
+        <div class="pause-overlay" id="pause-overlay" hidden><strong>PAUSED</strong><button id="resume">RESUME</button></div>
+      </div>
+      <div class="control-strip">
+        <div><span class="control-icon">↕</span><p><b>POWER</b><small>Pull farther down, then release</small></p></div>
+        <div><span class="control-icon">↔</span><p><b>AIM</b><small>Steer left or right</small></p></div>
+        <div><span class="control-icon">◉</span><p><b>FEEL</b><small>Watch the arc and rebound</small></p></div>
+      </div>
+    </section>
+    <aside class="side-panel">
+      <div class="eyebrow">THE AFTERHOURS COURT</div>
+      <h1>Find your<br><em>perfect arc.</em></h1>
+      <p class="intro">No button mashing. Read the distance, shape your shot, and let the ball fly.</p>
+      <div class="challenge-card">
+        <div class="challenge-label"><span>TONIGHT'S CHALLENGE</span><b>45 SEC</b></div>
+        <h2>LIGHTS OUT.</h2>
+        <p>Build a streak. Clean shots are worth more. Every rebound is another chance.</p>
+        <div class="challenge-goal"><span>GOAL</span><strong>120 PTS</strong></div>
+      </div>
+      <div class="stats-row"><div><small>BEST RUN</small><strong id="best">000</strong></div><div><small>ACCURACY</small><strong id="accuracy">—</strong></div></div>
+      <button id="start-game" class="start-button">START SHOOTING <span>↗</span></button>
+      <p class="microcopy">DESIGNED FOR TOUCH + MOUSE · KEYBOARD: ARROWS TO AIM, SPACE TO SHOOT</p>
+    </aside>
+  </main>
+</div>
+<div class="result-screen" id="results" hidden>
+  <div class="result-card"><div class="eyebrow">AFTERHOURS / FINAL WHISTLE</div><h2 id="result-title">NICE RUN.</h2><p id="result-copy">Your night is just getting started.</p><div class="result-score"><small>FINAL SCORE</small><strong id="final-score">000</strong></div><div class="result-stats"><span id="result-makes">0 baskets</span><span id="result-accuracy">0% accuracy</span><span id="result-tokens">+0 tokens</span></div><button id="play-again" class="start-button">RUN IT BACK ↗</button><a href="./index.html">BACK TO THE NEXUS</a></div>
+</div>
+<script type="module" src="./hoops.js"></script>
+</body>
+</html>
