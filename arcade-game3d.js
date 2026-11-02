@@ -9,7 +9,7 @@ const resultNode=document.querySelector('#result');
 const tokenNode=document.querySelector('#arcade-tokens');
 if(!stage||!canvas)return;
 
-let renderer,scene,camera,clock,raf=0,active=false,visible=false;
+let renderer,scene,camera,clock,chef,armL,armR,raf=0,active=false,visible=false;
 let ingredients=[],ticketTexture,ticketContext,ticketMaterial,plateFood=[],steam=[],decor=[];
 let score=0,timeLeft=55,ticketTime=11,ticket=0,step=0,misses=0,combo=0,sequence=[0,1,2],lastTime=0;
 const names=['TOMATO','LETTUCE','CHEESE','BREAD'];
@@ -59,14 +59,14 @@ function createRoom(){
   const tag=new THREE.Mesh(new THREE.PlaneGeometry(1.55,.42),new THREE.MeshBasicMaterial({map:labelTexture([String(i+1)+' · '+names[i],'TAP TO ADD','FRESH PREP'])}));tag.position.set(x,1.18,4.03);scene.add(tag);
  }
  // Chef character: clay head, apron, expressive face and hat.
- const chef=new THREE.Group();chef.position.set(0,0,-3.45);scene.add(chef);
+ chef=new THREE.Group();chef.position.set(0,0,-3.45);scene.add(chef);
  sphere(chef,0,1.75,0,.5,.59,.43,0xe8b998);sphere(chef,0,1.25,0,.57,.62,.38,0x83a99a);
  box(chef,.78,.52,.12,0,1.1,.36,0xf0d3b0,.09);
  sphere(chef,-.17,1.82,.38,.045,.055,.025,0x493343);sphere(chef,.17,1.82,.38,.045,.055,.025,0x493343);
  sphere(chef,0,1.62,.405,.085,.045,.03,0xb96d65);
  cylinder(chef,.36,.34,.19,0,2.3,0,0xf3dfc4);for(let i=-1;i<=1;i++){sphere(chef,i*.2,2.4,0,.19,.17,.19,0xffead1);}
- const armL=new THREE.Group();armL.position.set(-.45,1.35,0);chef.add(armL);const arm1=sphere(armL,-.12,-.18,.05,.16,.37,.16,0xe8b998);arm1.rotation.z=-.55;
- const armR=new THREE.Group();armR.position.set(.45,1.35,0);chef.add(armR);const arm2=sphere(armR,.12,-.18,.05,.16,.37,.16,0xe8b998);arm2.rotation.z=.55;
+ armL=new THREE.Group();armL.position.set(-.45,1.35,0);chef.add(armL);const arm1=sphere(armL,-.12,-.18,.05,.16,.37,.16,0xe8b998);arm1.rotation.z=-.55;
+ armR=new THREE.Group();armR.position.set(.45,1.35,0);chef.add(armR);const arm2=sphere(armR,.12,-.18,.05,.16,.37,.16,0xe8b998);arm2.rotation.z=.55;
  // Steam curls and little hanging pennants animate at stop-motion cadence.
  for(let i=0;i<5;i++){const s=sphere(scene,rand(-.45,.45),2.15,rand(-.35,.35),.06,.18,.06,0xffffff);s.material.transparent=true;s.material.opacity=.28;steam.push({mesh:s,phase:i*.8});}
  const sign=new THREE.Mesh(new THREE.PlaneGeometry(4.8,.8),new THREE.MeshBasicMaterial({map:labelTexture(['THE NEXUS KITCHEN','FRESH PLATES · FAST HANDS','ORDER UP!'])}));sign.position.set(0,4.35,-5.28);scene.add(sign);
@@ -99,5 +99,4 @@ window.addEventListener('nexus:game3d-start',startGame);
 window.addEventListener('nexus:game3d-stop',stop);
 stage.addEventListener('pointerdown',pointerDown);
 window.addEventListener('keydown',e=>{if(!active)return;if(['1','2','3','4'].includes(e.key)){e.preventDefault();choose(Number(e.key)-1);}});
-startButton.addEventListener('click',()=>{if(visible&&!active)startGame();});
 init();
