@@ -24,7 +24,7 @@ test('every playable cabinet has a 3D model and launches its matching game',()=>
 
 test('arcade includes keyboard, touch and proximity interactions',()=>{
  assert.match(world,/arrowup/);assert.match(world,/arcade-touch-pad/);
- assert.match(world,/dmin=4\.1/);assert.match(world,/if\(k==='e'\)useCabinet\(\)/);
+ assert.match(world,/dmin=4\.1/);assert.match(world,/if\(k==='e'\)\{if\(activeService\)useService\(\);else useCabinet\(\);\}/);
 });
 
 test('each mini-game defines a distinct instruction set and scoring mechanics',()=>{
