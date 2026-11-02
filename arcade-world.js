@@ -103,6 +103,31 @@ if(mount){
   if(!mobileDevice){const glow=new THREE.PointLight(0xffbd83,1.35,5.5,2);glow.position.set(side*.36,.02,0);fixture.add(glow);}
  }
  for(const z of [-15,-3,9,21])for(const side of [-1,1])makeSconce(side,z);
+ // A hand-strung festival canopy gives the central aisle the warmth of a little village square.
+ const festoonBulbs=[];
+ const festoonCurve=new THREE.CatmullRomCurve3([new THREE.Vector3(-10,5.05,3.8),new THREE.Vector3(-5,4.72,3.8),new THREE.Vector3(0,4.62,3.8),new THREE.Vector3(5,4.72,3.8),new THREE.Vector3(10,5.05,3.8)]);
+ const festoonRope=new THREE.Mesh(new THREE.TubeGeometry(festoonCurve,36,.025,6,false),clayMat(0x795d54));scene.add(festoonRope);
+ for(let i=0;i<9;i++){
+  const u=i/8,p=festoonCurve.getPoint(u),bulbGroup=new THREE.Group();bulbGroup.position.copy(p);scene.add(bulbGroup);
+  const drop=box(.035,.2,.035,0,-.11,0,clayMat(0x795d54),bulbGroup,.012);
+  const bulb=sphere(.105,0,-.23,.015,mat([0xffd28b,0x9fe0cf,0xf1a4a0][i%3],.22,.04,[0xffb95e,0x69d7c0,0xe87992][i%3],1.6),bulbGroup,1,.92,1);
+  const halo=new THREE.Mesh(new THREE.SphereGeometry(.17,10,8),new THREE.MeshBasicMaterial({color:[0xffd28b,0x9fe0cf,0xf1a4a0][i%3],transparent:true,opacity:.12}));halo.position.copy(bulb.position);bulbGroup.add(halo);
+  festoonBulbs.push({bulb,halo,phase:i*.83});
+ }
+ // Small pennants are cut from painted cloth and hang at slightly different lengths.
+ for(let i=0;i<11;i++){
+  const u=(i+.35)/11,p=festoonCurve.getPoint(u),flag=new THREE.Mesh(new THREE.PlaneGeometry(.34,.48,1,3),clayMat([0xd98f86,0xe4bd7e,0x86b9a9,0x9b8bb9][i%4]));
+  flag.position.set(p.x,p.y-.34,p.z+.015);flag.rotation.x=-.08;flag.rotation.z=(i%2?-.08:.08);scene.add(flag);
+  flag.userData.sway=i*.72;
+  festoonBulbs.push({flag,phase:i*.72});
+ }
+ // Framed hand-painted district posters add small stories between the cabinets.
+ for(let i=0;i<3;i++){
+  const frame=box(1.38,1.72,.13,-8.9+i*8.9,3.1,-25.45,clayMat([0x9b6c5d,0x657b76,0x8d7395][i]),scene,.07);
+  const poster=new THREE.Mesh(new THREE.PlaneGeometry(1.12,1.44),new THREE.MeshBasicMaterial({map:textTexture(['TONIGHT · OPEN PLAY','FIND YOUR PEOPLE','PLAY · EARN · COLLECT'][i],['ARCADE SOCIAL CLUB','THE GLOW BAR','NEXUS PRIZE GALLERY'][i],'#fff0c8')}));
+  poster.position.set(frame.position.x,3.1,-25.365);scene.add(poster);
+  for(const side of [-1,1])sphere(.045,frame.position.x+side*.53,3.75,-25.34,mat(0xe8bd82,.35,.25),scene,.9,.9,.5);
+ }
  // Dust motes catch the practical lights and add depth between the player and scenery.
  const motePositions=new Float32Array(90*3);
  for(let i=0;i<90;i++){motePositions[i*3]=(Math.random()-.5)*21;motePositions[i*3+1]=.5+Math.random()*4.4;motePositions[i*3+2]=-23+Math.random()*44;}
@@ -674,6 +699,7 @@ visitorProfiles.forEach((profile,i)=>{const g=new THREE.Group();const [x,z]=visi
    const preview=c.userData.preview,screenDistance=player.position.distanceTo(c.position);
    if(preview&&previewSet.has(c)){preview.clock+=dt;if(preview.clock>=.12){preview.clock=0;preview.frame++;drawCabinetPreview(preview,preview.frame);}}else if(preview){preview.clock=0;}
   });
+  festoonBulbs.forEach((item)=>{if(item.flag){item.flag.rotation.z=Math.sin(t*1.1+item.phase)*.045;item.flag.rotation.y=Math.sin(t*.8+item.phase)*.025;}else{const pulse=.72+Math.sin(t*2.2+item.phase)*.22;item.bulb.material.emissiveIntensity=1.1+pulse*.65;item.halo.material.opacity=.07+pulse*.07;}});
   livingLeaves.forEach(({leaf,base,phase,amount})=>{leaf.rotation.z=base+Math.sin(t*1.35+phase)*amount;leaf.rotation.x+=Math.sin(t*.8+phase)*.0007;});
   flowerHeads.forEach(({blossom,phase,base})=>{blossom.rotation.z=base+Math.sin(t*1.1+phase)*.045;blossom.rotation.x=Math.cos(t*.9+phase)*.025;});
   if((moteFrame++%2)===0){const motesAttr=moteGeo.attributes.position;for(let i=0;i<90;i++){const y=motesAttr.getY(i)+dt*2*(.025+(i%4)*.012);motesAttr.setY(i,y>5?0.45:y);}motesAttr.needsUpdate=true;}
