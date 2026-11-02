@@ -201,6 +201,8 @@ test('arcade mini-games have a hand-drawn paper finish and tactile clay detailin
  assert.match(game,/function drawKeyboardCursor\(\)/);
  assert.match(game,/quadraticCurveTo\(-r\*\.48,r\*\.42/);
  assert.match(game,/Kalam, cursive/);
+ assert.match(immersive,/const clayGrain=\(\(\)=>/);
+ assert.match(immersive,/bumpMap:clayGrain,bumpScale:\.065/);
 });
 test('computer players can navigate pointer-led games with arrows and activate with Enter',()=>{
  assert.match(game,/cursorGames=!\['pulse','moto','moonquest','racer','sushi','meteor'\]/);
