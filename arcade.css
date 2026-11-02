@@ -67,3 +67,19 @@ html,body{width:100%;height:100%;min-height:100%;overflow:hidden}body{min-height
 .visitor-quest{grid-column:1/-1;border:2px solid #c18b54;background:linear-gradient(145deg,#fff0d1,#f1d3a9);box-shadow:inset 0 0 0 1px #fff9,0 8px 20px #67404a18}.visitor-quest>b{font-size:18px;color:#6a4550}.visitor-quest .quest-progress{display:block;margin:4px 0 8px;color:#98603f;font-size:11px;font-weight:800;letter-spacing:.06em}.quest-claim{border:0;border-radius:11px;padding:11px 14px;background:#684b5d;color:#fff0d6;font:700 12px Fredoka;cursor:pointer}.quest-claim:disabled{background:#9b8b83;color:#fff7e9;opacity:.8;cursor:default}.prize-card[data-rarity="LEGENDARY"]{background:linear-gradient(145deg,#fff0c9,#e8c5a7);border-color:#c39752;box-shadow:inset 0 0 0 1px #fff9,0 8px 22px #9d6c3d22}.prize-card[data-rarity="EPIC"]{border-color:#a78cba;background:linear-gradient(145deg,#fff0dc,#ead8e9)}.prize-card .prize-rarity{letter-spacing:.09em}.prize-card .prize-redeem:focus-visible,.quest-claim:focus-visible{outline:3px solid #d58a4d;outline-offset:3px}
 
 .daily-circuit{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;padding:12px 14px;border:1px solid #c99d72;border-radius:14px;background:linear-gradient(120deg,#fff0d5,#f1d9c4);color:#594252}.daily-circuit>div{display:grid;gap:3px}.daily-circuit b{font:700 12px Fredoka;letter-spacing:.07em}.daily-circuit small{font:600 11px Fredoka;color:#876b69}.daily-claim{flex:none;border:0;border-radius:10px;padding:10px 12px;background:#765064;color:#fff0d2;font:700 11px Fredoka;cursor:pointer}.daily-claim:disabled{background:#b4a49b;color:#fffaf0;cursor:default}.daily-claim:focus-visible{outline:3px solid #d58a4d;outline-offset:3px}@media(max-width:560px){.daily-circuit{align-items:flex-start;flex-direction:column}.daily-claim{width:100%}}
+
+/* A cabinet is a portal into a different game world, not a miniature copy of the arcade. */
+.overlay[data-game="airhockey"]{--game-paper:#dff3e8;--game-ink:#244b55;--game-accent:#4f9da4}
+.overlay[data-game="billiards"]{--game-paper:#d8e6ce;--game-ink:#244c3e;--game-accent:#5d956d}
+.overlay[data-game="meteor"],.overlay[data-game="moonquest"],.overlay[data-game="gemdig"],.overlay[data-game="pulse"]{--game-paper:#dce1f4;--game-ink:#303451;--game-accent:#8277bd}
+.overlay[data-game="racer"],.overlay[data-game="moto"]{--game-paper:#f7d5b5;--game-ink:#583a3d;--game-accent:#c76c51}
+.overlay[data-game="chef"],.overlay[data-game="sushi"],.overlay[data-game="mixology"]{--game-paper:#f5dfc4;--game-ink:#594047;--game-accent:#b66b62}
+.overlay[data-game="rhythm"],.overlay[data-game="memory"],.overlay[data-game="pinball"]{--game-paper:#e8d8f2;--game-ink:#48365c;--game-accent:#9869ad}
+.overlay[data-game="skeeball"],.overlay[data-game="ringtoss"],.overlay[data-game="claw"]{--game-paper:#f8e3bb;--game-ink:#65444a;--game-accent:#c47d58}
+.overlay[data-game="whack"],.overlay[data-game="target"],.overlay[data-game="sushi"]{--game-paper:#e3edcf;--game-ink:#405b45;--game-accent:#83a66e}
+.overlay[data-game] .cabinet{background:var(--game-paper,linear-gradient(150deg,#f7e6c8,#e8c5a7));color:var(--game-ink,#392c36);border-color:color-mix(in srgb,var(--game-accent,#b67e72) 70%,#fff);box-shadow:0 24px 90px #0009,inset 0 0 0 3px #fff8}
+.overlay[data-game] .cabinet h2{color:var(--game-ink,#392c36)}
+.overlay[data-game] .cabinet-head .eyebrow{color:var(--game-accent,#a35e61)}
+.overlay[data-game] #stage{border-color:var(--game-accent,#986c69);box-shadow:0 7px 0 color-mix(in srgb,var(--game-accent,#986c69) 55%,#342b38),inset 0 0 0 2px #fff8}
+.overlay[data-game] .game-controls button{background:var(--game-accent,#b85f62);box-shadow:0 4px color-mix(in srgb,var(--game-accent,#81434c) 65%,#302532)}
+.overlay[data-game] .stats b{color:var(--game-ink,#372a36)}
