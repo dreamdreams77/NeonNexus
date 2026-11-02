@@ -9,7 +9,7 @@ const [html,game,world,immersive,css]=await Promise.all([
  readFile(new URL('../arcade-game3d.js',import.meta.url),'utf8'),
  readFile(new URL('../arcade.css',import.meta.url),'utf8')
 ]);
-const ids=['skeeball','airhockey','whack','target','memory','rhythm','meteor','racer','stack','pinball','claw','chef','sushi','mixology','pulse','moto','moonquest'];
+const ids=['skeeball','airhockey','whack','target','memory','rhythm','meteor','racer','stack','pinball','claw','chef','sushi','mixology','pulse','moto','moonquest','ringtoss','gemdig'];
 
 test('arcade opens as one walkable RPG district with all seventeen mini-game cabinets and no game catalogue below it',()=>{
  for(const id of ids)assert.ok(world.includes("'"+id+"'"),'missing world cabinet '+id);
