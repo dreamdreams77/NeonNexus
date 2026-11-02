@@ -65,7 +65,7 @@ test('air hockey has free 2D mallets with momentum transfer, CPU attack/defence,
 test('restaurant district has bar, host stand, dining tables and a token-priced menu',()=>{
  assert.match(world,/THE GLOW BAR/);
  assert.match(world,/HOST/);
- assert.match(world,/makeTable\(5\.8,5\.3,1\)/);
+ assert.match(world,/makeTable\(8\.9,5\.4,1\)/);assert.match(world,/function hideAndDecal/);
  assert.match(world,/nexus:service-open/);
  assert.match(html,/id="service-modal"/);
  assert.match(game,/foodMenu=/);
@@ -237,7 +237,7 @@ test('storybook environment has painted wall art, handmade planters and drifting
  assert.match(world,/function muralTexture\(\)/);
  assert.match(world,/new THREE\.PlaneGeometry\(5\.3,2\.15\)/);
  assert.match(world,/function makePlanter\(x,z,flip=1\)/);
- assert.match(world,/new THREE\.CylinderGeometry\(\.42,\.3,\.58,11\)/);
+ assert.match(world,/createPlantSprite\(THREE,kind/);
  assert.match(world,/const motes=new THREE\.Points/);
  assert.match(world,/motesAttr\.needsUpdate=true/);
  assert.match(css,/Cabinet discovery: an editorial mini-preview/);
@@ -427,35 +427,26 @@ test('the prize gallery is a physically walkable 3D room with an open doorway an
  assert.match(world,/Math\.abs\(player\.position\.x-prizeRoom\.left\)/);
  assert.match(world,/Math\.abs\(player\.position\.x-prizeRoom\.right\)/);
 });
-test('redeemed prizes become physical gallery shelf displays and refresh immediately after redemption',()=>{
- assert.match(world,/function refreshPrizeGallery\(\)/);
- assert.match(world,/saved\.prizes\|\|\[\]/);
- assert.match(world,/shown\.forEach/);
- assert.match(world,/OWNED × /);
+test('redeemed prizes repaint the illustrated collection wall immediately after redemption',async()=>{
+ const spr=await readFile(new URL('../lobby-sprites.js',import.meta.url),'utf8');
+ assert.match(world,/function refreshPrizeGallery\(\)/);assert.match(world,/saved\.prizes\|\|\[\]/);
+ assert.match(world,/paintGalleryWall\(owned\)/);assert.match(world,/galleryWallTex\.needsUpdate=true/);
  assert.match(world,/window\.addEventListener\('nexus:prize-redeemed',refreshPrizeGallery\)/);
- assert.match(game,/else if\(service==='prize-room'\)/);
- assert.match(game,/prizeView='haul'/);
- assert.match(game,/WALKABLE PRIZE GALLERY/);
+ assert.match(spr,/YOUR PRIZE HAUL/);assert.match(spr,/'\?'/);assert.match(spr,/'×'\+q/);
+ assert.match(game,/else if\(service==='prize-room'\)/);assert.match(game,/prizeView='haul'/);assert.match(game,/WALKABLE PRIZE GALLERY/);
 });
 
-test('prize gallery uses distinct detailed 3D collectible sculpts instead of generic placeholder blobs',()=>{
- for(const id of ['sticker-pack','keychain','mystery-capsule','moon-moth','comet-bear','slime-kit','puzzle-cube','robot-kit','star-projector','mini-speaker','gaming-headset','retro-handheld','clay-figure','grand-prize'])assert.ok(world.includes("id==='"+id+"'"),'missing dedicated 3D model for '+id);
- assert.match(world,/function makePrizeModel\(p,id\)/);
- assert.match(world,/function artPlush\(p,id\)/);
- assert.match(world,/new THREE\.LatheGeometry/);
- assert.match(world,/new THREE\.TubeGeometry/);
- assert.match(world,/new THREE\.ExtrudeGeometry/);
- assert.match(world,/new THREE\.MeshPhysicalMaterial/);
- assert.match(world,/prizeArt\.gold/);
- assert.match(world,/artBox\(group,0,\.045,0/);
- assert.match(world,/OWNED × /);
+test('prize gallery draws every catalogue prize as its own illustration with 12 distinct drawn kinds',async()=>{
+ const spr=await readFile(new URL('../lobby-sprites.js',import.meta.url),'utf8');
+ for(const id of ['sticker-pack','keychain','mystery-capsule','clay-figure','moon-moth','comet-bear','slime-kit','puzzle-cube','robot-kit','star-projector','mini-speaker','gaming-headset','retro-handheld','grand-prize','vip-night','mastery-medal','golden-key'])assert.ok(spr.includes("id:'"+id+"'"),id);
+ for(const k of ['bear','rocket','trophy','gift','bunny','robot','crown','moon','pad','star','balloons','cat'])assert.match(spr,new RegExp("case'"+k+"':"));
+ assert.doesNotMatch(world,/function makePrizeModel/);
 });
 
 test('clay surfaces use tactile fingerprints, tool marks and physically varied roughness',()=>{
  assert.match(world,/Fine grain, soft dragged tool marks and shallow fingerprints/);
  assert.match(world,/roughnessMap:grain/);
  assert.match(world,/clearcoatRoughness:.82/);
- assert.match(world,/MeshPhysicalMaterial\(\{color:0xd6ad70/);
 });
 test('arcade games reward clean streaks, preserve per-game mastery and avoid stale memory callbacks',()=>{
  assert.match(game,/function awardStreak\(/);
@@ -558,8 +549,7 @@ test('daily district circuit tracks three distinct cabinets, grants one claim pe
  assert.match(css,/\.daily-circuit/);
 });
 
-test('premium experience prizes have bespoke 3D display models and the lucky wheel shows all eight ticket sectors',()=>{
- for(const id of ['vip-night','mastery-medal','golden-key'])assert.ok(world.includes("id==='"+id+"'"));
+test('the lucky wheel shows all eight ticket sectors',()=>{
  for(const value of ['0','10','25','50','100','250','500','1K'])assert.ok(world.includes("'"+value+"'"));
  assert.match(world,/Eight enamelled prize sectors/);
  assert.match(world,/wheelHub=new THREE\.Mesh/);
@@ -608,9 +598,7 @@ test('Glow Bar has three walk-up video poker machines with a playable five-card 
 });
 
 test('arcade district has living garden details and a festive social-square canopy',()=>{
- assert.match(world,/const livingLeaves=\[\],flowerHeads=\[\]/);
- assert.match(world,/flowerHeads\.push/);
- assert.match(world,/livingLeaves\.forEach/);
+ assert.match(world,/function makePlanter\(x,z,flip=1\)/);assert.match(world,/\(plantCount\+\+\*3/);
  assert.match(world,/makeRug\(0,7\.2/);
  assert.match(world,/const festoonBulbs=\[\]/);
  assert.match(world,/new THREE\.TubeGeometry\(festoonCurve/);
@@ -705,7 +693,7 @@ test('lobby crowd has personalities, A* navigation over real obstacles, queues, 
  const crowd=await readFile(new URL('../lobby-crowd.js',import.meta.url),'utf8');
  for(const k of ["'queue'","'play'","'react'","'drink'","'browse'","'dance'","'chat'","findPath","losClear","stuckT","skill","fav:pick(FAVS)"])assert.ok(crowd.includes(k),k);
  assert.match(world,/createCrowd\(\{THREE,scene,clayMat,cabinets/);
- assert.match(world,/const solidBoxes=\[\.\.\.cabinets\.map/);
+ assert.match(world,/const solidBoxes=\[\{x:-7\.1,z:13[^\]]*\.\.\.cabinets\.map/);
  assert.match(world,/solidBoxes\.some\(b=>Math\.abs\(nextX-b\.x\)/);
 });
 
@@ -719,7 +707,7 @@ test('players meet a title screen with load progress, failure fallback and persi
  assert.match(css,/\.nx-intro\{/);assert.doesNotMatch(css.slice(css.indexOf('Title screen')),/\n\.intro\{/);
  assert.match(css,/prefers-reduced-motion:reduce\)\{\.intro-bg i/);
 });
-test('planter petal colours cannot index out of range for negative world x',()=>{assert.match(world,/\(\(\(i\+Math\.round\(x\)\)%3\)\+3\)%3/);});
+test('plant species index is always in range for negative world x',()=>{assert.match(world,/\(plantCount\+\+\*3\+Math\.abs\(Math\.round\(x\*2\+z\)\)\)%4/);});
 
 test('light budget: cabinet glow uses a fixed pool of real lights instead of dozens of point lights',()=>{
  assert.match(world,/function makeLampProxy/);assert.match(world,/LAMP_POOL=mobileDevice\?3:5/);assert.match(world,/function updateLampPool/);

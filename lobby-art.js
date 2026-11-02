@@ -294,3 +294,6 @@ export function paintRug(base,accent,seed=1){
  for(let i=0;i<700;i++){x.fillStyle=`rgba(255,235,210,${rand()*.08})`;x.fillRect(rand()*S,rand()*S,2,1);}
  return c;
 }
+
+// Draw a game's emblem (used on cabinet side badges and marquees) at any scale.
+export function drawEmblem(ctx,id,cx,cy,s,seed=3){const r=rng(seed*131+9);(MOTIFS[id]||MOTIFS.skeeball)(ctx,cx,cy,s,r);}

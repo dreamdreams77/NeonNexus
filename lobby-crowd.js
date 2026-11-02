@@ -22,47 +22,32 @@ export function createCrowd(ctx){
 
  // Points of interest (world space). Fronts face the aisle; routes always travel the central aisle first.
  const cabs=cabinets.map((c,i)=>{const side=c.position.x<0?-1:1;return{i,side,z:c.position.z,front:{x:side*3.55,z:c.position.z},occ:null,queue:[],cab:c};});
- const stools=[[7.7,1.5],[9.0,1.5],[10.3,1.5]].map(([x,z])=>({x,z,occ:null}));
- const prizeSpots=[[-9.0,12.4],[-5.3,12.4],[-9.0,16.2],[-5.3,16.2],[-7.1,13.8]].map(([x,z])=>({x,z}));
+ const stools=[[7.0,1.4],[8.8,1.4],[10.6,1.4]].map(([x,z])=>({x,z,occ:null}));
+ const prizeSpots=[[-9.0,15.6],[-5.3,15.6],[-9.0,17.6],[-5.3,17.6],[-7.1,16.4]].map(([x,z])=>({x,z}));
  const juke={x:-10,z:-10.7},wheel={x:-7.7,z:-10.7};
- const obstacles=[ // axis-aligned solids: cx,cz,half-width,half-depth
+ const obstacles=[[8.9,5.4,1.55,1.55],[8.9,9.2,1.55,1.55],[8.9,13,1.55,1.55], // axis-aligned solids: cx,cz,half-width,half-depth
   ...cabs.map(c=>[c.side*5.2,c.z,1.05,.95]),[-8.6,-4.7,2.55,1.7],[8.9,-11.8,2.55,1.7],[-8.55,4.7,2.2,1.3],[9.3,-.6,2.7,1.2],
   [-10.0,-12.6,.7,.5],[-7.7,-12.6,1.1,.5],[0,-24.2,3,1],
-  [-10.7,14.85,.35,4.4],[-3.5,14.85,.35,4.4],[-7.1,10.5,3.7,.35],[-9.5,19.2,1.3,.35],[-4.7,19.2,1.3,.35]];
+  [-7.1,13,3.3,1.45],[-10.7,14.85,.35,4.4],[-3.5,14.85,.35,4.4],[-7.1,10.5,3.7,.35],[-9.5,19.2,1.3,.35],[-4.7,19.2,1.3,.35]];
 
+ const plushTex=(()=>{const cv=document.createElement('canvas');cv.width=cv.height=96;const x=cv.getContext('2d');x.lineWidth=3.5;x.strokeStyle='#2a1a2d';x.lineJoin='round';
+  const blob=(cx,cy,rx,ry,col)=>{const gr=x.createRadialGradient(cx-rx*.3,cy-ry*.4,2,cx,cy,Math.max(rx,ry)*1.1);gr.addColorStop(0,'#ffd2e4');gr.addColorStop(.6,col);gr.addColorStop(1,'#c9648f');x.fillStyle=gr;x.beginPath();x.ellipse(cx,cy,rx,ry,0,0,6.3);x.fill();x.stroke();};
+  blob(30,22,10,13,'#f4a6c4');blob(66,22,10,13,'#f4a6c4');blob(48,56,30,28,'#f4a6c4');blob(48,70,17,14,'#fbd5e3');x.fillStyle='#2a1a2d';x.beginPath();x.ellipse(38,50,3.2,4.2,0,0,6.3);x.ellipse(58,50,3.2,4.2,0,0,6.3);x.fill();x.fillStyle='#fff';x.beginPath();x.arc(39.2,48.5,1.2,0,6.3);x.arc(59.2,48.5,1.2,0,6.3);x.fill();x.strokeStyle='#2a1a2d';x.beginPath();x.moveTo(44,60);x.quadraticCurveTo(48,64,52,60);x.stroke();
+  const t=new THREE.CanvasTexture(cv);t.colorSpace=THREE.SRGBColorSpace;return t;})();
  const crowd=[],bursts=[];
  const burstMat=new THREE.MeshBasicMaterial({color:0xffe08a,toneMapped:false});
  for(let i=0;i<18;i++){const m=new THREE.Mesh(new THREE.OctahedronGeometry(.07),burstMat);m.visible=false;scene.add(m);bursts.push({m,life:0,vx:0,vy:0,vz:0});}
  function spark(x,y,z,n=6){let k=0;for(const b of bursts){if(b.life>0)continue;b.life=.9;b.m.visible=true;b.m.position.set(x,y,z);const a=rand()*6.28;b.vx=Math.cos(a)*(.6+rand()*.8);b.vz=Math.sin(a)*(.6+rand()*.8);b.vy=1.8+rand()*1.2;if(++k>=n)break;}}
 
  function build(i){
-  const g=new THREE.Group(),skin=mat(pick(SKIN)),shirtC=pick(SHIRT),shirt=mat(shirtC),pants=mat(pick(PANTS)),hairC=pick(HAIR),hairM=mat(hairC);
-  const sh=new THREE.Mesh(shadowGeo,shadowMat);sh.rotation.x=-Math.PI/2;sh.position.y=.012;g.add(sh);
-  const body=new THREE.Group();g.add(body);
-  const torso=mesh(gSphere,shirt,body,0,.88,0,.32,.4,.24);
-  mesh(gSphere,mat(shirtC^0x1a1a1a),body,0,.64,0,.3,.14,.23); // hem
-  const legs=[-1,1].map(s=>{const piv=new THREE.Group();piv.position.set(s*.12,.56,0);g.add(piv);mesh(gCyl,pants,piv,0,-.26,0,.09,.27,.09);mesh(gSphere,mat(0x3a2c3a),piv,0,-.54,.04,.1,.07,.14);return piv;});
-  const arms=[-1,1].map(s=>{const piv=new THREE.Group();piv.position.set(s*.34,1.08,0);body.add(piv);mesh(gCyl,shirt,piv,0,-.2,0,.075,.22,.075);mesh(gSphere,skin,piv,0,-.44,0,.075,.075,.075);return piv;});
-  const head=new THREE.Group();head.position.set(0,1.42,0);body.add(head);
-  mesh(gSphere,skin,head,0,.06,0,.23,.24,.22);
-  const hs=i%4;
-  if(hs===0)mesh(gSphere,hairM,head,0,.14,-.02,.245,.17,.235);
-  else if(hs===1){mesh(gSphere,hairM,head,0,.14,-.02,.245,.16,.235);mesh(gSphere,hairM,head,0,.36,-.02,.1,.1,.1);}
-  else if(hs===2){mesh(gSphere,hairM,head,0,.12,-.05,.25,.2,.25);mesh(gSphere,hairM,head,0,-.1,-.12,.22,.28,.12);}
-  else{mesh(gSphere,mat(shirtC^0x303030),head,0,.2,0,.25,.13,.24);mesh(gCyl,mat(shirtC^0x303030),head,0,.1,0,.255,.04,.245);}
-  for(const s of [-1,1]){mesh(gSphere,dark,head,s*.085,.09,.2,.028,.036,.02);const c=mesh(gSphere,cheek,head,s*.14,-.01,.18,.045,.03,.01);c.castShadow=false;}
-  const mouth=new THREE.Mesh(gTorus,dark);mouth.scale.set(.06,.045,.05);mouth.position.set(0,-.06,.21);mouth.rotation.z=Math.PI;head.add(mouth);
-  if(i%3===0){for(const s of [-1,1]){const gl=new THREE.Mesh(new THREE.TorusGeometry(.06,.01,6,14),dark);gl.position.set(s*.085,.09,.22);head.add(gl);}}
-  if(i%5===1)mesh(gBox,mat(0x9a6a8a),body,0,.9,-.26,.2,.26,.1); // backpack
-  if(i%5===3){const sc=new THREE.Mesh(new THREE.TorusGeometry(.2,.05,6,16),mat(0xe6786a));sc.rotation.x=Math.PI/2;sc.position.set(0,1.27,0);sc.castShadow=true;body.add(sc);}
-  // held prop: cup (bar) or plush (prize gallery)
-  const prop=new THREE.Group();prop.visible=false;arms[1].add(prop);prop.position.set(0,-.46,.06);
-  const cup=new THREE.Group();mesh(gCyl,mat(0xf2ead8),cup,0,0,0,.05,.07,.05);mesh(gSphere,mat([0xff7ab6,0x5fe0d4,0xffc66b][i%3]),cup,0,.08,0,.052,.03,.052);prop.add(cup);
-  const plush=new THREE.Group();mesh(gSphere,mat(0xf4a6c4),plush,0,.06,0,.1,.1,.09);for(const s of [-1,1])mesh(gSphere,mat(0xf4a6c4),plush,s*.07,.15,0,.035,.05,.03);plush.visible=false;prop.add(plush);
-  scene.add(g);
-  return{g,body,torso,legs,arms,head,mouth,prop,cup,plush};
+  // The visible body is an illustrated sprite actor; the lightweight rig objects below only carry pose values.
+  const g=new THREE.Group(),sh=new THREE.Mesh(shadowGeo,shadowMat);sh.rotation.x=-Math.PI/2;sh.position.y=.012;sh.scale.set(1.15,.8,1);g.add(sh);
+  const actor=ctx.makeActor(i);g.add(actor.root);
+  const o=()=>new THREE.Object3D(),mouth=o();mouth.scale.set(.06,.045,.05);
+  const prop=o(),cup=o(),plush=new THREE.Mesh(new THREE.PlaneGeometry(.55,.55),new THREE.MeshBasicMaterial({map:plushTex,transparent:true,toneMapped:false}));
+  plush.position.set(0,.85,.22);plush.visible=false;actor.root.add(plush);
+  return{g,actor,body:o(),torso:o(),legs:[o(),o()],arms:[o(),o()],head:o(),mouth,prop,cup,plush};
  }
-
  function nearestFree(){for(let k=0;k<40;k++){const x=(rand()-.5)*8,z=-20+rand()*38;if(free(x,z))return[x,z];}return[0,0];}
  function blocked(x,z,pad=.2){for(const[cx,cz,hw,hd]of obstacles)if(Math.abs(x-cx)<hw+pad&&Math.abs(z-cz)<hd+pad)return true;return false;}
  function push(v){ // push out of solids and the world edge so nobody ever clips furniture
@@ -183,6 +168,18 @@ export function createCrowd(ctx){
    m.arms[0].rotation.z=.08;m.arms[1].rotation.z=-.08;
    m.head.rotation.y+=(headYaw-m.head.rotation.y)*Math.min(1,dt*7);m.head.rotation.x=m.body.rotation.x*-.6+(smile<0?.12:0);
    m.mouth.scale.y+=((smile<0?-.045:.045)-m.mouth.scale.y)*Math.min(1,dt*10);
+   {const hdg=g.rotation.y;let pose='idle',force=null;
+    if(moving>0){pose='walk'+(((Math.floor(v.walkPhase*2/Math.PI))%4)+4)%4;}
+    else switch(v.state){
+     case'play':pose=Math.sin(t*13+v.playSeed)>0?'mash0':'mash1';break;
+     case'react':pose=v.react==='win'?'cheer':'slump';force='front';break;
+     case'drink':pose=Math.sin(t*.9+v.i*2)>.15?'sip':'idle';force='front';break;
+     case'dance':pose=Math.sin(t*6+v.i)>0?'cheer':'idle';force='front';break;
+     case'chat':if(armLift[1]>.5){pose='talk';force='front';}break;
+    }
+    if(v.wave>0){pose='wave';force='front';}
+    m.actor.root.rotation.y=-g.rotation.y;
+    m.actor.set(hdg,pose,force,moving>0?0:Math.sin(t*1.7+v.i)*.008);}
   }
  }
  return{update,crowd,count:target};
