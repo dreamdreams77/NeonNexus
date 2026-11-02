@@ -619,3 +619,26 @@ test('arcade district has living garden details and a festive social-square cano
  assert.match(world,/flag\.rotation\.z=Math\.sin/);
  assert.match(world,/TONIGHT · OPEN PLAY/);
 });
+
+test('walk-up air hockey and billiards have a clear physical gap and grounded table legs',()=>{
+ assert.match(world,/g\.position\.set\(-4\.45,0,-2\.55\)/);
+ assert.match(world,/g\.position\.set\(4\.45,0,-2\.55\)/);
+ assert.match(world,/box\(\.2,\.68,\.2,x,\.34,z,clayMat\(0x60444b\)/);
+ assert.match(world,/box\(\.22,\.68,\.22,x,\.34,z,clayMat\(0x68494a\)/);
+});
+
+test('player movement uses eased acceleration, soft stopping and a smoother camera follow',()=>{
+ assert.match(world,/targetX=x\*4\.65,targetZ=z\*4\.65/);
+ assert.match(world,/len>\.06\?10\.5:7\.8/);
+ assert.match(world,/camera\.position\.lerp\(cameraTarget,1-Math\.exp\(-4\.8\*dt\)\)/);
+ assert.match(world,/const stride=Math\.min\(1,speed\/4\.65\)/);
+});
+
+test('visitors have individual looping routes, pause and face nearby players, and animate their steps',()=>{
+ assert.match(world,/const visitorRoutes=/);
+ assert.match(world,/routeIndex:1/);
+ assert.match(world,/playerDistance>3\.8/);
+ assert.match(world,/visitorArms\.filter/);
+ assert.match(world,/visitorLegs\.filter/);
+ assert.match(world,/visitor\.waveUntil/);
+});
