@@ -98,6 +98,28 @@ if(mount){
  for(const x of [-.13,.13])sphere(.045,x,1.69,.31,mat(0x33283b),host);
  for(const x of [-.23,.23])sphere(.075,x,1.48,.26,clayMat(0xe78d87),host);
  const smile=new THREE.Mesh(new THREE.TorusGeometry(.09,.018,8,18,Math.PI),mat(0x7c4855));smile.position.set(0,1.48,.31);smile.rotation.z=Math.PI;host.add(smile);
+ // The restaurant is part of this same continuous floor: no scene swap or second page.
+ const dining= new THREE.Group();scene.add(dining);
+ const wood=clayMat(0x80564b),cream=clayMat(0xf0d3a8),brass=mat(0xd6a15f,.38,.35,0x9c6130,.22),leaf=clayMat(0x6c9b78);
+ // Open kitchen and bar counter along the east wall, with a visible pass-through.
+ box(5.8,1.35,1.25,8.8,.72,-1.8,wood,dining,.2);
+ box(5.95,.16,1.35,8.8,1.46,-1.8,cream,dining,.12);
+ box(5.5,.1,.12,8.8,1.57,-1.22,brass,dining,.04);
+ for(let i=0;i<3;i++){const stool=cyl(.28,.32,.16,7+i*1.8,.48,-.45,wood,dining);cyl(.07,.07,.8,7+i*1.8,.15,-.45,brass,dining);}
+ // Kitchen wall, tiled backsplash, shelves, warm pendants and cookware silhouettes.
+ box(6,.12,.3,8.8,2.65,-2.5,cream,dining,.06);box(6,.1,.22,8.8,3.5,-2.5,wood,dining,.04);
+ for(let i=0;i<5;i++){box(.08,.75,.08,6.4+i*1.2,3.05,-2.55,brass,dining,.03);sphere(.22,6.4+i*1.2,3.35,-2.35,clayMat([0xd88b69,0x8fb9a1,0xe3bd79][i%3]),dining,.7,.9,.35);}
+ for(let i=0;i<3;i++){cyl(.08,.08,.45,7.1+i*1.7,4.5,-1.7,brass,dining);sphere(.32,7.1+i*1.7,4.22,-1.7,mat(0xffca85,.4,0,0xffa64f,.8),dining,1,.28,1);}
+ const barSign=box(3.6,.7,.18,8.8,4.35,-2.4,clayMat(0x513749),dining,.12);
+ const barTexture=textTexture('THE GLOW BAR','KITCHEN · JUICE · MOCKTAILS','#ffc88a');const barPlane=new THREE.Mesh(new THREE.PlaneGeometry(3.3,.52),new THREE.MeshBasicMaterial({map:barTexture}));barPlane.position.set(8.8,4.35,-2.29);dining.add(barPlane);
+ // Host podium and a friendly reservation bell.
+ box(1.45,1.2,.85,1.4,.62,10.2,clayMat(0x98605e),dining,.15);box(1.52,.12,.92,1.4,1.26,10.2,cream,dining,.08);cyl(.09,.12,.12,1.4,1.4,10.2,brass,dining);
+ const hostSign=box(2.4,.55,.16,1.4,2.25,10.15,clayMat(0x594052),dining,.1);const hostTex=textTexture('HOST','PLEASE WAIT TO BE SEATED','#ffe0ae');const hostPlane=new THREE.Mesh(new THREE.PlaneGeometry(2.2,.42),new THREE.MeshBasicMaterial({map:hostTex}));hostPlane.position.set(1.4,2.25,10.25);dining.add(hostPlane);
+ // Three intimate tables, upholstered chairs, plates, napkins and a centrepiece.
+ const tables=[];
+ function makeTable(x,z,i){const g=new THREE.Group();g.position.set(x,0,z);dining.add(g);cyl(.78,.86,.18,0,1.05,0,cream,g);cyl(.12,.16,1,0,.5,0,wood,g);for(let a=0;a<4;a++){const ang=a*Math.PI/2;box(.58,.18,.58,Math.cos(ang)*1.15,.55,Math.sin(ang)*1.15,clayMat(0x9a6862),g,.12);box(.64,.12,.64,Math.cos(ang)*1.15,.93,Math.sin(ang)*1.15,clayMat(0xd6a58d),g,.1);}for(let a=0;a<3;a++){cyl(.22,.22,.035,-.35+a*.35,1.16,.08,mat(0xfff0d3,.3),g);sphere(.08,-.35+a*.35,1.22,.08,clayMat([0xd67f70,0x88bca3,0xe3bc70][a]),g,.7,.4,.7);}tables.push({group:g,position:new THREE.Vector3(x,0,z),number:i});}
+ makeTable(5.8,5.3,1);makeTable(9.1,7.8,2);makeTable(5.7,10.5,3);
+ const services=[{type:'bar',name:'GLOW BAR · ORDER FOOD & DRINKS',position:new THREE.Vector3(8.8,0,-.2)},{type:'host',name:'HOST STAND · REQUEST A TABLE',position:new THREE.Vector3(1.4,0,10.2)},...tables.map(t=>({type:'table',name:'TABLE '+t.number+' · TAKE A SEAT',position:t.position,table:t.number}))];
  // Player avatar: asymmetrical clay hoodie, rounded head, hair cap, eyes and stubby limbs.
  const player=new THREE.Group();scene.add(player);player.position.set(0,0,13);
  const hoodie=new THREE.Mesh(new THREE.CapsuleGeometry(.37,.68,5,10),clayMat(0x7db9b1));hoodie.position.y=1.04;hoodie.castShadow=true;player.add(hoodie);
@@ -106,11 +128,11 @@ if(mount){
  for(const x of [-.105,.105])sphere(.035,x,1.83,.27,mat(0x2e2638),player);
  for(const x of [-.39,.39]){const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.12,.48,4,8),clayMat(0x7db9b1));arm.position.set(x,1.03,0);arm.rotation.z=x*.7;player.add(arm);}
  for(const x of [-.17,.17]){const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.14,.38,4,8),clayMat(0x574052));leg.position.set(x,.3,0);player.add(leg);}
- const keys=new Set(),touch={x:0,y:0};let nearest=null,walk=0;
+ const keys=new Set(),touch={x:0,y:0};let nearest=null,activeService=null,walk=0;
  const prompt=document.querySelector('#arcade-world-prompt'),interact=document.querySelector('#arcade-interact'),pad=document.querySelector('#arcade-touch-pad'),knob=document.querySelector('#arcade-joystick');
- function useCabinet(){if(!nearest)return;window.dispatchEvent(new CustomEvent('nexus:arcade-play',{detail:{gameId:nearest.userData.id}}));}
- interact.addEventListener('click',useCabinet);
- window.addEventListener('keydown',e=>{if(!document.querySelector('#overlay').hidden)return;const k=e.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e'].includes(k)){e.preventDefault();keys.add(k);}if(k==='e')useCabinet();});
+ function useCabinet(){if(!nearest)return;window.dispatchEvent(new CustomEvent('nexus:arcade-play',{detail:{gameId:nearest.userData.id}}));}\n function useService(){if(!activeService)return;window.dispatchEvent(new CustomEvent('nexus:service-open',{detail:{service:activeService.type,table:activeService.table||null}}));}
+ interact.addEventListener('click',()=>{if(activeService)useService();else useCabinet();});
+ window.addEventListener('keydown',e=>{if(!document.querySelector('#overlay').hidden)return;const k=e.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e'].includes(k)){e.preventDefault();keys.add(k);}if(k==='e'){if(activeService)useService();else useCabinet();}});
  window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));window.addEventListener('blur',()=>keys.clear());
  if(pad){let pid=null;pad.addEventListener('pointerdown',e=>{pid=e.pointerId;pad.setPointerCapture(pid);});pad.addEventListener('pointermove',e=>{if(pid!==e.pointerId)return;const r=pad.getBoundingClientRect(),dx=e.clientX-r.left-r.width/2,dy=e.clientY-r.top-r.height/2,len=Math.max(1,Math.hypot(dx,dy)),s=Math.min(1,len/(r.width*.32));touch.x=dx/len*s;touch.y=dy/len*s;knob.style.transform='translate('+touch.x*24+'px,'+touch.y*24+'px)';});const stop=e=>{if(pid!==null&&(!e||e.pointerId===pid)){pid=null;touch.x=touch.y=0;knob.style.transform='translate(0,0)';}};pad.addEventListener('pointerup',stop);pad.addEventListener('pointercancel',stop);}
  const ray=new THREE.Raycaster(),pointer=new THREE.Vector2();
