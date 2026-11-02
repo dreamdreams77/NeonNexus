@@ -82,7 +82,7 @@ if(game==='stack'){p.width=170;p.cx=450;p.blocks=0;p.blockX=450;}
 if(game==='whack')spawnMoles();
 if(game==='skeeball'){p.ballX=450;p.ballY=415;}
 if(game==='chef'){window.dispatchEvent(new CustomEvent('nexus:game3d-start'));return;}raf=requestAnimationFrame(loop);}
-function finish(win=false){if(!running)return;running=false;cancelAnimationFrame(raf);if(win)window.dispatchEvent(new CustomEvent('nexus:character-celebrate'));const earned=p.tableDuel?(win?p.tableDuel.payout:0):Math.max(2,Math.floor(score/7)+(win?12:0)+Math.min(15,Math.floor(combo/3)));$('#result').textContent=p.tableDuel?(win?'MATCH WON · ':'MATCH LOST · ')+score+' POINTS · '+(win?'RETURN '+earned+' TOKENS':'ENTRY FEE LOST'):(win?'CABINET CLEARED! ':'ROUND OVER · ')+score+' POINTS · +'+earned+' TOKENS';$('#start').textContent='PLAY AGAIN';sound(win?880:190,.22,'triangle');try{const key='neon-nexus-player-v1',saved=JSON.parse(localStorage.getItem(key)||'{}');saved.tokens=(Number(saved.tokens)||250)+earned;saved.arcadeBest=saved.arcadeBest||{};saved.arcadeBest[game]=Math.max(Number(saved.arcadeBest[game])||0,score);localStorage.setItem(key,JSON.stringify(saved));$('#arcade-tokens').textContent=saved.tokens;}catch{}}
+function finish(win=false){if(!running)return;running=false;cancelAnimationFrame(raf);if(win)window.dispatchEvent(new CustomEvent('nexus:character-celebrate'));const earned=p.tableDuel?(win?p.tableDuel.payout:0):Math.max(2,Math.floor(score/7)+(win?12:0)+Math.min(15,Math.floor(combo/3)));const ticketsEarned=Math.max(2,Math.floor(score/9)+(win?12:0)+Math.min(18,Math.floor(combo/3)));$('#result').textContent=(p.tableDuel?(win?'MATCH WON · ':'MATCH LOST · ')+score+' POINTS · '+(win?'RETURN '+earned+' TOKENS':'ENTRY FEE LOST'):(win?'CABINET CLEARED! ':'ROUND OVER · ')+score+' POINTS · +'+earned+' TOKENS')+' · +'+ticketsEarned+' TICKETS';$('#start').textContent='PLAY AGAIN';sound(win?880:190,.22,'triangle');try{const key='neon-nexus-player-v1',saved=JSON.parse(localStorage.getItem(key)||'{}');saved.tokens=(Number(saved.tokens)||250)+earned;saved.tickets=(Number(saved.tickets)||0)+ticketsEarned;saved.ticketHistory=saved.ticketHistory||[];saved.ticketHistory.unshift({game,score,amount:ticketsEarned,at:Date.now()});saved.ticketHistory=saved.ticketHistory.slice(0,30);saved.arcadeBest=saved.arcadeBest||{};saved.arcadeBest[game]=Math.max(Number(saved.arcadeBest[game])||0,score);localStorage.setItem(key,JSON.stringify(saved));$('#arcade-tokens').textContent=saved.tokens;$('#arcade-tickets').textContent=saved.tickets;}catch{}}
 function rounded(x,y,w,h,r,c){ctx.fillStyle=c;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill();ctx.strokeStyle='rgba(55,39,51,.23)';ctx.lineWidth=Math.max(1.1,Math.min(2.1,w*.003));ctx.stroke();}
 function circle(x,y,r,c){ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();if(r>5){ctx.strokeStyle='rgba(55,39,51,.24)';ctx.lineWidth=Math.max(1,r*.035);ctx.stroke();}}
 function clay(x,y,r,c){ctx.save();ctx.translate(x,y);ctx.rotate(Math.sin(x*.013+y*.017)*.07);ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(-r*.92,-r*.12);ctx.bezierCurveTo(-r,-r*.8,r*.35,-r*1.12,r*.84,-r*.45);ctx.bezierCurveTo(r*1.15,r*.15,r*.48,r*.98,-r*.22,r*.92);ctx.bezierCurveTo(-r*.85,r*.82,-r*1.08,r*.38,-r*.92,-r*.12);ctx.fill();ctx.globalAlpha=.22;ctx.strokeStyle='#fff5d9';ctx.lineWidth=Math.max(1,r*.07);ctx.beginPath();ctx.arc(-r*.12,-r*.13,r*.7,Math.PI*1.08,Math.PI*1.78);ctx.stroke();ctx.globalAlpha=.16;ctx.strokeStyle='#50394c';ctx.beginPath();ctx.arc(r*.1,r*.08,r*.83,.2,1.1);ctx.stroke();ctx.globalAlpha=.2;ctx.strokeStyle='#5c3e4c';ctx.lineWidth=Math.max(1,r*.035);ctx.beginPath();ctx.moveTo(-r*.72,r*.24);ctx.quadraticCurveTo(-r*.48,r*.42,-r*.19,r*.37);ctx.stroke();ctx.globalAlpha=.13;for(let i=0;i<5;i++){const fx=Math.sin(i*12.7+x*.03)*r*.52,fy=Math.cos(i*8.3+y*.02)*r*.48;ctx.fillStyle='#fff0cf';ctx.beginPath();ctx.ellipse(fx,fy,Math.max(.7,r*.025),Math.max(.5,r*.014),i*.6,0,Math.PI*2);ctx.fill();}ctx.restore();}
@@ -248,14 +248,67 @@ window.addEventListener('nexus:arcade-play',e=>{const id=e.detail?.gameId;if(id=
 $('#start').addEventListener('click',start);$('#close').addEventListener('click',()=>{running=false;cancelAnimationFrame(raf);window.dispatchEvent(new CustomEvent('nexus:game3d-stop'));overlay.hidden=true;activeTableDuel=null;});
 canvas.addEventListener('pointerdown',e=>{keyboardAim=false;try{canvas.setPointerCapture(e.pointerId);}catch{}onDown(e);});canvas.addEventListener('pointermove',onMove);canvas.addEventListener('pointerup',onUp);canvas.addEventListener('pointercancel',onUp);
 window.addEventListener('keydown',keydown);window.addEventListener('keyup',keyup);
-const saved=(()=>{try{return JSON.parse(localStorage.getItem('neon-nexus-player-v1')||'{}')}catch{return {}}})();$('#arcade-tokens').textContent=saved.tokens??250;
-const serviceModal=$('#service-modal'),serviceTitle=$('#service-title'),serviceKicker=$('#service-kicker'),serviceCopy=$('#service-copy'),serviceItems=$('#service-items'),serviceStatus=$('#service-status');
+const saved=(()=>{try{return JSON.parse(localStorage.getItem('neon-nexus-player-v1')||'{}')}catch{return {}}})();$('#arcade-tokens').textContent=saved.tokens??250;$('#arcade-tickets').textContent=Number(saved.tickets)||0;
+const serviceModal=$('#service-modal'),serviceTitle=$('#service-title'),serviceKicker=$('#service-kicker'),serviceCopy=$('#service-copy'),serviceItems=$('#service-items'),serviceStatus=$('#service-status'),prizeToolbar=$('#prize-toolbar'),prizeBalance=$('#prize-balance'),prizeFilters=$('#prize-filters'),prizeCollection=$('#prize-collection'),prizeViewToggle=$('#prize-view-toggle');
 const foodMenu=[['Clay Oven Flatbread','Roasted tomato, basil and whipped ricotta',38],['Moon Garden Bowl','Warm grains, greens, avocado and citrus',32],['Crispy Comet Tenders','Golden crunchy tenders with herb dip',30],['Starlight Mac & Cheese','Creamy three-cheese comfort bowl',28],['Sushi Garden Plate','Six fresh garden and salmon-style rolls',42],['Mini Meteor Sliders','Three little house sliders with fries',45],['Honey Cloud Sundae','Vanilla, honeycomb and berry ripple',24],['Warm Cinnamon Knots','Soft baked knots with vanilla glaze',20]];
 const drinkMenu=[['Nebula Berry Fizz','Blueberry, lime, soda and crushed ice',18],['Peach Moon Cooler','Peach nectar, mint and sparkling water',18],['Glow Garden Lemonade','Fresh lemon, basil and a little sparkle',16],['Cosmic Cocoa','Warm chocolate, vanilla cloud and cinnamon',20],['Stardust Smoothie','Mango, banana and coconut',22],['Midnight Mocha','Espresso, cocoa and steamed milk',22]];
 function readPlayer(){try{return JSON.parse(localStorage.getItem('neon-nexus-player-v1')||'{}')}catch{return {}}}
-function writePlayer(saved){localStorage.setItem('neon-nexus-player-v1',JSON.stringify(saved));$('#arcade-tokens').textContent=saved.tokens??250;}
+function writePlayer(saved){localStorage.setItem('neon-nexus-player-v1',JSON.stringify(saved));$('#arcade-tokens').textContent=saved.tokens??250;$('#arcade-tickets').textContent=Number(saved.tickets)||0;}
+const prizeCatalog=[
+ {id:'sticker-pack',name:'Nexus Sticker Pack',category:'Collectibles',description:'A glossy set of arcade mascots and neon district decals.',icon:'✨',cost:65,rarity:'COMMON',stock:40},
+ {id:'keychain',name:'Comet Keychain',category:'Collectibles',description:'A little hand-painted comet to take home.',icon:'☄️',cost:95,rarity:'COMMON',stock:32},
+ {id:'mystery-capsule',name:'Mystery Capsule',category:'Collectibles',description:'One surprise mini collectible from the Nexus series.',icon:'🎁',cost:180,rarity:'UNCOMMON',stock:18},
+ {id:'clay-figure',name:'Limited Clay Arcade Figure',category:'Collectibles',description:'A numbered miniature of a favourite arcade character.',icon:'🧸',cost:520,rarity:'RARE',stock:8},
+ {id:'moon-moth',name:'Moon Moth Plush',category:'Plush',description:'A soft, squishy moth with embroidered starry wings.',icon:'🦋',cost:220,rarity:'UNCOMMON',stock:20},
+ {id:'comet-bear',name:'Giant Comet Bear',category:'Plush',description:'The big cuddle prize from the top shelf.',icon:'🐻',cost:980,rarity:'RARE',stock:6},
+ {id:'slime-kit',name:'Nebula Slime Lab',category:'Toys',description:'Mix shimmering colours and make your own cosmic putty.',icon:'🫧',cost:150,rarity:'COMMON',stock:16},
+ {id:'puzzle-cube',name:'Prism Puzzle Cube',category:'Toys',description:'A tactile colour-shifting brain teaser.',icon:'🧩',cost:240,rarity:'UNCOMMON',stock:14},
+ {id:'robot-kit',name:'Pocket Bot Builder',category:'Toys',description:'A build-it-yourself mini robot with moving parts.',icon:'🤖',cost:680,rarity:'RARE',stock:7},
+ {id:'star-projector',name:'Little Galaxy Projector',category:'Tech',description:'Fill a bedroom ceiling with drifting stars.',icon:'🌌',cost:1250,rarity:'RARE',stock:5},
+ {id:'mini-speaker',name:'Pocket Bluetooth Speaker',category:'Tech',description:'A compact rechargeable speaker for everyday adventures.',icon:'🔊',cost:1750,rarity:'EPIC',stock:4},
+ {id:'gaming-headset',name:'Nexus Gaming Headset',category:'Tech',description:'Over-ear sound with a soft padded headband.',icon:'🎧',cost:3200,rarity:'EPIC',stock:3},
+ {id:'retro-handheld',name:'Retro Pocket Arcade',category:'Big Wins',description:'A dedicated handheld with a collection of classic-style games.',icon:'🕹️',cost:5200,rarity:'LEGENDARY',stock:2},
+ {id:'grand-prize',name:'Ultimate Nexus Prize Bundle',category:'Big Wins',description:'The showcase bundle: plush, collectibles and premium tech.',icon:'🏆',cost:9000,rarity:'LEGENDARY',stock:1}
+];
+const prizeCategories=['All','Plush','Toys','Collectibles','Tech','Big Wins'];let prizeCategory='All',prizeView='shop';
+function renderPrizeExchange(){
+ const saved=readPlayer(),tickets=Number(saved.tickets)||0,haul=saved.prizes||[],owned=haul.reduce((n,item)=>n+(Number(item.quantity)||0),0);
+ prizeBalance.textContent='🎟 '+tickets.toLocaleString()+' TICKETS AVAILABLE  ·  '+owned+' PRIZES IN YOUR HAUL';
+ prizeFilters.innerHTML='';prizeCategories.forEach(category=>{const b=document.createElement('button');b.className='prize-filter';b.type='button';b.textContent=category;b.setAttribute('aria-pressed',String(prizeCategory===category));b.addEventListener('click',()=>{prizeCategory=category;renderPrizeExchange();});prizeFilters.append(b);});
+ prizeViewToggle.textContent=prizeView==='shop'?'MY PRIZE HAUL':'BACK TO PRIZE SHOP';
+ serviceItems.hidden=prizeView!=='shop';prizeCollection.hidden=prizeView!=='haul';
+ if(prizeView==='shop'){
+  serviceItems.innerHTML='';const items=prizeCatalog.filter(item=>prizeCategory==='All'||item.category===prizeCategory);
+  items.forEach(item=>{const stock=Number((saved.prizeStock||{})[item.id]??item.stock),card=document.createElement('article');card.className='service-item prize-card';
+   const icon=document.createElement('span');icon.className='prize-icon';icon.textContent=item.icon;
+   const rarity=document.createElement('span');rarity.className='prize-rarity';rarity.textContent=item.rarity;
+   const name=document.createElement('b');name.textContent=item.name;
+   const desc=document.createElement('small');desc.textContent=item.description;
+   const tag=document.createElement('span');tag.className='prize-tag';tag.textContent=item.category;
+   const cost=document.createElement('strong');cost.className='prize-cost';cost.textContent='🎟 '+item.cost.toLocaleString()+' TICKETS';
+   const stockLabel=document.createElement('span');stockLabel.className='prize-stock';stockLabel.textContent=stock>0?(stock<=5?'LIMITED STOCK · '+stock+' LEFT':'IN STOCK · '+stock):'SOLD OUT';
+   const redeem=document.createElement('button');redeem.type='button';redeem.className='prize-redeem';redeem.textContent=tickets>=item.cost?'REDEEM PRIZE':'NEED '+(item.cost-tickets).toLocaleString()+' MORE';
+   redeem.disabled=stock<=0||tickets<item.cost;redeem.addEventListener('click',()=>redeemPrize(item));card.append(icon,rarity,name,desc,tag,cost,stockLabel,redeem);serviceItems.append(card);
+  });
+ }else{
+  prizeCollection.innerHTML='';const heading=document.createElement('h3');heading.textContent='YOUR PRIZE HAUL';prizeCollection.append(heading);
+  if(!haul.length){const empty=document.createElement('div');empty.className='prize-haul-empty';empty.textContent='Your shelf is waiting. Redeem your first prize and it will appear here.';prizeCollection.append(empty);}
+  haul.forEach(entry=>{const item=prizeCatalog.find(p=>p.id===entry.id),row=document.createElement('div');row.className='prize-haul-item';const icon=document.createElement('span');icon.className='prize-haul-icon';icon.textContent=item?.icon||'🎁';const details=document.createElement('div'),name=document.createElement('b'),meta=document.createElement('small');name.textContent=entry.name||item?.name||'Mystery prize';meta.textContent='Quantity: '+(Number(entry.quantity)||0)+' · Last redeemed '+new Date(entry.lastRedeemed||entry.at||Date.now()).toLocaleDateString();details.append(name,meta);row.append(icon,details);prizeCollection.append(row);});
+  const history=document.createElement('div');history.className='prize-history';history.textContent='RECENT REDEMPTIONS · '+(saved.prizeHistory||[]).slice(0,5).map(h=>h.name+' ('+Number(h.cost).toLocaleString()+' tickets)').join(' · ');prizeCollection.append(history);
+ }
+}
+function redeemPrize(item){
+ const saved=readPlayer(),tickets=Number(saved.tickets)||0; saved.prizeStock=saved.prizeStock||{};
+ const stock=Number(saved.prizeStock[item.id]??item.stock);
+ if(stock<=0){serviceStatus.textContent='That prize has sold out. Check another shelf.';return;}
+ if(tickets<item.cost){serviceStatus.textContent='You need '+(item.cost-tickets)+' more tickets for '+item.name+'.';return;}
+ saved.tickets=tickets-item.cost;saved.prizeStock[item.id]=stock-1;saved.prizes=saved.prizes||[];
+ let owned=saved.prizes.find(p=>p.id===item.id);if(!owned){owned={id:item.id,name:item.name,quantity:0};saved.prizes.push(owned);}owned.quantity++;owned.lastRedeemed=Date.now();
+ saved.prizeHistory=saved.prizeHistory||[];saved.prizeHistory.unshift({id:item.id,name:item.name,cost:item.cost,at:Date.now()});saved.prizeHistory=saved.prizeHistory.slice(0,50);
+ writePlayer(saved);serviceStatus.textContent='Prize redeemed! '+item.name+' has been added to your prize haul.';window.dispatchEvent(new CustomEvent('nexus:prize-redeemed',{detail:{name:item.name}}));renderPrizeExchange();
+}
 function openService(service,table){
- serviceItems.innerHTML='';serviceStatus.textContent='';serviceModal.hidden=false;
+ serviceItems.innerHTML='';serviceItems.hidden=false;prizeToolbar.hidden=true;prizeCollection.hidden=true;prizeView='shop';serviceStatus.textContent='';serviceModal.hidden=false;
  if(service==='bar'){
   serviceKicker.textContent='THE GLOW BAR · KITCHEN';serviceTitle.textContent='Food & drink menu';serviceCopy.textContent='Choose something freshly made. Orders take a little time; collect them at the kitchen pass.';
   [...foodMenu,...drinkMenu].forEach(([name,desc,cost])=>{const b=document.createElement('button');b.className='service-item';b.innerHTML='<b>'+name+'</b><small>'+desc+'</small><strong>✦ '+cost+' TOKENS · ORDER</strong>';b.addEventListener('click',()=>{const saved=readPlayer(),balance=Number(saved.tokens??250);if(balance<cost){serviceStatus.textContent='Not enough tokens yet. Play a cabinet to earn more.';return;}saved.tokens=balance-cost;saved.orders=saved.orders||[];const id='order-'+Date.now()+'-'+Math.floor(Math.random()*10000);saved.orders.push({id,name,cost,at:Date.now(),prepSeconds:12,status:'Preparing'});writePlayer(saved);window.dispatchEvent(new CustomEvent('nexus:order-created',{detail:{name}}));serviceStatus.textContent=name+' ordered! Your kitchen ticket is in the queue. Collect it from the pass when it is ready.';});serviceItems.append(b);});
@@ -268,6 +321,8 @@ function openService(service,table){
   if(!pending.length){const p=document.createElement('p');p.className='service-empty';p.textContent='No active kitchen tickets. Place an order at the Glow Bar.';serviceItems.append(p);}
   pending.forEach(order=>{const ready=Date.now()-order.at>=Number(order.prepSeconds||12)*1000;if(ready&&order.status==='Preparing'){order.status='Ready';window.dispatchEvent(new CustomEvent('nexus:order-ready',{detail:{name:order.name}}));}const b=document.createElement('button');b.className='service-item';b.innerHTML='<b>'+order.name+'</b><small>'+(ready?'Fresh from the kitchen · ready to collect':'Cooking · '+Math.max(1,Math.ceil((Number(order.prepSeconds||12)*1000-(Date.now()-order.at))/1000))+' seconds remaining')+'</small><strong>'+(ready?'COLLECT ORDER ✓':'STILL PREPARING')+'</strong>';b.disabled=!ready;b.addEventListener('click',()=>{const latest=readPlayer(),item=(latest.orders||[]).find(o=>o.id===order.id);if(!item||item.status!=='Ready')return;item.status='Carrying';item.collectedAt=Date.now();writePlayer(latest);serviceStatus.textContent=item.name+' collected. Take it to your table and interact to serve it.';b.disabled=true;b.querySelector('strong').textContent='COLLECTED ✓';});serviceItems.append(b);});
   writePlayer(saved);
+ }else if(service==='prize'){
+  serviceKicker.textContent='NEXUS ARCADE · PRIZE EXCHANGE';serviceTitle.textContent='Trade tickets for treasures';serviceCopy.textContent='Every game earns tickets. Save up for the big shelf prizes or take home a little reward today.';prizeToolbar.hidden=false;prizeCategory='All';prizeView='shop';renderPrizeExchange();
  }else{
   serviceKicker.textContent='NEXUS DINING · TABLE '+table;serviceTitle.textContent='Your table';serviceCopy.textContent='Take a seat, then serve any order you have collected from the kitchen pass.';
   const saved=readPlayer(),reservation=(saved.reservations||[]).find(r=>r.table===table&&r.status!=='Finished')||(saved.reservation&&saved.reservation.table===table?saved.reservation:null);
@@ -276,5 +331,6 @@ function openService(service,table){
   if(!reservation&&!carry.length){const p=document.createElement('p');p.className='service-empty';p.textContent='No reservation or collected orders yet. Visit the host stand or Glow Bar.';serviceItems.append(p);}
  }
 }
+prizeViewToggle.addEventListener('click',()=>{prizeView=prizeView==='shop'?'haul':'shop';renderPrizeExchange();});
 window.addEventListener('nexus:service-open',e=>openService(e.detail.service,e.detail.table));$('#service-close').addEventListener('click',()=>serviceModal.hidden=true);
 })();
