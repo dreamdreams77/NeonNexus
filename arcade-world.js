@@ -2,7 +2,7 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.m
 import * as ART from './lobby-art.js';
 import { stepVelocity, turnToward } from './movement.js';
 import { createCrowd } from './lobby-crowd.js';
-import { createActor, CAST, createCabinetSprite, paintGalleryWall, paintGalleryFloor, createPlantSprite, paintTableTop, paintStoolTop, paintBarTop, createPokerSprite, paintAirTable, paintPoolTable, paintDisc, paintSoftShadow, drawWheel, WHEEL_W, WHEEL_H, paintBackBar, createHostStandSprite } from './lobby-sprites.js';
+import { createActor, CAST, createCabinetSprite, paintGalleryWall, paintGalleryFloor, createPlantSprite, paintTableTop, paintStoolTop, paintBarTop, createPokerSprite, paintAirTable, paintPoolTable, paintDisc, paintSoftShadow, drawWheel, WHEEL_W, WHEEL_H, paintBackBar, createHostStandSprite, paintCounterFront, paintGarland, paintWallCap, drawSconce, SCONCE_W, SCONCE_H, drawStool, STOOL_W, STOOL_H, makeSpriteFromCanvas, canvasFrom, drawPrizeCounter, PCOUNTER_W, PCOUNTER_H, paintGalleryFacade } from './lobby-sprites.js';
 import { RoundedBoxGeometry } from 'https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/geometries/RoundedBoxGeometry.js';
 
 const mount=document.querySelector('#arcade-world');
@@ -422,8 +422,9 @@ if(mount){
  box(5.8,1.35,1.25,8.8,.72,-1.8,wood,dining,.2);
  box(5.95,.16,1.35,8.8,1.46,-1.8,cream,dining,.12);
  {const bb=new THREE.Mesh(new THREE.PlaneGeometry(6.2,2.17),new THREE.MeshBasicMaterial({map:artTex(paintBackBar(),{aniso:4}),transparent:true,alphaTest:.04,toneMapped:false}));const bg=new THREE.Group();bg.position.set(8.8,.15,-3.6);bg.rotation.x=-.4;bb.position.y=1.08;bg.add(bb);scene.add(bg);}
+ {const cf=new THREE.Mesh(new THREE.PlaneGeometry(5.8,1.35),new THREE.MeshBasicMaterial({map:artTex(paintCounterFront(),{aniso:4}),alphaTest:.04,toneMapped:false}));cf.position.set(8.8,.72,-1.16);scene.add(cf);}
  {const bt=new THREE.Mesh(new THREE.PlaneGeometry(5.95,1.35),new THREE.MeshBasicMaterial({map:artTex(paintBarTop(),{aniso:4}),toneMapped:false}));bt.rotation.x=-Math.PI/2;bt.position.set(8.8,1.552,-1.8);scene.add(bt);}
- {const st=artTex(paintStoolTop(),{aniso:4});for(let i=0;i<3;i++){const d=new THREE.Mesh(new THREE.PlaneGeometry(.95,.95),new THREE.MeshBasicMaterial({map:st,transparent:true,toneMapped:false,depthWrite:false}));d.rotation.x=-Math.PI/2;d.position.set(7+i*1.8,.07,.9);scene.add(d);}}
+ {const sc=canvasFrom(STOOL_W,STOOL_H,g=>drawStool(g,'#c9553f'));for(let i=0;i<3;i++){const s=makeSpriteFromCanvas(THREE,sc,{height:1.45,anisotropy:mobileDevice?2:4,baseOffset:.1});s.root.position.set(7+i*1.8,0,.25);scene.add(s.root);}}
  // Kitchen wall, tiled backsplash, shelves, warm pendants and cookware silhouettes.
  box(6,.12,.3,8.8,2.65,-2.5,cream,dining,.06);box(6,.1,.22,8.8,3.5,-2.5,wood,dining,.04);
  for(let i=0;i<5;i++){box(.08,.75,.08,6.4+i*1.2,3.05,-2.55,brass,dining,.03);sphere(.22,6.4+i*1.2,3.35,-2.35,clayMat([0xd88b69,0x8fb9a1,0xe3bd79][i%3]),dining,.7,.9,.35);}
@@ -568,9 +569,12 @@ if(mount){
  const capsuleColors=[0xe98b77,0x86c7b9,0xe7c37b];for(let i=0;i<3;i++){const c=sphere(.13,-.82+i*.34,1.43,-.29,clayMat(capsuleColors[i]),prizeCounter,.82,1,.82);c.rotation.z=i*.2;}
  const prizeSign=new THREE.Mesh(new THREE.PlaneGeometry(3.25,.58),new THREE.MeshBasicMaterial({map:textTexture('PRIZE EXCHANGE','TRADE TICKETS FOR TREASURES','#ffd18b'),transparent:false}));prizeSign.position.set(0,2.42,.64);prizeCounter.add(prizeSign);
  const prizeTrim=mat(0xffc77d,.35,.05,0xffa44f,.75);box(3.65,.055,.055,0,2.73,.61,prizeTrim,prizeCounter,.02);
+ // Illustrated prize exchange replaces the sculpted counter (interaction position unchanged).
+ for(const ch of prizeCounter.children)ch.visible=false;
+ {const s=makeSpriteFromCanvas(THREE,canvasFrom(PCOUNTER_W,PCOUNTER_H,drawPrizeCounter),{height:3.0,anisotropy:mobileDevice?2:4,tilt:-.45,baseOffset:.12});prizeCounter.add(s.root);}
  // Walkable Prize Gallery: an open-front room with real shelves, floor space and a clear doorway.
  const prizeRoom={left:-10.7,right:-3.5,back:10.5,front:19.2,doorLeft:-8.35,doorRight:-5.85,center:new THREE.Vector3(-7.1,0,14.7)};
- const roomWall=clayMat(0x574253),roomTrim=clayMat(0xd2a47e),roomFloor=clayMat(0x7b5b6a),shelfMat=clayMat(0x8d655e),shelfEdge=clayMat(0xe0b17e);
+ const facadeTex=artTex(paintGalleryFacade(),{aniso:4,repeat:[1,1]}),roomWall=new THREE.MeshStandardMaterial({map:facadeTex,roughness:.8});const _unusedRoomWall=clayMat(0x574253),roomTrim=clayMat(0xd2a47e),roomFloor=clayMat(0x7b5b6a),shelfMat=clayMat(0x8d655e),shelfEdge=clayMat(0xe0b17e);
  box(7.2,.12,8.7,-7.1,.02,14.85,roomFloor,scene,.12);
  box(.28,4.25,8.7,prizeRoom.left,2.12,14.85,roomWall,scene,.1);
  box(.28,4.25,8.7,prizeRoom.right,2.12,14.85,roomWall,scene,.1);
@@ -871,7 +875,21 @@ visitorProfiles.forEach((profile,i)=>{const g=new THREE.Group();const [x,z]=visi
  }
  // Retire the sculpted back-bar clutter (pendants, shelf props, menu board) now that the illustrated back bar replaces it.
  dining.children.forEach(c=>{if(c.position.z<-2.1&&c.position.x>5.3&&c.position.y>1.6)c.visible=false;});
- scene.updateMatrixWorld(true);{const v=new THREE.Vector3();scene.traverse(o=>{if(!o.isMesh||!o.visible)return;const t=o.geometry&&o.geometry.type;if(t!=='SphereGeometry'&&t!=='CylinderGeometry'&&t!=='TorusGeometry')return;o.getWorldPosition(v);if(v.x>5.3&&v.x<11.8&&v.z<-2.0&&v.z>-4.4&&v.y>1.75&&v.y<3.9){let p=o,staff=false;while(p){if(serviceStaff.some(s=>s.group===p)){staff=true;break;}p=p.parent;}if(!staff)o.visible=false;}});}
+ scene.updateMatrixWorld(true);{const v=new THREE.Vector3();scene.traverse(o=>{if(!o.isMesh||!o.visible)return;const t=o.geometry&&o.geometry.type;if(t==='PlaneGeometry')return;o.getWorldPosition(v);if(v.x>5.3&&v.x<11.8&&v.z<-1.2&&v.z>-4.4&&v.y>1.65&&v.y<4.6){let p=o,staff=false;while(p){if(serviceStaff.some(s=>s.group===p)){staff=true;break;}p=p.parent;}if(!staff)o.visible=false;}});}
+ // ── Finishing pass: retire remaining sculpted decoration in favour of the illustrated pieces ──
+ {
+  // garland replaces the 3D festoon rope, bulbs and paper flags
+  festoonRope.visible=false;festoonBulbs.forEach(b=>{if(b.bulb&&b.bulb.parent)b.bulb.parent.visible=false;if(b.flag)b.flag.visible=false;});
+  scene.children.forEach(o=>{if(o.isMesh&&o.geometry&&o.geometry.type==='PlaneGeometry'&&o.geometry.parameters&&Math.abs(o.geometry.parameters.width-.34)<.001&&Math.abs(o.geometry.parameters.height-.48)<.001)o.visible=false;});
+  const gl=makeSpriteFromCanvas(THREE,paintGarland(),{height:1.7,anisotropy:mobileDevice?2:4,tilt:-.5});gl.root.position.set(0,3.45,3.8);scene.add(gl.root);
+  // carved wall caps along both side walls
+  const capCanvas=paintWallCap(2000,120);
+  for(const x of [-12.2,12.2]){const tex=artTex(capCanvas,{aniso:4,repeat:[2,1]});const cap=new THREE.Mesh(new THREE.PlaneGeometry(50,.72),new THREE.MeshBasicMaterial({map:tex,toneMapped:false}));cap.rotation.x=-Math.PI/2;cap.rotation.z=Math.PI/2;cap.position.set(x,5.72,-1);scene.add(cap);}
+  // sculpted sconces -> illustrated sconces with painted glow
+  scene.children.forEach(o=>{if(o.isGroup&&Math.abs(Math.abs(o.position.x)-11.78)<.01&&Math.abs(o.position.y-3.55)<.01)o.visible=false;});
+  const sconceCv=canvasFrom(SCONCE_W,SCONCE_H,g=>drawSconce(g));
+  for(const z of [-15,-3,9,21])for(const side of [-1,1]){if(side>0&&z===-3)continue;const s=makeSpriteFromCanvas(THREE,sconceCv,{height:1.25,anisotropy:mobileDevice?2:4});s.root.position.set(side*11.55,2.5,z);scene.add(s.root);}
+ }
  let announcedReady=false,frameCount=0;function animate(){requestAnimationFrame(animate);if(!announcedReady&&frameCount++>2){announcedReady=true;window.dispatchEvent(new CustomEvent('nexus:world-ready'));}const paused=document.hidden||!gameOverlay.hidden;if(paused){clock.getDelta();return;}const dt=Math.min(clock.getDelta(),.05),t=clock.elapsedTime;update(dt,t);renderer.render(scene,camera);}
  animate();
 }

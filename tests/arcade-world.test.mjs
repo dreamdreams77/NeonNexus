@@ -752,3 +752,10 @@ test('host stand is illustrated and character sheets render at higher resolution
  assert.match(spr,/function buildSheet\(design,res=1\)/);assert.match(spr,/ctx\.scale\(res,res\)/);assert.match(spr,/translate\(ox,oy-6\)/);
  assert.match(world,/res:mobileDevice\?1\.5:2/);assert.match(world,/res:mobileDevice\?1:1\.5/);
 });
+
+test('finishing pass: counter front, garland, wall caps, sconces, stools, prize exchange and gallery facade are illustrated',async()=>{
+ const spr=await readFile(new URL('../lobby-sprites.js',import.meta.url),'utf8');
+ for(const f of ['paintCounterFront','paintGarland','paintWallCap','drawSconce','drawStool','drawPrizeCounter','paintGalleryFacade','makeSpriteFromCanvas','canvasFrom'])assert.match(spr,new RegExp('function '+f+'\\('));
+ assert.match(world,/paintCounterFront\(\)/);assert.match(world,/festoonRope\.visible=false/);assert.match(world,/paintWallCap\(2000,120\)/);assert.match(world,/drawSconce\(g\)/);assert.match(world,/drawStool\(g,/);assert.match(world,/drawPrizeCounter\),\{height:3\.0/);assert.match(world,/paintGalleryFacade\(\)/);
+ assert.doesNotMatch(spr,/paintShape\([^;]*'rgba\(/);
+});
