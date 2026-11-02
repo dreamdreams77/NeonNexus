@@ -367,10 +367,58 @@ function redeemPrize(item){
  saved.prizeHistory=saved.prizeHistory||[];saved.prizeHistory.unshift({id:item.id,name:item.name,cost:item.cost,at:Date.now()});saved.prizeHistory=saved.prizeHistory.slice(0,50);
  writePlayer(saved);serviceStatus.textContent='Prize redeemed! '+item.name+' has been added to your prize haul.';window.dispatchEvent(new CustomEvent('nexus:prize-redeemed',{detail:{name:item.name}}));renderPrizeExchange();
 }
-function openService(service,table,npc){
+
+let pokerMachineIndex=0,pokerHand=[],pokerHolds=[],pokerPhase='deal',pokerLast='Insert 5 tokens to deal a hand.';
+const pokerPaytable=[['Royal flush',250],['Straight flush',50],['Four of a kind',25],['Full house',9],['Flush',6],['Straight',4],['Three of a kind',3],['Two pair',2],['Jacks or better',1]];
+const pokerSuits=['♠','♥','♦','♣'],pokerRanks=['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+function pokerDeck(){const d=[];for(let s=0;s<4;s++)for(let v=2;v<=14;v++)d.push({v,s,rank:pokerRanks[v-2],suit:pokerSuits[s]});for(let i=d.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[d[i],d[j]]=[d[j],d[i]];}return d;}
+function pokerRank(hand){
+ const vals=hand.map(c=>c.v).sort((a,b)=>a-b),counts={};hand.forEach(c=>counts[c.v]=(counts[c.v]||0)+1);
+ const groups=Object.values(counts).sort((a,b)=>b-a),flush=hand.every(c=>c.s===hand[0].s),straight=vals.every((v,i)=>i===0||v===vals[i-1]+1)||(vals.join(',')==='2,3,4,5,14');
+ if(flush&&straight&&vals[0]===10)return 'Royal flush';
+ if(flush&&straight)return 'Straight flush';
+ if(groups[0]===4)return 'Four of a kind';
+ if(groups[0]===3&&groups[1]===2)return 'Full house';
+ if(flush)return 'Flush';
+ if(straight)return 'Straight';
+ if(groups[0]===3)return 'Three of a kind';
+ if(groups[0]===2&&groups[1]===2)return 'Two pair';
+ if(groups[0]===2&&Object.keys(counts).some(v=>counts[v]===2&&Number(v)>=11))return 'Jacks or better';
+ return 'No win';
+}
+function renderPoker(){
+ serviceItems.innerHTML='';
+ const saved=readPlayer(),balance=Number(saved.tokens??250);
+ const deckWrap=document.createElement('div');deckWrap.className='poker-hand';
+ if(pokerHand.length) pokerHand.forEach((card,i)=>{const b=document.createElement('button');b.type='button';b.className='poker-card'+(pokerHolds[i]?' held':'')+(card.s===1||card.s===2?' red':'');b.innerHTML='<span>'+card.rank+'</span><strong>'+card.suit+'</strong><small>'+(pokerHolds[i]?'HELD':'TAP TO HOLD')+'</small>';b.disabled=pokerPhase!=='hold';b.addEventListener('click',()=>{pokerHolds[i]=!pokerHolds[i];renderPoker();});deckWrap.append(b);});
+ else deckWrap.innerHTML='<p class="poker-empty">Your seat is waiting. Deal five cards and choose what to hold.</p>';
+ serviceItems.append(deckWrap);
+ const controls=document.createElement('div');controls.className='poker-actions';
+ const action=document.createElement('button');action.className='service-item poker-deal';action.innerHTML='<b>'+(pokerPhase==='hold'?'DRAW THE REST':'DEAL FIVE CARDS')+'</b><small>'+(pokerPhase==='hold'?'Keep your selected cards and replace the rest.':'Five-token entry · Jacks or better pays 1×')+'</small><strong>'+(pokerPhase==='hold'?'DRAW':'5 ✦ TOKENS')+'</strong>';
+ action.addEventListener('click',()=>{
+  const current=readPlayer(),wallet=Number(current.tokens??250);
+  if(pokerPhase==='deal'){
+   if(wallet<5){serviceStatus.textContent='You need 5 tokens to play this hand.';return;}
+   current.tokens=wallet-5;writePlayer(current);pokerHand=pokerDeck().slice(0,5);pokerHolds=[false,false,false,false,false];pokerPhase='hold';pokerLast='Choose the cards to hold, then draw.';renderPoker();return;
+  }
+  const deck=pokerDeck();pokerHand=pokerHand.map((card,i)=>pokerHolds[i]?card:deck.pop());const rank=pokerRank(pokerHand),award=pokerPaytable.find(row=>row[0]===rank)?.[1]||0;
+  if(award){const latest=readPlayer();latest.tokens=Number(latest.tokens??250)+award*5;writePlayer(latest);pokerLast=rank+'! You won '+(award*5)+' tokens.';window.dispatchEvent(new CustomEvent('nexus:character-celebrate'));}else pokerLast='No winning hand this time. Try a different hold strategy.';
+  pokerPhase='result';renderPoker();
+ });
+ controls.append(action);
+ if(pokerPhase==='result'){const again=document.createElement('button');again.className='service-item';again.innerHTML='<b>NEW HAND</b><small>Play another five-card draw round.</small><strong>DEAL AGAIN</strong>';again.addEventListener('click',()=>{pokerHand=[];pokerHolds=[];pokerPhase='deal';pokerLast='Ready for another hand.';renderPoker();});controls.append(again);}
+ serviceItems.append(controls);
+ const table=document.createElement('div');table.className='poker-paytable';table.innerHTML='<b>PAY TABLE · 5 TOKEN BET</b>'+pokerPaytable.map(([name,mult])=>'<span>'+name+'<strong>'+mult*5+'</strong></span>').join('')+'<small>Practice tokens only · no cash value</small>';serviceItems.append(table);
+ serviceStatus.textContent=pokerLast+'  Balance: '+Number(readPlayer().tokens??250)+' tokens.';
+}
+
+function openService(service,table,npc,machine){
  if(service!=='jukebox'&&jukeboxTimer){clearInterval(jukeboxTimer);jukeboxTimer=null;}
  serviceItems.innerHTML='';serviceItems.hidden=false;prizeToolbar.hidden=true;prizeCollection.hidden=true;prizeView='shop';serviceStatus.textContent='';serviceModal.hidden=false;
- if(service==='bar'){
+ if(service==='poker'){
+  const names=['The Glow · Classic Video Poker','Moon Deal · Five Card Draw','Lucky Hand · Neon Poker'];
+  serviceKicker.textContent='THE GLOW BAR · VIDEO POKER';serviceTitle.textContent=names[Number(machine)||0];serviceCopy.textContent='Five-card draw. Deal a hand, tap cards to hold them, then draw replacements. Build a winning hand to earn arcade tokens.';pokerMachineIndex=Number(machine)||0;pokerHand=[];pokerHolds=[];pokerPhase='deal';pokerLast='Insert 5 tokens to deal a hand.';renderPoker();
+ }else if(service==='bar'){
   serviceKicker.textContent='THE GLOW BAR · KITCHEN';serviceTitle.textContent='Food & drink menu';serviceCopy.textContent='Choose something freshly made. Orders take a little time; collect them at the kitchen pass.';
   [...foodMenu,...drinkMenu].forEach(([name,desc,cost])=>{const b=document.createElement('button');b.className='service-item';b.innerHTML='<b>'+name+'</b><small>'+desc+'</small><strong>✦ '+cost+' TOKENS · ORDER</strong>';b.addEventListener('click',()=>{const saved=readPlayer(),balance=Number(saved.tokens??250);if(balance<cost){serviceStatus.textContent='Not enough tokens yet. Play a cabinet to earn more.';return;}saved.tokens=balance-cost;saved.orders=saved.orders||[];const id='order-'+Date.now()+'-'+Math.floor(Math.random()*10000);saved.orders.push({id,name,cost,at:Date.now(),prepSeconds:12,status:'Preparing'});writePlayer(saved);window.dispatchEvent(new CustomEvent('nexus:order-created',{detail:{name}}));serviceStatus.textContent=name+' ordered! Your kitchen ticket is in the queue. Collect it from the pass when it is ready.';});serviceItems.append(b);});
  }else if(service==='host'){
@@ -408,5 +456,5 @@ function openService(service,table,npc){
  }
 }
 prizeViewToggle.addEventListener('click',()=>{prizeView=prizeView==='shop'?'haul':'shop';renderPrizeExchange();});
-window.addEventListener('nexus:service-open',e=>openService(e.detail.service,e.detail.table,e.detail.npc));$('#service-close').addEventListener('click',()=>{serviceModal.hidden=true;if(jukeboxTimer){clearInterval(jukeboxTimer);jukeboxTimer=null;}});
+window.addEventListener('nexus:service-open',e=>openService(e.detail.service,e.detail.table,e.detail.npc,e.detail.machine));$('#service-close').addEventListener('click',()=>{serviceModal.hidden=true;if(jukeboxTimer){clearInterval(jukeboxTimer);jukeboxTimer=null;}});
 })();
