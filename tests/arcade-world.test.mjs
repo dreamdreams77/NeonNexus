@@ -53,6 +53,22 @@ test('restaurant district has bar, host stand, dining tables and a token-priced 
  assert.match(game,/saved\.tokens=balance-cost/);
  assert.match(game,/saved\.reservation=/);
 });
+test('restaurant orders progress through preparation, pickup and table delivery',()=>{
+ assert.match(world,/type:'pass'/);
+ assert.match(world,/KITCHEN PASS · COLLECT ORDERS/);
+ for(const state of ['Preparing','Ready','Carrying','Served'])assert.ok(game.includes("'"+state+"'"));
+ assert.match(game,/prepSeconds:12/);
+ assert.match(game,/collectedAt/);
+ assert.match(game,/servedAt/);
+ assert.match(game,/first available table/);
+});
+test('cooking and mixology mistakes have real failure consequences',()=>{
+ assert.match(game,/p\.ticketClock>9/);
+ assert.match(game,/p\.misses\+\+;p\.combo=0/);
+ assert.match(game,/if\(p\.misses>=3\)\{finish\(\);return;\}/);
+ assert.match(game,/function pourMix\(/);
+ assert.match(game,/if\(game==='mixology'\)pourMix\(\)/);
+});
 test('three new cabinets have distinct kitchen, catching and timing gameplay loops',()=>{
  for(const id of ['chef','sushi','mixology']){assert.ok(game.includes(id+':['));assert.ok(game.includes("case'"+id+"'"));}
  assert.match(game,/ticketTarget/);
