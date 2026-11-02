@@ -33,7 +33,7 @@ function buildMoonRoom(room){
  const layouts=[
   {trees:[[155,165],[250,175],[640,170],[735,180],[210,350],[690,345]],enemies:[[235,300],[655,310]],shard:[450,235],chest:[730,390]},
   {trees:[[160,180],[275,155],[625,165],[750,185],[165,350],[745,355]],enemies:[[250,260],[650,265],[450,350]],shard:[450,205],chest:[175,390]},
-  {trees:[[170,175],[730,175],[170,355],[730,355]],enemies:[],shard:[450,235],chest:null}
+  {trees:[[170,175],[730,175],[170,355],[730,355]],enemies:[],shard:[450,185],chest:null}
  ];
  const layout=layouts[room];objects=[];
  layout.trees.forEach(([x,y],i)=>objects.push({type:'tree',x,y,r:28+(i%3)*4}));
