@@ -89,7 +89,7 @@ function loop(now){if(!running)return;const dt=Math.min(.04,(now-last)/1000);las
 function pointer(e){const r=canvas.getBoundingClientRect();mouse.x=(e.clientX-r.left)*W/r.width;mouse.y=(e.clientY-r.top)*H/r.height;}
 function hitRhythm(lane){const i=objects.findIndex(o=>o.lane===lane&&Math.abs(o.y-390)<55);if(i>=0){objects.splice(i,1);combo++;scoreBy(10+Math.min(30,combo*2));sound(360+combo*18,.08,'triangle');}else{combo=0;sound(100,.05,'square');}}
 function dropStack(){if(!running)return;if(p.blocks===0){p.blocks=1;p.blockX=p.x;p.width=170;scoreBy(5);return;}const left=Math.max(p.blockX-p.width/2,p.x-p.width/2),right=Math.min(p.blockX+p.width/2,p.x+p.width/2),nw=right-left;if(nw<20){finish();return;}p.blockX=(left+right)/2;p.width=nw;p.blocks++;scoreBy(Math.max(5,Math.round(nw/7)));sound(300+p.blocks*12,.07,'triangle');addParticles(p.blockX,420-p.blocks*27,colors[p.blocks%4],6);if(p.blocks>=14)finish(true);}
-function grabClaw(){if(!running||p.grabbing)return;p.grabbing=true;p.clawY=125;sound(220,.08);}
+function grabClaw(){if(!running||p.grabbing)return;p.grabbing=true;p.clawY=125;sound(220,.08);}\nfunction pourMix(){if(!running||game!=='mixology')return;const target=clamp(80-(p.mixRound||1)*8,22,80),low=100-target;if(p.pour>=low&&p.pour<=100){p.perfects++;scoreBy(35+p.mixRound*8);p.mixRound++;if(p.mixRound>6){scoreBy(100);finish(true);}}else{p.mixRound=Math.max(1,p.mixRound-1);sound(110,.1,'sawtooth');}p.pour=0;}
 function onDown(e){pointer(e);if(!running)return;swipeStartX=mouse.x;sound(480,.025);
 if(game==='skeeball'&&!p.rolling){p.drag=true;p.dragStartY=mouse.y;p.dragX=mouse.x;}
 if(game==='whack'){const i=Math.round((mouse.x-230)/220)+Math.floor((mouse.y-180)/112)*3;const n=objects.findIndex(o=>o.id===i);if(n>=0){objects.splice(n,1);scoreBy(10);sound(560,.07);addParticles(mouse.x,mouse.y,'#9ecb9b',5);}else{p.miss++;sound(120,.07);if(p.miss>=3)finish();}}
@@ -101,7 +101,7 @@ if(game==='pinball'&&!p.launched){p.launched=true;p.vx=rand(-65,65);p.vy=-460;so
 if(game==='claw')grabClaw();
 if(game==='airhockey'){mouse.y=clamp(mouse.y,300,430);}
 }
-function onMove(e){pointer(e);if(game==='meteor'&&running)p.x=clamp(mouse.x,190,710);if(game==='airhockey') {mouse.x=clamp(mouse.x,160,740);mouse.y=clamp(mouse.y,295,430);}if(game==='skeeball'&&p.drag){p.ballX=clamp(mouse.x,150,750);p.ballY=415;}}
+function onMove(e){pointer(e);if(game==='sushi'&&running)p.x=clamp(mouse.x,190,710);if(game==='meteor'&&running)p.x=clamp(mouse.x,190,710);if(game==='airhockey') {mouse.x=clamp(mouse.x,160,740);mouse.y=clamp(mouse.y,295,430);}if(game==='skeeball'&&p.drag){p.ballX=clamp(mouse.x,150,750);p.ballY=415;}}
 function onUp(e){pointer(e);if(game==='racer'&&running&&Math.abs(mouse.x-swipeStartX)>25)p.lane=clamp(p.lane+(mouse.x<swipeStartX?1:-1),0,2);if(game==='skeeball'&&p.drag&&running){const power=clamp((mouse.y-p.dragStartY)*4,260,680);p.vx=(mouse.x-p.dragX)*2.1;p.vy=-power;p.rolling=true;p.drag=false;sound(190,.1,'triangle');}}
 function keydown(e){keys[e.key]=true;if(!running)return;if(e.key===' '){e.preventDefault();if(game==='stack')dropStack();if(game==='pinball'&&!p.launched){p.launched=true;p.vy=-460;p.vx=35;sound(180,.15,'sawtooth');}if(game==='claw')grabClaw();}
 if(game==='racer'&&(e.key==='ArrowLeft'||e.key.toLowerCase()==='a'))p.lane=Math.max(0,p.lane-1);
