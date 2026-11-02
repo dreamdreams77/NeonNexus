@@ -488,8 +488,7 @@ test('mastery perks alter Pulse Runner, Barrelstorm, Moonshard, Sushi, Meteor an
 });
 test('higher mastery raises arcade challenge pacing while preserving earned counterplay',()=>{
  assert.match(game,/Math\.max\(\.34,\.58-\(p\.masteryLevel\|\|0\)\*\.025\)/);
- assert.match(game,/Math\.max\(\.3,\.48-\(p\.masteryLevel\|\|0\)\*\.018\)/);
- assert.match(game,/Math\.max\(\.36,\.62-\(p\.masteryLevel\|\|0\)\*\.025\)/);
+ assert.match(game,/const mastery=1\+Math\.min\(\.1,\(p\.masteryLevel\|\|0\)\*\.015\)/);
  assert.match(game,/Math\.max\(\.25,\.38-\(p\.masteryLevel\|\|0\)\*\.012\)/);
  assert.match(game,/Math\.max\(\.38,\.75-\(p\.masteryLevel\|\|0\)\*\.035\)/);
 });
@@ -503,7 +502,7 @@ test('the remaining cabinets have distinct mastery perks beyond XP-only progress
  assert.match(game,/p\.malletReach=43\+\(p\.masteryLevel>=2\?8:0\)/);
  assert.match(game,/p\.balls=3\+\(p\.masteryLevel>=2\?1:0\)/);
  assert.match(game,/p\.clawReach=p\.masteryLevel>=2\?34:24/);
- assert.match(game,/p\.masteryLevel>=2\?65:55/);
+ assert.match(game,/const wm=p\.masteryLevel>=2\?1\.15:1/);
  assert.match(game,/p\.masteryLevel>=2\?\.12:0/);
  assert.match(game,/p\.masteryLevel>=2\?1\.12:1/);
  assert.match(game,/p\.masteryLevel>=4\?8:0/);
@@ -681,3 +680,24 @@ test('lobby is built from the painted art layer: parquet, carpet, walls, neon, p
  for(const id of ids.concat('hoops','billiards'))if(id!=='billiards')assert.match(art,new RegExp('\\b'+id+'\\(x,cx,cy,s,r\\)'),'motif '+id);
 });
 test('debug camera hook is opt-in only',()=>{assert.match(world,/location\.search\.includes\('debug'\)/);});
+
+const fnBody=(src,name)=>{const i=src.indexOf('function '+name+'(');assert.ok(i>=0,name);const j=src.indexOf('\nfunction ',i+10);return src.slice(i,j<0?undefined:j);};
+test('billiards physics, CPU turns and pocketing run every frame inside update(), never only once inside start()',()=>{
+ const update=fnBody(game,'update'),start=fnBody(game,'start');
+ assert.match(update,/if\(p\.shotActive\)\{/);assert.match(update,/p\.cpuWait/);assert.match(update,/pockets\.find/);
+ assert.doesNotMatch(start,/p\.shotActive\)\{/);
+});
+test('beat foundry is a charted, beat-locked rhythm game with timing tiers, stray-tap penalty and S-D grades',()=>{
+ const init=fnBody(game,'initRhythm'),upd=fnBody(game,'updateRhythm'),grade=fnBody(game,'rhythmGrade');
+ assert.match(init,/bpm=116/);assert.match(init,/phrases/);assert.match(upd,/r\.lastBeat/);assert.match(upd,/sound\(62/);
+ assert.match(game,/RH_WINDOW=\{perfect:\.06,good:\.12,ok:\.2\}/);assert.match(grade,/'S'.*'A'.*'B'.*'C'.*'D'/);assert.match(grade,/r\.stray\*\.5/);
+ assert.match(game,/GRADE \$\{?|'GRADE '\+g\.letter/);
+});
+test('turbo tunnels is a lap race: spline track, steering physics, three lap count, AI rivals and place-based rewards',()=>{
+ for(const f of ['raceTrack','initRace','stepCar','updateRace','finishRace','drawRace'])assert.match(game,new RegExp('function '+f+'\\('));
+ assert.match(game,/RACE_LAPS=3/);assert.match(game,/RACE_CARS=\[/);
+ const upd=fnBody(game,'updateRace');assert.match(upd,/rubber-banding/);assert.match(upd,/curve/);assert.match(upd,/finished/);
+ assert.match(fnBody(game,'finishRace'),/\[120,80,50,25\]/);
+ assert.doesNotMatch(game,/p\.lane=Math\.max\(0,p\.lane-1\)/);
+});
+test('canvas keeps its 900:520 ratio on short landscape windows',()=>{const css2=css;assert.match(css2,/#stage\{width:min\(100%,calc\(58vh\*900\/520\)\)/);});
