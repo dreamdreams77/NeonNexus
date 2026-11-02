@@ -190,4 +190,7 @@ test('Moonshard equipment has gameplay effects rather than cosmetic labels',()=>
  assert.match(game,/p\.shield=true/);
  assert.match(game,/e\.key\.toLowerCase\(\)==='x'\)p\.shield=!p\.shield/);
  assert.match(game,/p\.guard&&p\.shield/);
+ assert.match(game,/p\.touchGuard=true/);
+ assert.match(game,/p\.touchGuard=false/);
+ assert.match(game,/keys\.C\|\|p\.touchGuard/);
 });
