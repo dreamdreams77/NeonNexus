@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Art templates — Neon Nexus</title>
+<style>
+:root{color-scheme:dark}body{margin:0;font:15px/1.5 system-ui,sans-serif;background:#1c1424;color:#f4e6cf;padding:24px}
+h1{margin:0 0 4px;font-size:26px}p{max-width:760px;color:#cdb8a4}code{background:#2f2238;padding:1px 6px;border-radius:5px}
+#status{margin:14px 0;color:#ffd98a}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:18px}
+.card{background:#2a1d34;border:1px solid #4b3658;border-radius:14px;padding:12px}
+.card canvas{width:100%;height:auto;background:repeating-conic-gradient(#3a2b46 0 25%,#2f2238 0 50%) 0 0/16px 16px;border-radius:8px;display:block}
+.card b{display:block;margin:8px 0 2px;font-size:14px}.card small{color:#b9a48f}.card a{display:inline-block;margin-top:8px;color:#9ff4ec;font-size:13px}
+.tag{float:right;font-size:11px;padding:1px 8px;border-radius:99px;background:#46315a;color:#e8c9ff}.tag.live{background:#25503f;color:#b6f5d7}
+iframe{position:absolute;left:-9999px;width:1280px;height:800px;border:0}
+</style></head><body>
+<h1>Neon Nexus art templates</h1>
+<p>Every illustrated piece in the lobby, at its exact pixel size, as the game currently draws it. Paint over a piece, save it as a PNG with the same pixel size, name it after the slot (<code>carpet.png</code>), put it in <code>assets/</code> and list it in <code>assets/manifest.json</code>. See <code>assets/README.md</code>.</p>
+<div id="status">Building the lobby…</div><div class="grid" id="grid"></div>
+<iframe id="world" src="arcade.html"></iframe>
+<script>
+const frame=document.getElementById('world'),grid=document.getElementById('grid'),status=document.getElementById('status');
+let tries=0;
+const timer=setInterval(()=>{
+ tries++;const w=frame.contentWindow;
+ if(w&&w.__artSlots&&w.__artSlots.slots.size>60){clearInterval(timer);render(w.__artSlots);}
+ else if(tries>120){clearInterval(timer);status.textContent='Timed out waiting for the lobby to build. Reload this page.';}
+},500);
+function render(api){
+ const list=api.snapshot();status.textContent=list.length+' art slots · click "Download PNG" for a paint-over template.';
+ for(const s of list){
+  const c=document.createElement('canvas');c.width=s.w;c.height=s.h;c.getContext('2d').drawImage(s.image,0,0);
+  const card=document.createElement('div');card.className='card';
+  const live=api.slots.get(s.name).loaded;
+  card.innerHTML='<span class="tag'+(live?' live':'')+'">'+(live?'PAINTED':'CODE-DRAWN')+'</span><b>'+s.name+'</b><small>'+s.w+' × '+s.h+' px</small><br>';
+  card.insertBefore(c,card.firstChild);
+  const a=document.createElement('a');a.textContent='Download PNG';a.href='#';a.onclick=e=>{e.preventDefault();c.toBlob(b=>{const u=URL.createObjectURL(b),l=document.createElement('a');l.href=u;l.download=s.name+'.png';l.click();setTimeout(()=>URL.revokeObjectURL(u),2000);});};
+  card.append(a);grid.append(card);
+ }
+}
+</script></body></html>

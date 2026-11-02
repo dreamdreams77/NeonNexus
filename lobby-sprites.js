@@ -4,6 +4,9 @@
 // camera-facing sprite. This is deliberately illustration, not geometry: the shapes below are authored per feature.
 
 const INK='#2a1a2d';
+// Art-slot hook (see art-slots.js): lets a hand-painted PNG replace any code-drawn texture by name.
+export const slotHook={fn:null};
+const reg=(name,tex)=>{try{if(slotHook.fn)slotHook.fn(name,tex);}catch(e){}return tex;};
 const hexRgb=h=>{const n=parseInt(h.slice(1),16);return[(n>>16)&255,(n>>8)&255,n&255];};
 const rgbHex=(r,g,b)=>'#'+((1<<24)+(Math.max(0,Math.min(255,r|0))<<16)+(Math.max(0,Math.min(255,g|0))<<8)+Math.max(0,Math.min(255,b|0))).toString(16).slice(1);
 export const mix=(a,b,t)=>{const A=hexRgb(a),B=hexRgb(b);return rgbHex(A[0]+(B[0]-A[0])*t,A[1]+(B[1]-A[1])*t,A[2]+(B[2]-A[2])*t);};
@@ -308,7 +311,7 @@ const sheetCache=new Map();
 export function createActor(THREE,design,{anisotropy=4,height=2.05,res=1}={}){
  const ckey=design.name+'@'+res;let tex=sheetCache.get(ckey);
  const {w,h}=atlasSize();
- if(!tex){tex=new THREE.CanvasTexture(buildSheet(design,res));tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=anisotropy;tex.minFilter=THREE.LinearMipmapLinearFilter;sheetCache.set(ckey,tex);}
+ if(!tex){tex=new THREE.CanvasTexture(buildSheet(design,res));tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=anisotropy;tex.minFilter=THREE.LinearMipmapLinearFilter;sheetCache.set(ckey,tex);reg('character-'+design.name.toLowerCase(),tex);}
  const map=tex.clone();map.needsUpdate=true;map.repeat.set(CELL_W/w,CELL_H/h);
  const mat=new THREE.MeshBasicMaterial({map,transparent:true,alphaTest:.04,toneMapped:false,depthWrite:true});
  const width=height*CELL_W/CELL_H,mesh=new THREE.Mesh(new THREE.PlaneGeometry(width,height),mat);
@@ -412,7 +415,7 @@ function paintShape(ctx,path,color,o){return paint(ctx,path,color,o);}
 
 export function createCabinetSprite(THREE,def,{anisotropy=4,height=3.7,variant=0}={}){
  const [,id,,,color]=def,c=document.createElement('canvas');c.width=CAB_W;c.height=CAB_H;drawCabinet(c.getContext('2d'),id,color,variant);
- const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=anisotropy;tex.minFilter=THREE.LinearMipmapLinearFilter;
+ const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=anisotropy;tex.minFilter=THREE.LinearMipmapLinearFilter;reg('cabinet-'+id,tex);
  const width=height*CAB_W/CAB_H,mesh=new THREE.Mesh(new THREE.PlaneGeometry(width,height),new THREE.MeshBasicMaterial({map:tex,transparent:true,alphaTest:.04,toneMapped:false}));
  mesh.position.y=height/2-height*(10/CAB_H);
  const tilt=new THREE.Group();tilt.rotation.x=-.5;tilt.add(mesh);const root=new THREE.Group();root.add(tilt);
@@ -537,7 +540,7 @@ export function paintStoolTop(){
 }
 const plantTexCache=new Map();
 export function createPlantSprite(THREE,kind,{anisotropy=4,height=1.9}={}){
- let tex=plantTexCache.get(kind);if(!tex){const c=document.createElement('canvas');c.width=PLANT_W;c.height=PLANT_H;drawPlant(c.getContext('2d'),kind);tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=anisotropy;tex.minFilter=THREE.LinearMipmapLinearFilter;plantTexCache.set(kind,tex);}
+ let tex=plantTexCache.get(kind);if(!tex){const c=document.createElement('canvas');c.width=PLANT_W;c.height=PLANT_H;drawPlant(c.getContext('2d'),kind);tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=anisotropy;tex.minFilter=THREE.LinearMipmapLinearFilter;plantTexCache.set(kind,tex);reg('plant-'+kind,tex);}
  const mesh=new THREE.Mesh(new THREE.PlaneGeometry(height*PLANT_W/PLANT_H,height),new THREE.MeshBasicMaterial({map:tex,transparent:true,alphaTest:.04,toneMapped:false}));mesh.position.y=height/2-height*(6/PLANT_H);
  const tilt=new THREE.Group();tilt.rotation.x=-.5;tilt.add(mesh);const root=new THREE.Group();root.add(tilt);return{root,mesh};
 }
@@ -576,7 +579,7 @@ export function drawPoker(ctx,index=0){
 }
 export function createPokerSprite(THREE,index,{anisotropy=4,height=1.15}={}){
  const c=document.createElement('canvas');c.width=POKER_W;c.height=POKER_H;drawPoker(c.getContext('2d'),index);
- const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=anisotropy;
+ const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=anisotropy;reg('poker-'+index,tex);
  const mesh=new THREE.Mesh(new THREE.PlaneGeometry(height*POKER_W/POKER_H,height),new THREE.MeshBasicMaterial({map:tex,transparent:true,alphaTest:.04,toneMapped:false}));mesh.position.y=height/2-height*(6/POKER_H);
  const tilt=new THREE.Group();tilt.rotation.x=-.5;tilt.add(mesh);const root=new THREE.Group();root.add(tilt);return{root,mesh};
 }
@@ -704,7 +707,7 @@ export function drawHostStand(ctx){
 }
 export function createHostStandSprite(THREE,{anisotropy=4,height=2.7}={}){
  const c=document.createElement('canvas');c.width=HOST_W*2;c.height=HOST_H*2;const g=c.getContext('2d');g.scale(2,2);drawHostStand(g);
- const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=anisotropy;tex.minFilter=THREE.LinearMipmapLinearFilter;
+ const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=anisotropy;tex.minFilter=THREE.LinearMipmapLinearFilter;reg('host-stand',tex);
  const mesh=new THREE.Mesh(new THREE.PlaneGeometry(height*HOST_W/HOST_H,height),new THREE.MeshBasicMaterial({map:tex,transparent:true,alphaTest:.04,toneMapped:false}));mesh.position.y=height/2-height*(10/HOST_H);
  const tilt=new THREE.Group();tilt.rotation.x=-.45;tilt.add(mesh);const root=new THREE.Group();root.add(tilt);return{root,mesh};
 }
@@ -785,8 +788,8 @@ export function drawStool(ctx,seat='#c9553f'){
  for(let i=-2;i<=2;i++){ctx.fillStyle='rgba(255,230,220,.6)';ctx.beginPath();ctx.arc(48+i*11,38-Math.abs(i)*1.5,2,0,6.3);ctx.fill();}
  paintShape(ctx,P(p=>p.ellipse(48,46,30,6,0,0,Math.PI)),'#e8c47a',{ow:2});
 }
-export function makeSpriteFromCanvas(THREE,canvas,{height,anisotropy=4,tilt=-.5,baseOffset=0}){
- const tex=new THREE.CanvasTexture(canvas);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=anisotropy;tex.minFilter=THREE.LinearMipmapLinearFilter;
+export function makeSpriteFromCanvas(THREE,canvas,{height,anisotropy=4,tilt=-.5,baseOffset=0,slot=null}){
+ const tex=new THREE.CanvasTexture(canvas);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=anisotropy;tex.minFilter=THREE.LinearMipmapLinearFilter;if(slot)reg(slot,tex);
  const mesh=new THREE.Mesh(new THREE.PlaneGeometry(height*canvas.width/canvas.height,height),new THREE.MeshBasicMaterial({map:tex,transparent:true,alphaTest:.04,toneMapped:false}));mesh.position.y=height/2-baseOffset;
  const t=new THREE.Group();t.rotation.x=tilt;t.add(mesh);const root=new THREE.Group();root.add(t);return{root,mesh};
 }
