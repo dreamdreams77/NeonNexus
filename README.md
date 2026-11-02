@@ -33,6 +33,16 @@ The Nexus Arcade lobby is dressed entirely with procedurally *painted* artwork (
 - **Prize gallery:** neon lintel, flanking planters, and a walkable room with shelves and the prize exchange.
 - **Crowd:** `lobby-crowd.js` populates the floor with individually dressed visitors with personalities. They use real A* pathfinding, queue for busy cabinets, play and react to winning or losing, drink at the bar, browse the prize gallery, dance at the jukebox and chat in pairs.
 
+## Second-pass art direction: illustrated sprites
+
+The lobby's characters and props are authored illustrations (`lobby-sprites.js`), not procedural noise on primitives: inked outlines, cel shading, designed silhouettes, expressive faces and per-feature drawing code.
+
+- **Cast:** 17 individually designed characters (hair, outfits, glasses, headphones, beards, hats, scarves, backpacks, aprons), each with front / side / back views, a four-frame walk cycle and acting poses (wave, cheer, slump, sip, talk, button-mash). The player, four named regulars, the host, the bartender and chef and the whole crowd use them.
+- **Cabinets:** side-profile illustrations in four body types (upright, sit-down racer, pinball, glass claw) with joystick, buttons, coin door, emblem badge and side-art, under a marquee sign that carries the game's artwork and mastery pips.
+- **Furniture and props:** top-down dining tables with cushioned chairs and candles, bar stools, a marble bar top with glasses and snacks, three bar-top video-poker units, four plant species.
+- **Prize gallery:** a sloped collection wall showing all 17 prizes — owned ones in full colour with a ×N badge, unowned ones as "?" silhouettes — over a tiled floor with a sunburst rug.
+- Everything keeps the existing A* crowd, interactions, collision, lighting budget and mobile support. Draw calls dropped from ~1,500 to ~300 as sculpted geometry was retired.
+
 ## Title screen and settings
 
 The arcade opens on a title screen with an honest load bar (it completes when the 3D world has rendered), a friendly fallback if loading stalls, and **Settings** for sound, reduced motion and graphics quality (saved on your device).

@@ -71,7 +71,7 @@ export function paintCarpet(cabinets,W=768,H=1536,planeW=24,planeH=48,zTop=-25){
   x.save();x.beginPath();x.moveTo(rx,ry);for(let i=0;i<=40;i++)x.lineTo(rx+rw*i/40,ry+(rand()-.5)*amt);for(let i=0;i<=80;i++)x.lineTo(rx+rw+(rand()-.5)*amt,ry+rh*i/80);for(let i=40;i>=0;i--)x.lineTo(rx+rw*i/40,ry+rh+(rand()-.5)*amt);for(let i=80;i>=0;i--)x.lineTo(rx+(rand()-.5)*amt,ry+rh*i/80);x.closePath();x.clip();
  };
  x.save();rough(x0,y0,x1-x0,y1-y0,3);
- const base=x.createLinearGradient(x0,0,x1,0);base.addColorStop(0,'#241d3a');base.addColorStop(.5,'#2e2548');base.addColorStop(1,'#241d3a');x.fillStyle=base;x.fillRect(x0-6,y0-6,x1-x0+12,y1-y0+12);
+ const base=x.createLinearGradient(x0,0,x1,0);base.addColorStop(0,'#33295a');base.addColorStop(.5,'#40336e');base.addColorStop(1,'#33295a');x.fillStyle=base;x.fillRect(x0-6,y0-6,x1-x0+12,y1-y0+12);
  // washed tonal blotches so the pile never looks uniform
  for(let i=0;i<260;i++){x.fillStyle=`rgba(${rand()>.5?'90,60,120':'20,16,36'},${.05+rand()*.08})`;x.beginPath();x.ellipse(x0+rand()*(x1-x0),y0+rand()*(y1-y0),10+rand()*30,6+rand()*18,rand()*3,0,6.283);x.fill();}
  // neon confetti: squiggles, triangles, rings, stars, hand-drawn at uneven strength
@@ -90,7 +90,7 @@ export function paintCarpet(cabinets,W=768,H=1536,planeW=24,planeH=48,zTop=-25){
  x.globalAlpha=1;
  // central runner with braided gold border and medallions
  const rx0=X(-2.7),rx1=X(2.7);
- const runner=x.createLinearGradient(rx0,0,rx1,0);runner.addColorStop(0,'#3e1d3c');runner.addColorStop(.5,'#4d2546');runner.addColorStop(1,'#3e1d3c');x.fillStyle=runner;x.fillRect(rx0,y0+10,rx1-rx0,y1-y0-20);
+ const runner=x.createLinearGradient(rx0,0,rx1,0);runner.addColorStop(0,'#5e2a5a');runner.addColorStop(.5,'#74366c');runner.addColorStop(1,'#5e2a5a');x.fillStyle=runner;x.fillRect(rx0,y0+10,rx1-rx0,y1-y0-20);
  for(let i=0;i<900;i++){x.fillStyle=`rgba(255,190,220,${.02+rand()*.05})`;x.fillRect(rx0+rand()*(rx1-rx0),y0+10+rand()*(y1-y0-20),1.5,1.5);}
  for(const ex of [rx0,rx1]){brush(x,ex,y0+10,ex,y1-10,3.4,'#e8b867',.85,rand);brush(x,ex+(ex===rx0?7:-7),y0+10,ex+(ex===rx0?7:-7),y1-10,1.6,'#ffe2a0',.7,rand);}
  for(let z=-21;z<=20;z+=6.2){

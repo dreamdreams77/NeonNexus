@@ -290,6 +290,8 @@ export const CAST=[
  {name:'Lark',skin:'#f0c9a5',hair:'#2f2a5a',hairstyle:'long',eye:'#3b2a44',top:'#5fa8a0',pants:'#4a4660',shoes:'#3a2c3a',outfit:'jacket',accent:'#e0b46f',build:'slim',hat:null},
  {name:'Nell',skin:'#8d5b45',hair:'#1f1722',hairstyle:'pony',eye:'#2a1c34',top:'#e0a548',pants:'#3f5568',shoes:'#f4ead8',outfit:'tee',stripe:'#fff1c8',build:'avg',headphones:'#e86a8a'},
  {name:'Rue',skin:'#e9b99a',hair:'#d9c28a',hairstyle:'short',eye:'#4b3a2c',top:'#8e7ab8',pants:'#5a4a52',shoes:'#2f2434',outfit:'hoodie',build:'stocky',hat:'#4c6a4a',hatKind:'beanie'},
+ {name:'Mira',skin:'#c98e70',hair:'#2c2230',hairstyle:'bun',eye:'#2a1c34',top:'#7a4a8a',pants:'#2f2b3e',shoes:'#2a1c34',outfit:'jacket',accent:'#f0c58d',build:'avg',earrings:true},
+ {name:'Dex',skin:'#e9b99a',hair:'#6a3a2a',hairstyle:'short',eye:'#3b2a44',top:'#f4ead8',pants:'#2f2b3e',shoes:'#2a1c34',outfit:'vest',accent:'#4b3a63',bow:'#e6786a',build:'stocky',beard:true},
  {name:'Hero',skin:'#d9a07e',hair:'#2a1c34',hairstyle:'curly',eye:'#2a1c34',top:'#78c4ae',pants:'#4a4660',shoes:'#3a2c3a',outfit:'hoodie',build:'avg',glasses:'#2a1a2d',freckles:false}
 ];
 
@@ -336,7 +338,7 @@ export const CAB_W=160,CAB_H=224;
 const BODY_KIND={racer:'sitdown',moto:'sitdown',pinball:'pinball',claw:'glass',ringtoss:'glass',gemdig:'glass',hoops:'hoops'};
 const hexOf=n=>'#'+(n>>>0).toString(16).padStart(6,'0');
 export function drawCabinet(ctx,id,colorNum,variant=0){
- const col=hexOf(colorNum),body=mix(col,'#2b2036',.5),bodyL=mix(col,'#2b2036',.34),trim=mix(col,'#fff4dc',.15),kind=BODY_KIND[id]||'upright';
+ const col=hexOf(colorNum),body=mix(col,'#2b2036',.22),bodyL=mix(col,'#2b2036',.1),trim=mix(col,'#fff4dc',.15),kind=BODY_KIND[id]||'upright';
  const W=CAB_W,H=CAB_H;ctx.save();
  // soft contact shadow
  const sg=ctx.createRadialGradient(80,214,4,80,214,70);sg.addColorStop(0,'rgba(20,8,28,.35)');sg.addColorStop(1,'rgba(20,8,28,0)');ctx.fillStyle=sg;ctx.beginPath();ctx.ellipse(80,214,70,9,0,0,6.3);ctx.fill();
@@ -404,7 +406,7 @@ export function drawCabinet(ctx,id,colorNum,variant=0){
 // local alias (paint is module-private above)
 function paintShape(ctx,path,color,o){return paint(ctx,path,color,o);}
 
-export function createCabinetSprite(THREE,def,{anisotropy=4,height=3.1,variant=0}={}){
+export function createCabinetSprite(THREE,def,{anisotropy=4,height=3.7,variant=0}={}){
  const [,id,,,color]=def,c=document.createElement('canvas');c.width=CAB_W;c.height=CAB_H;drawCabinet(c.getContext('2d'),id,color,variant);
  const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=anisotropy;tex.minFilter=THREE.LinearMipmapLinearFilter;
  const width=height*CAB_W/CAB_H,mesh=new THREE.Mesh(new THREE.PlaneGeometry(width,height),new THREE.MeshBasicMaterial({map:tex,transparent:true,alphaTest:.04,toneMapped:false}));
@@ -533,5 +535,44 @@ export function createPlantSprite(THREE,kind,{anisotropy=4,height=1.9}={}){
  const c=document.createElement('canvas');c.width=PLANT_W;c.height=PLANT_H;drawPlant(c.getContext('2d'),kind);
  const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=anisotropy;tex.minFilter=THREE.LinearMipmapLinearFilter;
  const mesh=new THREE.Mesh(new THREE.PlaneGeometry(height*PLANT_W/PLANT_H,height),new THREE.MeshBasicMaterial({map:tex,transparent:true,alphaTest:.04,toneMapped:false}));mesh.position.y=height/2-height*(6/PLANT_H);
+ const tilt=new THREE.Group();tilt.rotation.x=-.5;tilt.add(mesh);const root=new THREE.Group();root.add(tilt);return{root,mesh};
+}
+
+// ───────── bar top and bar-top poker machines ─────────
+export function paintBarTop(){
+ const W=1180,H=260,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+ // cream marble slab with veining and a polished brass edge
+ const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#f4ead4');g.addColorStop(1,'#e2d2b4');x.fillStyle=g;x.beginPath();x.roundRect(0,0,W,H,22);x.fill();
+ x.save();x.clip();x.strokeStyle='rgba(150,120,110,.28)';x.lineWidth=2;for(let i=0;i<14;i++){x.beginPath();let px=(i*97)%W,py=(i*53)%H;x.moveTo(px,py);for(let k=0;k<6;k++){px+=30+(k*17+i*11)%40;py+=((k*29+i*7)%40)-20;x.lineTo(px,py);}x.stroke();}
+ x.fillStyle='rgba(255,255,255,.4)';x.fillRect(0,6,W,6);x.restore();
+ x.lineWidth=14;x.strokeStyle='#c99a52';x.beginPath();x.roundRect(8,8,W-16,H-16,18);x.stroke();x.lineWidth=3;x.strokeStyle=INK;x.beginPath();x.roundRect(2,2,W-4,H-4,22);x.stroke();x.lineWidth=3;x.beginPath();x.roundRect(15,15,W-30,H-30,14);x.stroke();
+ // front rail glow strip
+ x.fillStyle='#5fe0d4';x.shadowColor='#5fe0d4';x.shadowBlur=14;x.fillRect(60,H-34,W-120,5);x.shadowBlur=0;
+ const glass=(cx,cy,col)=>{x.fillStyle='rgba(20,8,28,.25)';x.beginPath();x.ellipse(cx+4,cy+6,26,22,0,0,6.3);x.fill();paintShape(x,P(q=>q.arc(cx,cy,26,0,6.3)),'rgba(255,255,255,.3)',{box:[cx-26,cy-26,52,52],ow:2.6,hi:.7});paintShape(x,P(q=>q.arc(cx,cy,19,0,6.3)),col,{box:[cx-19,cy-19,38,38],ow:2,hi:.7});line(x,[[cx+4,cy-4],[cx+30,cy-30]],4,'#fff');x.strokeStyle=INK;x.lineWidth=1.4;x.beginPath();x.moveTo(cx+4,cy-4);x.lineTo(cx+30,cy-30);x.stroke();};
+ glass(120,130,'#ff7ab6');glass(1070,120,'#5fe0d4');glass(440,160,'#ffc66b');glass(740,90,'#a99bff');
+ // snack bowl, napkins and a menu card
+ paintShape(x,P(q=>q.arc(1000,175,30,0,6.3)),'#8a5a3a',{box:[970,145,60,60],ow:2.6});for(let i=0;i<9;i++){paintShape(x,P(q=>q.arc(985+(i*13)%34,160+(i*9)%26,6,0,6.3)),['#ffd96a','#e8a05a','#fff0b0'][i%3],{ow:1.4});}
+ paintShape(x,rrect(220,60,70,46,6),'#f4ead8',{box:[220,60,70,46],ow:2.4});x.font='700 15px Fredoka, sans-serif';x.fillStyle='#4a2a3a';x.textAlign='center';x.fillText('MENU',255,88);
+ paintShape(x,rrect(70,70,44,30,5),'#e8584f',{box:[70,70,44,30],ow:2.2});
+ return c;
+}
+export const POKER_W=120,POKER_H=130;
+export function drawPoker(ctx,index=0){
+ const col=['#59445f','#4a5267','#654653'][index%3],sc=['#8dd8c5','#9dc7e8','#e9bd79'][index%3];
+ const sg=ctx.createRadialGradient(60,122,2,60,122,46);sg.addColorStop(0,'rgba(20,8,28,.4)');sg.addColorStop(1,'rgba(20,8,28,0)');ctx.fillStyle=sg;ctx.beginPath();ctx.ellipse(60,122,46,8,0,0,6.3);ctx.fill();
+ paintShape(ctx,P(p=>{p.moveTo(16,120);p.lineTo(22,52);p.lineTo(98,52);p.lineTo(104,120);p.closePath();}),col,{box:[16,52,88,68],ow:3});
+ paintShape(ctx,rrect(12,112,96,12,4),'#d9b06d',{box:[12,112,96,12],ow:2.4});
+ paintShape(ctx,P(p=>{p.moveTo(24,50);p.lineTo(28,8);p.lineTo(92,8);p.lineTo(96,50);p.closePath();}),mix(col,'#2b2036',.3),{box:[24,8,72,42],ow:3});
+ paintShape(ctx,rrect(34,14,52,32,5),'#211d32',{box:[34,14,52,32],ow:2.2});
+ paintShape(ctx,rrect(37,17,46,26,3),sc,{box:[37,17,46,26],ow:1.6,hi:.7});
+ for(let i=0;i<5;i++){const cx=40+i*8.4;paintShape(ctx,rrect(cx-3.4,21,7,12,1.4),'#fffaf0',{box:[cx-3.4,21,7,12],ow:1.1,hi:.1,sh:.05});ctx.fillStyle=i%2?'#e8584f':'#2a1c34';ctx.font='700 7px sans-serif';ctx.textAlign='center';ctx.fillText(['A','K','♥','♠','10'][i],cx,29);}
+ line(ctx,[[40,38],[80,38]],2,'#ffd96a');
+ for(let b=0;b<3;b++)paintShape(ctx,ell(36+b*24,70,7,5),['#d98d83','#88c8b7','#e5c27d'][b],{box:[29+b*24,65,14,10],ow:1.8});
+ paintShape(ctx,rrect(50,88,20,5,2),'#14101e',{ow:1.4});paintShape(ctx,rrect(36,98,48,7,3),'#d9b06d',{box:[36,98,48,7],ow:1.8});
+}
+export function createPokerSprite(THREE,index,{anisotropy=4,height=1.15}={}){
+ const c=document.createElement('canvas');c.width=POKER_W;c.height=POKER_H;drawPoker(c.getContext('2d'),index);
+ const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=anisotropy;
+ const mesh=new THREE.Mesh(new THREE.PlaneGeometry(height*POKER_W/POKER_H,height),new THREE.MeshBasicMaterial({map:tex,transparent:true,alphaTest:.04,toneMapped:false}));mesh.position.y=height/2-height*(6/POKER_H);
  const tilt=new THREE.Group();tilt.rotation.x=-.5;tilt.add(mesh);const root=new THREE.Group();root.add(tilt);return{root,mesh};
 }

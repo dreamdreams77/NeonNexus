@@ -348,7 +348,7 @@ test('mobile rendering reduces GPU cost and world camera smoothing reuses its ta
 
 test('arcade floor is two painted planes (tiling parquet + one carpet overlay) instead of hundreds of tile meshes, felts stay textured',()=>{
  assert.match(world,/scene\.remove\(floorTiles\)/);
- assert.match(world,/new THREE\.PlaneGeometry\(24,48\),new THREE\.MeshStandardMaterial\(\{map:parquetMap,roughnessMap:parquetRough/);
+ assert.match(world,/new THREE\.PlaneGeometry\(24,48\),new THREE\.MeshStandardMaterial\(\{color:0xe2d2c6,map:parquetMap,roughnessMap:parquetRough/);
  assert.match(world,/function feltTexture\(base\)/);
  assert.match(world,/map:airFelt,roughness:\.72,bumpMap:grain/);
  assert.match(world,/map:poolFelt,roughness:\.88,bumpMap:grain/);
@@ -713,4 +713,15 @@ test('light budget: cabinet glow uses a fixed pool of real lights instead of doz
  assert.match(world,/function makeLampProxy/);assert.match(world,/LAMP_POOL=mobileDevice\?3:5/);assert.match(world,/function updateLampPool/);
  assert.ok((world.match(/new THREE\.PointLight/g)||[]).length<=14,'point light constructions');
  assert.doesNotMatch(world,/new THREE\.PointLight\(color,1\.8,3\.2\)/);
+});
+
+test('illustrated sprite art layer: designed cast, cabinets, plants, tables, bar and gallery replace sculpted primitives',async()=>{
+ const spr=await readFile(new URL('../lobby-sprites.js',import.meta.url),'utf8');
+ for(const fn of ['drawCharacter','buildSheet','createActor','drawCabinet','createCabinetSprite','drawPlant','createPlantSprite','paintTableTop','paintStoolTop','paintBarTop','createPokerSprite','paintGalleryWall','paintGalleryFloor','drawPrizeItem'])assert.match(spr,new RegExp('function '+fn+'\\('));
+ assert.ok((spr.match(/\n \{name:'/g)||[]).length>=17,'cast size');
+ for(const view of ['front','side','back'])assert.ok(spr.includes(view+':['));
+ for(const pose of ['walk0','walk3','wave','cheer','slump','sip','talk','mash0'])assert.ok(spr.includes("'"+pose+"'"),pose);
+ for(const k of ['sitdown','pinball','glass','upright'])assert.ok(spr.includes("'"+k+"'"),k);
+ assert.match(world,/createActor\(THREE,CAST/);assert.match(world,/createCabinetSprite\(THREE,def/);assert.match(world,/hostActor/);assert.match(world,/staffActors/);assert.match(world,/createPokerSprite/);
+ assert.doesNotMatch(world,/const stitch=box/);
 });

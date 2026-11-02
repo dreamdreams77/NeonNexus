@@ -15,7 +15,7 @@ export function createCrowd(ctx){
  const gSphere=new THREE.SphereGeometry(1,14,10),gCyl=new THREE.CylinderGeometry(1,1,1,10),gTorus=new THREE.TorusGeometry(1,.16,6,14,Math.PI),gBox=new THREE.BoxGeometry(1,1,1);
  const matCache=new Map(),mat=c=>{let m=matCache.get(c);if(!m){m=clayMat(c);matCache.set(c,m);}return m;};
  const dark=new THREE.MeshBasicMaterial({color:0x2a1a2c,side:THREE.DoubleSide}),cheek=new THREE.MeshBasicMaterial({color:0xf08a8a,transparent:true,opacity:.55});
- const shadowMat=new THREE.MeshBasicMaterial({color:0x14081c,transparent:true,opacity:.3,depthWrite:false});
+ const shadowMat=new THREE.MeshBasicMaterial({color:0x14081c,transparent:true,opacity:.5,depthWrite:false});
  const shadowGeo=new THREE.CircleGeometry(.4,16);
  const pick=a=>a[Math.floor(rand()*a.length)];
  const mesh=(geo,m,parent,x,y,z,sx,sy,sz)=>{const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);o.scale.set(sx,sy,sz);o.castShadow=true;parent.add(o);return o;};
