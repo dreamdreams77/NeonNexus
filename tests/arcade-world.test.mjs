@@ -221,7 +221,7 @@ test('mobile arcade movement eases joystick input and accelerates smoothly inste
 
 test('approaching a cabinet previews its genre, gameplay loop, challenge and controls before interaction range',()=>{
  assert.match(html,/id="cabinet-discovery"/);
- for(const field of ['discovery-title','discovery-genre','discovery-description','discovery-challenge','discovery-controls'])assert.ok(html.includes('id="'+field+'"'),'missing discovery field '+field);
+ for(const field of ['discovery-title','discovery-genre','discovery-description','discovery-challenge','discovery-controls','discovery-action'])assert.ok(html.includes('id="'+field+'"'),'missing discovery field '+field);
  for(const id of ids.concat(['hoops']))assert.ok(world.includes(id+':{label:'),'missing player-facing guide for '+id);
  assert.match(world,/discoverDistance=7\.6/);
  assert.match(world,/let dmin=4\.1,discovered=null,discoverDistance=7\.6/);
