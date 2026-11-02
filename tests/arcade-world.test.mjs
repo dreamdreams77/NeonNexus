@@ -20,6 +20,20 @@ test('arcade opens as one walkable RPG district with all fourteen cabinets and n
  assert.match(world,/new THREE\.OrthographicCamera/);
 });
 
+
+test('player avatar is a detailed articulated clay character, not a flat SVG/blob',()=>{
+ for(const feature of ['const head=new THREE.Group()','const mouthCurve=new THREE.CatmullRomCurve3','const arms=[],legs=[]','function makeArm(side)','function makeLeg(side)','eyeWhite','irisMat','hairCap'])assert.ok(world.includes(feature),'missing sculpted avatar feature '+feature);
+ assert.match(world,/new THREE\.CapsuleGeometry\(\.135/);
+ assert.match(world,/new THREE\.TubeGeometry\(mouthCurve/);
+ assert.match(world,/legs\.forEach\(\(leg,i\)=>leg\.rotation\.x=Math\.sin\(walk\+i\*Math\.PI\)\*\.48\)/);
+});
+test('walk-up restaurant services are detected and take priority over cabinet prompts',()=>{
+ assert.match(world,/activeService=null;let serviceDistance=3\.5;for\(const service of services\)/);
+ assert.match(world,/nexus:service-open/);
+ assert.match(world,/if\(activeService\)useService\(\);else useCabinet\(\)/);
+ assert.match(world,/activeService\.type==='table'/);
+});
+
 test('every playable cabinet has a 3D model and launches its matching game',()=>{
  for(const id of ids)assert.ok(world.includes("'"+id+"'"),'missing 3D cabinet '+id);
  assert.match(world,/nexus:arcade-play/);
