@@ -134,7 +134,7 @@ test('host, bartender and chef have distinct articulated claymation routines and
  assert.match(world,/hostEyeLids\.forEach/);
  assert.match(world,/function makeStaff\(x,z,shirt,hat,role\)/);
  assert.match(world,/role==='bartender'/);
- assert.match(world,/role==='chef'/);
+ assert.match(world,/makeStaff\(10\.4,-5\.2,0xd58b79,true,'chef'\)/);
  assert.match(world,/staff\.role==='bartender'/);
  assert.match(world,/staff\.role==='chef'/);
  assert.match(world,/staff\.head\.rotation\.y=near\?/);
