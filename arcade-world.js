@@ -180,7 +180,7 @@ if(mount){
   sphere(.13,0,-.38,.01,trouserMat,pivot,.98,1,.95);
   const shin=new THREE.Mesh(new THREE.CapsuleGeometry(.12,.27,5,12),trouserMat);shin.position.set(0,-.54,.005);shin.castShadow=true;pivot.add(shin);
   cyl(.11,.12,.1,0,-.7,.01,trouserMat,pivot);
-  const shoe=new THREE.Group();shoe.position.set(0,-.78,.09);pivot.add(shoe);
+  const shoe=new THREE.Group();shoe.position.set(0,-.55,.09);pivot.add(shoe);
   sphere(.16,0,-.015,.045,shoeMat,shoe,1,.72,1.35);sphere(.12,0,-.045,.12,clayMat(0x625466),shoe,1,.48,1.05);
   const sole=new THREE.Mesh(new THREE.CapsuleGeometry(.115,.12,4,10),soleMat);sole.rotation.x=Math.PI/2;sole.position.set(0,-.095,.05);sole.scale.set(1,.52,1.25);shoe.add(sole);
   for(let lace=0;lace<3;lace++)box(.09,.012,.018,(lace-1)*.025,-.005-lace*.012,.11+lace*.012,mat(0xe6d4b6),shoe,.006);
