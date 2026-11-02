@@ -22,9 +22,44 @@ An original arcade-resort experience: explore themed districts, play quick chall
 - **Persistent local player profile**: wallet, quest progress, best score, claimed bonuses, redeemed prizes and completed district activities save in the browser on that device.
 - Responsive layouts, keyboard-accessible dialogs and reduced-motion support.
 
-## Arcade game collection\n\nThe dedicated [Nexus Arcade](./arcade.html) hub contains twenty distinct cabinet experiences: Neon Hoops, Cosmic Skee-Ball, Comet Air Hockey, Moon Moles, Bubble Blaster, Prism Sequence, Beat Foundry, Meteor Mayhem, Turbo Tunnels, Clay Stack, Starlight Pinball, Lucky Claw, Kitchen Rush, Sushi Catch, Mixology Master, Pulse Runner, Barrelstorm Moto, Moonshard Legend, Comet Ring Toss and Moon Gem Dig. The walkable arcade also includes a separate Moonlight Billiards CPU table, a token jukebox, a weighted ticket wheel, a staffed Glow Bar and visitors with RPG-style conversations. Each has its own controls, scoring rules and round flow, with touch and keyboard support where applicable. Cabinet mastery persists per game and increases ticket payouts as it levels up. A daily district circuit rewards 80 tickets for playing three different cabinets, with one claim per UTC day. Four named regulars offer character-specific quests with tracked objectives and ticket rewards; the prize exchange adds VIP experiences and daily restocks to its limited-stock catalogue. Arcade rewards are added to the local player token wallet.\n\n## Rewards and difficulty
+## Arcade game collection\n\nThe dedicated [Nexus Arcade](./arcade.html) hub contains twenty distinct cabinet experiences: Neon Hoops, Cosmic Skee-Ball, Comet Air Hockey, Moon Moles, Bubble Blaster, Prism Sequence, Beat Foundry, Meteor Mayhem, Turbo Tunnels, Clay Stack, Starlight Pinball, Lucky Claw, Kitchen Rush, Sushi Catch, Mixology Master, Pulse Runner, Barrelstorm Moto, Moonshard Legend, Comet Ring Toss and Moon Gem Dig. The walkable arcade also includes a separate Moonlight Billiards CPU table, a token jukebox, a weighted ticket wheel, a staffed Glow Bar and visitors with RPG-style conversations. Each has its own controls, scoring rules and round flow, with touch and keyboard support where applicable. Cabinet mastery persists per game and increases ticket payouts as it levels up. A daily district circuit rewards 80 tickets for playing three different cabinets, with one claim per UTC day. Four named regulars offer character-specific quests with tracked objectives and ticket rewards; the prize exchange adds VIP experiences and daily restocks to its limited-stock catalogue. Arcade rewards are added to the local player token wallet.\n\n## Art direction: the hand-painted lobby
 
-Every cabinet has a difficulty tier (×1.0 to ×1.4) that scales token and ticket payouts, beating your personal best adds a ticket bonus, and Comet Air Hockey has an Easy / Normal / Hard CPU selector (Hard pays ×1.25, Easy ×0.8). The 3D world stops rendering while a cabinet is open or the tab is hidden, which keeps game loops smooth on mobile.
+The Nexus Arcade lobby is dressed entirely with procedurally *painted* artwork (`lobby-art.js`), not flat colours or stock textures: wobbly ink outlines, dry-brush grain, layered washes and deliberate imperfections.
+
+- **Floor:** painted parquet (per-plank grain, knots, bevels, a roughness map for sheen) under a single hand-painted arcade carpet with neon confetti, braided gold border, medallions and baked neon light spill.
+- **Walls:** damask wallpaper over raised-panel wainscot, framed posters (eight painted designs) and neon plaques; an illuminated **NEON NEXUS** brand sign and an entrance arch with welcome mat.
+- **Cabinets:** every machine has painted side-art, an ink outline and a tilted illuminated **marquee** with a unique illustrated emblem (hoops, pool ball, mole, cocktail, robot, gem…) and hand-lettered title.
+- **Jukebox & lucky wheel:** chrome-arch jukebox with glowing tubes, spinning record glow and rising notes; both stand clear of the cabinets, with the air hockey and billiards tables on their own rugs.
+- **Prize gallery:** neon lintel, flanking planters, and a walkable room with shelves and the prize exchange.
+- **Crowd:** `lobby-crowd.js` populates the floor with individually dressed visitors with personalities. They use real A* pathfinding, queue for busy cabinets, play and react to winning or losing, drink at the bar, browse the prize gallery, dance at the jukebox and chat in pairs.
+
+## Title screen and settings
+
+The arcade opens on a title screen with an honest load bar (it completes when the 3D world has rendered), a friendly fallback if loading stalls, and **Settings** for sound, reduced motion and graphics quality (saved on your device).
+
+## The twenty games
+
+All twenty cabinets were playtested with scripted bots driving the real input handlers. Notable work from the audit:
+
+- **Moonlight Billiards** – the whole physics/CPU/rules block had been stranded inside `start()` and only ran once; it now runs every frame (turns alternate, groups are assigned, pockets register).
+- **Comet Air Hockey** – rebuilt: free 2D mallets that carry velocity, circle–circle collisions with momentum transfer, goal posts, a CPU that defends and attacks with level-dependent aim error, Easy / Normal / Hard.
+- **Beat Foundry** – a charted 116 BPM rhythm game with a backing track on the same clock, Perfect / Good / OK / Miss windows, stray-tap penalty and S–D grades.
+- **Turbo Tunnels** – a real circuit race: spline track, steering/throttle/brake, barriers, three AI rivals, three laps, lap timing and place-based rewards.
+- **Comet Ring Toss** – was physically unwinnable (rings could not reach the pegs); now a lead-the-target throw with an aim reticle.
+- **Pulse Runner** – walking speed was ~42 px/s because of a friction bug; fixed.
+- **Lucky Claw** – every grab threw; fixed. Skeeball, Bubble Blaster and Clay Stack no longer award a "clear" for a zero score.
+
+## Economy
+
+Every cabinet has a difficulty tier (×1.0–×1.4) applied to payouts; beating your personal best adds a ticket bonus; Air Hockey's CPU level changes its payout (Hard ×1.25, Easy ×0.8). Payouts use a diminishing-returns score (soft cap) so runaway totals can't flood the economy. Tokens and tickets are spent at the Glow Bar and the prize exchange, and everything persists in `localStorage`.
+
+## Performance
+
+The 3D world pauses while a cabinet is open or the tab is hidden; dynamic point lights were cut from 60 to 14 (cabinet glow uses a small pool that follows the player); the floor is two painted planes instead of hundreds of tile meshes; mobile and the **Low** setting drop shadows, antialiasing and pixel ratio.
+
+## Debugging and tests
+
+Append `?debug` to `arcade.html` to expose `window.__nx` (camera/player), `window.__arc` (cabinet state) and `window.__crowd` for bot-driven playtests. `npm test` runs syntax checks plus ~100 tests, including the movement model and structural regression checks for each fix above.
 
 ## Controls
 

@@ -651,7 +651,7 @@ const jukebox=new THREE.Group();jukebox.position.set(-10.0,0,-12.6);jukebox.scal
 }
 { // Ambient visitors: a living crowd with routines, queues and reactions.
   const crowd=createCrowd({THREE,scene,clayMat,cabinets,count:mobileDevice?5:10});
-  window.__crowd=crowd;
+  if(location.search.includes('debug'))window.__crowd=crowd;
   artAnimators.push(t=>crowd.update(t,player.position));
 }
 // Solid set pieces the player cannot walk through (cabinets, bar, jukebox, lucky wheel).
