@@ -207,9 +207,18 @@ if(mount){
   // Wobbly illuminated edge strips.
   const edgeMat=new THREE.MeshStandardMaterial({color:color,emissive:color,emissiveIntensity:.8,roughness:.5});
   for(const x of [-.73,.73]){const edge=box(.045,2.25,.055,x,1.48,.54,edgeMat,g,.02);edge.rotation.z=x*.025;}
+  // A tiny animated cabinet crest gives every machine a physical identity beyond its screen.
+  const crest=new THREE.Group();crest.position.set(.51,.83,.79);g.add(crest);
+  const crestRing=new THREE.Mesh(new THREE.TorusGeometry(.145,.018,8,28),new THREE.MeshStandardMaterial({color:color,emissive:color,emissiveIntensity:.85,roughness:.32,metalness:.18}));
+  crest.add(crestRing);
+  const crestCore=new THREE.Mesh(new THREE.SphereGeometry(.072,16,12),new THREE.MeshStandardMaterial({color:0xffe5b0,emissive:color,emissiveIntensity:.55,roughness:.28}));
+  crest.add(crestCore);
+  const crestDots=[];
+  for(let n=0;n<3;n++){const dot=new THREE.Mesh(new THREE.SphereGeometry(.027,10,8),new THREE.MeshStandardMaterial({color:n===1?0xffe2a0:color,emissive:color,emissiveIntensity:.65}));crest.add(dot);crestDots.push(dot);}
+  const crestLight=new THREE.PointLight(color,.35,1.25);crestLight.position.z=.08;crest.add(crestLight);
   const lamp=new THREE.PointLight(color,1.8,3.2);lamp.position.set(0,2.2,.9);g.add(lamp);
   const discoveryRing=new THREE.Mesh(new THREE.RingGeometry(.92,1.12,48),new THREE.MeshBasicMaterial({color:color,transparent:true,opacity:.62,side:THREE.DoubleSide,depthWrite:false}));discoveryRing.rotation.x=-Math.PI/2;discoveryRing.position.set(side*5.2,.035,z);discoveryRing.visible=false;scene.add(discoveryRing);
-  g.userData={name,id,genre,index:i,screen,screenTex,preview,marquee:marqScreen,lamp,discoveryRing,baseY:1.42};
+  g.userData={name,id,genre,index:i,screen,screenTex,preview,marquee:marqScreen,lamp,discoveryRing,crest,crestRing,crestCore,crestDots,crestLight,baseY:1.42};
   cabinets.push(g);
   // Hand-painted floor decal, small and slightly rotated.
   const decal=box(1.9,.025,1.1,side*5.2,.005,z+ (side===-1?1.2:-1.2),mat(0x9b7180,.95),scene,.2);decal.rotation.y=(i%2)*.035;
@@ -579,7 +588,7 @@ visitorProfiles.forEach((profile,i)=>{const g=new THREE.Group();const [x,z]=visi
   const previewEnabled=!reduceMotion&&document.visibilityState==='visible'&&(!gameOverlay||gameOverlay.hidden)&&(!serviceModal||serviceModal.hidden);
   if(previewEnabled&&t>=nextPreviewRefresh){previewSetCache=new Set(cabinets.map(c=>({cabinet:c,distance:player.position.distanceTo(c.position)})).filter(v=>v.distance<19).sort((a,b)=>a.distance-b.distance).slice(0,4).map(v=>v.cabinet));nextPreviewRefresh=t+.25;}else if(!previewEnabled)previewSetCache.clear();
   const previewSet=previewSetCache;
-  cabinets.forEach((c,i)=>{const pulse=.75+Math.sin(t*2.1+i*.8)*.22;c.userData.lamp.intensity=1.4+pulse*1.1;c.position.y=Math.sin(t*1.3+i)*.012;c.userData.discoveryRing.visible=!!discovered&&discovered===c&&!activeService;c.userData.discoveryRing.material.opacity=.35+Math.sin(t*3.2+i)*.16;
+  cabinets.forEach((c,i)=>{const pulse=.75+Math.sin(t*2.1+i*.8)*.22;c.userData.lamp.intensity=1.4+pulse*1.1;c.position.y=Math.sin(t*1.3+i)*.012;const crest=c.userData.crest;if(crest){crest.rotation.z=Math.sin(t*1.1+i*.7)*.12;crest.position.y=.83+Math.sin(t*2.2+i)*.025;crest.rotation.y=Math.sin(t*.8+i)*.09;c.userData.crestRing.rotation.z=t*(.28+i%3*.06);c.userData.crestCore.scale.setScalar(.92+Math.sin(t*3+i)*.08);c.userData.crestDots.forEach((dot,n)=>{const a=t*(.85+n*.08)+n*Math.PI*2/3;dot.position.set(Math.cos(a)*.112,Math.sin(a)*.112,.025);});c.userData.crestLight.intensity=.25+pulse*.22;}c.userData.discoveryRing.visible=!!discovered&&discovered===c&&!activeService;c.userData.discoveryRing.material.opacity=.35+Math.sin(t*3.2+i)*.16;
    const preview=c.userData.preview,screenDistance=player.position.distanceTo(c.position);
    if(preview&&previewSet.has(c)){preview.clock+=dt;if(preview.clock>=.12){preview.clock=0;preview.frame++;drawCabinetPreview(preview,preview.frame);}}else if(preview){preview.clock=0;}
   });
