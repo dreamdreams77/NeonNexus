@@ -610,7 +610,7 @@ test('Glow Bar has three walk-up video poker machines with a playable five-card 
 });
 
 test('arcade district has living garden details and a festive social-square canopy',()=>{
- assert.match(world,/const livingLeaves,flowerHeads/);
+ assert.match(world,/const livingLeaves=\[\],flowerHeads=\[\]/);
  assert.match(world,/flowerHeads\.push/);
  assert.match(world,/livingLeaves\.forEach/);
  assert.match(world,/makeRug\(0,7\.2/);
