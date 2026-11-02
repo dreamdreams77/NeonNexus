@@ -46,7 +46,7 @@ if(mount){
  box(.6,6,50,-12.2,2.7,-1,clayMat(0x463447),scene,.18);box(.6,6,50,12.2,2.7,-1,clayMat(0x463447),scene,.18);
  box(24,.5,.6,0,5.7,-26,clayMat(0x594052),scene,.18);
  // Repeated timber-like ceiling ribs and hand-painted wall panels.
- for(let z=-24;z<=20;z+=4){const rib=box(24,.22,.28,0,5.3,z,clayMat(0x9b6b69),scene,.1);rib.rotation.z=Math.sin(z)*.006;}
+ // Ceiling ribs removed from the play view: they cut across the top-down camera and hid the floor.
  const sign=box(8,1.25,.35,0,4.45,-25.5,clayMat(0x472f49),scene,.18);
  // Painted storybook mural: layered brush shapes and hand-drawn stars on warm plaster.
  function muralTexture(){
@@ -788,6 +788,6 @@ visitorProfiles.forEach((profile,i)=>{const g=new THREE.Group();const [x,z]=visi
   visitorNPCs.forEach((visitor,i)=>{const g=visitor.group,dx=player.position.x-g.position.x,dz=player.position.z-g.position.z,playerDistance=Math.hypot(dx,dz),target=visitor.route[visitor.routeIndex];visitor.phase+=dt*(.7+i*.08);let walking=false;if(playerDistance>3.8){const tx=target[0]-g.position.x,tz=target[1]-g.position.z,distance=Math.hypot(tx,tz);if(distance<.14){visitor.routeIndex=(visitor.routeIndex+1)%visitor.route.length;}else{const step=Math.min(distance,.52*dt);g.position.x+=tx/distance*step;g.position.z+=tz/distance*step;g.rotation.y+=(Math.atan2(tx,tz)-g.rotation.y)*(1-Math.exp(-dt*5));walking=true;}}if(playerDistance<3.8){g.rotation.y+=(Math.atan2(dx,dz)-g.rotation.y)*(1-Math.exp(-dt*3.5));if(t>visitor.waveUntil&&playerDistance<2.8)visitor.waveUntil=t+5.5;}visitor.walk+=dt*(walking?5.8:1.2);g.position.y=.012+Math.abs(Math.sin(visitor.walk))*(walking?.018:.006);g.children[0].rotation.z=Math.sin(visitor.walk)*.025;g.children[1].rotation.z=Math.sin(visitor.phase*1.2)*.025;if(walking){visitorArms.filter(a=>a.visitor===i).forEach(({arm,side})=>arm.rotation.z=side*.16+Math.sin(visitor.walk+side*Math.PI)*.18);visitorLegs.filter(a=>a.visitor===i).forEach(({leg,side})=>leg.rotation.x=Math.sin(visitor.walk+side*Math.PI)*.22);}else{visitorArms.filter(a=>a.visitor===i).forEach(({arm,side})=>arm.rotation.z=side*.16+Math.sin(visitor.phase*1.3+side)*.025);visitorLegs.filter(a=>a.visitor===i).forEach(({leg})=>leg.rotation.x*=.82);}if(visitor.waveUntil>t&&playerDistance<3.8){const wave=Math.sin(t*9+i)*.18;visitorArms.filter(a=>a.visitor===i&&a.side===1).forEach(({arm})=>arm.rotation.z=-1.15+wave);}});
   if(knob)knob.style.transform='translate('+touch.x*31+'px,'+touch.y*31+'px)';pink.intensity=30+Math.sin(t*1.4)*5;cyan.intensity=28+Math.cos(t*1.1)*5;
  }
- function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.05),t=clock.elapsedTime;update(dt,t);renderer.render(scene,camera);}
+ function animate(){requestAnimationFrame(animate);const paused=document.hidden||!gameOverlay.hidden;if(paused){clock.getDelta();return;}const dt=Math.min(clock.getDelta(),.05),t=clock.elapsedTime;update(dt,t);renderer.render(scene,camera);}
  animate();
 }

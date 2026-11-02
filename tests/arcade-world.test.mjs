@@ -372,7 +372,7 @@ test('the arcade has a physical prize exchange counter with walk-up interaction'
 test('tickets are a separate persistent currency from dining tokens and every cabinet awards them',()=>{
  assert.match(html,/id="arcade-tokens"/);
  assert.match(html,/id="arcade-tickets"/);
- assert.match(game,/const ticketsEarned=Math\.max\(2,Math\.floor\(score\/9\)/);
+ assert.match(game,/const ticketsEarned=Math\.max\(2,Math\.round\(\(Math\.floor\(score\/9\)/);
  assert.match(game,/saved\.tickets=\(Number\(saved\.tickets\)\|\|0\)\+payoutTickets/);
  assert.match(game,/saved\.ticketHistory\.unshift\(\{game,score,amount:payoutTickets,baseAmount:ticketsEarned,masteryBonus:masteryTicketBonus,at:Date\.now\(\)\}\)/);
  assert.match(game,/\+payoutTickets\+' TICKETS/);
@@ -648,4 +648,26 @@ test('arcade regulars have expressive individual faces and layered signature out
  assert.match(world,/new THREE\.TorusGeometry\(\.067,\.009,6,16\)/);
  assert.match(world,/const collarMat=clayMat/);
  assert.match(world,/const shirtFront=box/);
+});
+
+test('opening a cabinet before starting cannot crash the idle preview (air hockey, billiards)',()=>{
+ assert.match(game,/puck:\{x:450,y:270,vx:0,vy:0\},botX:450/);
+ assert.match(game,/if\(p\.cue\)drawPoolBall\(p\.cue\)/);
+});
+test('lucky claw nearest-prize search is seeded so the first grab cannot throw',()=>{
+ assert.doesNotMatch(game,/\?b:a,null\)/);
+ assert.match(game,/\?b:a,objects\[0\]\|\|null\)/);
+});
+test('3D world render loop pauses while a game overlay is open or the tab is hidden',()=>{
+ assert.match(world,/document\.hidden\|\|!gameOverlay\.hidden/);
+});
+test('ceiling ribs no longer occlude the top-down camera view',()=>{
+ assert.doesNotMatch(world,/const rib=box\(24,\.22/);
+});
+test('rewards scale with cabinet difficulty and personal bests; air hockey has a CPU level picker',()=>{
+ for(const id of ids.concat('billiards'))assert.match(game,new RegExp(id+':[0-9.]+[,}]'));
+ assert.match(game,/DIFFICULTY_TIER/);
+ assert.match(game,/NEW PERSONAL BEST/);
+ assert.match(html,/id="level-select"/);
+ assert.match(game,/cpuLevel\(\)/);
 });
