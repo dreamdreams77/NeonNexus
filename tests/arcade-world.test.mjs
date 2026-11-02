@@ -316,6 +316,8 @@ test('Moonlight Billiards is a CPU eight-ball game with cue physics, collisions,
  assert.match(game,/type:'poolball'/);
  assert.match(game,/const pockets=\[\[155,125\]/);
  assert.match(game,/const impulse=\-\(1\+\.94\)\*rel\*\.5/);
+ assert.match(game,/const active=\[p\.cue,\.\.\.balls\]\.filter\(b=>!b\.pocketed\)/);
+ assert.match(game,/if\(p\.current==='player'\)\{p\.playerPotted\.push\(b\.number\);scoreBy\(15\);\}else p\.cpuPotted\.push\(b\.number\)/);
  assert.match(game,/p\.playerGroup/);
  assert.match(game,/p\.cpuGroup/);
  assert.match(game,/b\.number===8/);
