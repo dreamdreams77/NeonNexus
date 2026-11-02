@@ -10,6 +10,7 @@ const [html,game,world,immersive,css]=await Promise.all([
  readFile(new URL('../arcade.css',import.meta.url),'utf8')
 ]);
 const movementSrc=await readFile(new URL('../movement.js',import.meta.url),'utf8');
+const fnBody=(src,name)=>{const i=src.indexOf('function '+name+'(');assert.ok(i>=0,name);const j=src.indexOf('\nfunction ',i+10);return src.slice(i,j<0?undefined:j);};
 const ids=['skeeball','airhockey','whack','target','memory','rhythm','meteor','racer','stack','pinball','claw','chef','sushi','mixology','pulse','moto','moonquest','ringtoss','gemdig'];
 
 test('arcade opens as one walkable RPG district with all nineteen mini-game cabinets and no game catalogue below it',()=>{
@@ -53,14 +54,12 @@ test('each mini-game defines a distinct instruction set and scoring mechanics',(
  for(const mechanic of ['scoreBy','finish','nextSequence','dropStack','grabClaw','hitRhythm'])assert.ok(game.includes(mechanic));
 });
 
-test('air hockey uses predictive goalie movement, physical paddle returns and rally scoring',()=>{
- assert.match(game,/projected arrival/);
- assert.match(game,/p\.aiMood=incoming\?'intercept':'guard'/);
- assert.match(game,/q\.y>375&&q\.y<430/);
- assert.match(game,/p\.rally\+\+/);
- assert.match(game,/const speed=Math\.hypot\(q\.vx,q\.vy\),cap=570/);
- assert.match(game,/p\.goal>=5/);
- assert.match(game,/p\.botGoal>=5/);
+test('air hockey has free 2D mallets with momentum transfer, CPU attack/defence, goal posts and first-to-five matches',()=>{
+ const upd=fnBody(game,'updateHockey'),hit=fnBody(game,'hockeyHit');
+ assert.match(hit,/rv<0/);assert.match(hit,/\(1\+\.9\)/);
+ assert.match(upd,/m\.vx=\(m\.x-px\)/);assert.match(upd,/bot\.mode='attack'/);assert.match(upd,/aimErr/);assert.match(upd,/cpuLevel\(\)/);
+ assert.match(upd,/for\(const gx of \[HK\.GL,HK\.GR\]\)/);assert.match(upd,/p\.goal>=5/);assert.match(upd,/p\.botGoal>=5/);assert.match(upd,/p\.rally\+\+/);
+ assert.match(game,/finish\(game==='airhockey'\?p\.goal>p\.botGoal/);
 });
 
 test('restaurant district has bar, host stand, dining tables and a token-priced menu',()=>{
@@ -373,7 +372,7 @@ test('the arcade has a physical prize exchange counter with walk-up interaction'
 test('tickets are a separate persistent currency from dining tokens and every cabinet awards them',()=>{
  assert.match(html,/id="arcade-tokens"/);
  assert.match(html,/id="arcade-tickets"/);
- assert.match(game,/const ticketsEarned=Math\.max\(2,Math\.round\(\(Math\.floor\(score\/9\)/);
+ assert.match(game,/const ticketsEarned=Math\.max\(2,Math\.round\(\(Math\.floor\(eff\/9\)/);
  assert.match(game,/saved\.tickets=\(Number\(saved\.tickets\)\|\|0\)\+payoutTickets/);
  assert.match(game,/saved\.ticketHistory\.unshift\(\{game,score,amount:payoutTickets,baseAmount:ticketsEarned,masteryBonus:masteryTicketBonus,at:Date\.now\(\)\}\)/);
  assert.match(game,/\+payoutTickets\+' TICKETS/);
@@ -651,7 +650,7 @@ test('arcade regulars have expressive individual faces and layered signature out
 });
 
 test('opening a cabinet before starting cannot crash the idle preview (air hockey, billiards)',()=>{
- assert.match(game,/puck:\{x:450,y:270,vx:0,vy:0\},botX:450/);
+ assert.match(game,/puck:\{x:450,y:280,vx:0,vy:0\},botX:450/);
  assert.match(game,/if\(p\.cue\)drawPoolBall\(p\.cue\)/);
 });
 test('lucky claw nearest-prize search is seeded so the first grab cannot throw',()=>{
@@ -681,7 +680,6 @@ test('lobby is built from the painted art layer: parquet, carpet, walls, neon, p
 });
 test('debug camera hook is opt-in only',()=>{assert.match(world,/location\.search\.includes\('debug'\)/);});
 
-const fnBody=(src,name)=>{const i=src.indexOf('function '+name+'(');assert.ok(i>=0,name);const j=src.indexOf('\nfunction ',i+10);return src.slice(i,j<0?undefined:j);};
 test('billiards physics, CPU turns and pocketing run every frame inside update(), never only once inside start()',()=>{
  const update=fnBody(game,'update'),start=fnBody(game,'start');
  assert.match(update,/if\(p\.shotActive\)\{/);assert.match(update,/p\.cpuWait/);assert.match(update,/pockets\.find/);
