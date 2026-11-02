@@ -7,12 +7,12 @@ const [html,game,world]=await Promise.all([
  readFile(new URL('../arcade.js',import.meta.url),'utf8'),
  readFile(new URL('../arcade-world.js',import.meta.url),'utf8')
 ]);
-const ids=['skeeball','airhockey','whack','target','memory','rhythm','meteor','racer','stack','pinball','claw'];
+const ids=['skeeball','airhockey','whack','target','memory','rhythm','meteor','racer','stack','pinball','claw','chef','sushi','mixology'];
 
-test('arcade page exposes all eleven cabinet games plus Neon Hoops',()=>{
+test('arcade page exposes fourteen cabinet games plus Neon Hoops',()=>{
  for(const id of ids)assert.match(html,new RegExp('data-game="'+id+'"'));
  assert.match(html,/href="\.\/hoops\.html"/);
- assert.equal((html.match(/class="game-card/g)||[]).length,12);
+ assert.equal((html.match(/class="game-card/g)||[]).length,15);
 });
 
 test('every playable cabinet has a 3D model and launches its matching game',()=>{
@@ -40,4 +40,22 @@ test('air hockey uses predictive goalie movement, physical paddle returns and ra
  assert.match(game,/const speed=Math\.hypot\(q\.vx,q\.vy\),cap=570/);
  assert.match(game,/p\.goal>=5/);
  assert.match(game,/p\.botGoal>=5/);
+});
+
+test('restaurant district has bar, host stand, dining tables and a token-priced menu',()=>{
+ assert.match(world,/THE GLOW BAR/);
+ assert.match(world,/HOST/);
+ assert.match(world,/makeTable\(5\.8,5\.3,1\)/);
+ assert.match(world,/nexus:service-open/);
+ assert.match(html,/id="service-modal"/);
+ assert.match(game,/foodMenu=/);
+ assert.match(game,/drinkMenu=/);
+ assert.match(game,/saved\.tokens=balance-cost/);
+ assert.match(game,/saved\.reservation=/);
+});
+test('three new cabinets have distinct kitchen, catching and timing gameplay loops',()=>{
+ for(const id of ['chef','sushi','mixology']){assert.ok(game.includes(id+':['));assert.ok(game.includes("case'"+id+"'"));}
+ assert.match(game,/ticketTarget/);
+ assert.match(game,/catchStreak/);
+ assert.match(game,/mixRound/);
 });
