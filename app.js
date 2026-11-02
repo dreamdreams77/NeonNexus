@@ -102,7 +102,7 @@
     updateWallet();
     openModal(district.toUpperCase()+' / ACTIVITY COMPLETE','Nice discovery!',''+(label||'You completed a district activity')+'. You earned '+reward+' tokens. Your progress is saved on this device.','<div class="game-play"><div class="game-score">+'+reward+' ◆</div><div class="game-clock">TOKENS ADDED · ACTIVITY SAVED</div></div>','BACK TO EXPLORING');
   });
-\n  document.querySelectorAll('[data-prize]').forEach(btn => btn.addEventListener('click', () => {
+  document.querySelectorAll('[data-prize]').forEach(btn => btn.addEventListener('click', () => {
     const cost = Number(btn.dataset.cost), name = btn.dataset.prize;
     if(state.tokens < cost){ toast('You need '+(cost-state.tokens)+' more tokens for '+name+'.'); return; }
     openModal('PRIZE VAULT / REDEMPTION', 'Redeem '+name+'?', 'This will use '+cost+' tokens from your wallet. This prototype keeps rewards in your local session.', '<div class="game-play"><div class="game-score">'+cost+' ◆</div><div class="game-clock">AVAILABLE BALANCE: '+state.tokens+' TOKENS</div></div>', 'CONFIRM REDEMPTION', () => {
