@@ -335,10 +335,14 @@ export function createActor(THREE,design,{anisotropy=4,height=2.05}={}){
 // ───────── cabinet illustrations (side profile, facing right) ─────────
 import { drawEmblem } from './lobby-art.js';
 export const CAB_W=160,CAB_H=224;
+// Push a colour toward a richer, brighter version of itself so cabinets pop against the carpet.
+function vivid(h,sat=1.45,lift=.04){const[r,g,b]=hexRgb(h).map(v=>v/255),mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2;let hh=0,ss=0;if(mx!==mn){const d=mx-mn;ss=l>.5?d/(2-mx-mn):d/(mx+mn);hh=mx===r?(g-b)/d+(g<b?6:0):mx===g?(b-r)/d+2:(r-g)/d+4;hh/=6;}
+ ss=Math.min(1,ss*sat);const L=Math.min(.78,l+lift),q=L<.5?L*(1+ss):L+ss-L*ss,p=2*L-q,f=t=>{t=(t+1)%1;return t<1/6?p+(q-p)*6*t:t<.5?q:t<2/3?p+(q-p)*(2/3-t)*6:p;};
+ return ss===0?rgbHex(L*255,L*255,L*255):rgbHex(f(hh+1/3)*255,f(hh)*255,f(hh-1/3)*255);}
 const BODY_KIND={racer:'sitdown',moto:'sitdown',pinball:'pinball',claw:'glass',ringtoss:'glass',gemdig:'glass',hoops:'hoops'};
 const hexOf=n=>'#'+(n>>>0).toString(16).padStart(6,'0');
 export function drawCabinet(ctx,id,colorNum,variant=0){
- const col=hexOf(colorNum),body=mix(col,'#2b2036',.22),bodyL=mix(col,'#2b2036',.1),trim=mix(col,'#fff4dc',.15),kind=BODY_KIND[id]||'upright';
+ const col=vivid(hexOf(colorNum)),body=mix(col,'#2b2036',.3),bodyL=mix(col,'#2b2036',.14),trim=mix(col,'#fff4dc',.15),kind=BODY_KIND[id]||'upright';
  const W=CAB_W,H=CAB_H;ctx.save();
  // soft contact shadow
  const sg=ctx.createRadialGradient(80,214,4,80,214,70);sg.addColorStop(0,'rgba(20,8,28,.35)');sg.addColorStop(1,'rgba(20,8,28,0)');ctx.fillStyle=sg;ctx.beginPath();ctx.ellipse(80,214,70,9,0,0,6.3);ctx.fill();
@@ -576,3 +580,54 @@ export function createPokerSprite(THREE,index,{anisotropy=4,height=1.15}={}){
  const mesh=new THREE.Mesh(new THREE.PlaneGeometry(height*POKER_W/POKER_H,height),new THREE.MeshBasicMaterial({map:tex,transparent:true,alphaTest:.04,toneMapped:false}));mesh.position.y=height/2-height*(6/POKER_H);
  const tilt=new THREE.Group();tilt.rotation.x=-.5;tilt.add(mesh);const root=new THREE.Group();root.add(tilt);return{root,mesh};
 }
+
+// ───────── game tables (top-down) and their moving pieces ─────────
+export function paintAirTable(){
+ const W=720,H=430,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+ // wood cabinet + rim
+ const wd=x.createLinearGradient(0,0,0,H);wd.addColorStop(0,'#c98f5e');wd.addColorStop(1,'#8a5a3e');paintShape(x,P(q=>q.roundRect(4,4,W-8,H-8,46)),'#b57a52',{box:[0,0,W,H],ow:5});
+ x.save();x.beginPath();x.roundRect(4,4,W-8,H-8,46);x.clip();for(let i=0;i<22;i++){x.strokeStyle=`rgba(${i%2?'255,225,180':'60,30,20'},.13)`;x.lineWidth=2+i%3;x.beginPath();x.moveTo(0,i*20+4);x.bezierCurveTo(W*.3,i*20-6,W*.7,i*20+12,W,i*20);x.stroke();}x.restore();
+ // playfield
+ const fx=44,fy=44,fw=W-88,fh=H-88;
+ const g=x.createLinearGradient(fx,fy,fx+fw,fy+fh);g.addColorStop(0,'#cdeef0');g.addColorStop(.5,'#e8fbf8');g.addColorStop(1,'#b9dfe6');x.fillStyle=g;x.beginPath();x.roundRect(fx,fy,fw,fh,26);x.fill();x.lineWidth=5;x.strokeStyle=INK;x.stroke();
+ x.save();x.clip();x.fillStyle='rgba(60,120,140,.16)';for(let ix=0;ix<fw;ix+=14)for(let iy=0;iy<fh;iy+=14){x.beginPath();x.arc(fx+ix+7,fy+iy+7,1.6,0,6.3);x.fill();}
+ // painted sheen
+ const sh=x.createLinearGradient(fx,fy,fx+fw*.6,fy+fh);sh.addColorStop(0,'rgba(255,255,255,.55)');sh.addColorStop(.4,'rgba(255,255,255,0)');x.fillStyle=sh;x.fillRect(fx,fy,fw,fh);
+ x.lineWidth=5;x.strokeStyle='#e8584f';x.beginPath();x.moveTo(W/2,fy);x.lineTo(W/2,fy+fh);x.stroke();x.beginPath();x.arc(W/2,H/2,58,0,6.3);x.stroke();x.fillStyle='#e8584f';x.beginPath();x.arc(W/2,H/2,9,0,6.3);x.fill();
+ for(const [gx,col,dir] of [[fx,'#ff8f6a',1],[fx+fw,'#5fe0d4',-1]]){x.lineWidth=5;x.strokeStyle=col;x.beginPath();x.arc(gx,H/2,84,dir>0?-Math.PI/2:Math.PI/2,dir>0?Math.PI/2:Math.PI*1.5);x.stroke();}
+ x.restore();
+ // goal slots
+ for(const gx of [fx-14,fx+fw-10]){paintShape(x,rrect(gx,H/2-62,24,124,10),'#2a1c34',{box:[gx,H/2-62,24,124],ow:3});}
+ // brass studs and neon rim
+ for(const [bx,by] of [[26,26],[W-26,26],[26,H-26],[W-26,H-26],[W/2,22],[W/2,H-22]])paintShape(x,P(q=>q.arc(bx,by,8,0,6.3)),'#e8c47a',{box:[bx-8,by-8,16,16],ow:2.2,hi:.7});
+ x.save();x.shadowColor='#5fe0d4';x.shadowBlur=14;x.strokeStyle='#5fe0d4';x.lineWidth=3;x.beginPath();x.roundRect(fx-6,fy-6,fw+12,fh+12,30);x.stroke();x.restore();
+ return c;
+}
+export function paintPoolTable(){
+ const W=720,H=430,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+ paintShape(x,P(q=>q.roundRect(4,4,W-8,H-8,40)),'#8a4f3a',{box:[0,0,W,H],ow:5});
+ x.save();x.beginPath();x.roundRect(4,4,W-8,H-8,40);x.clip();for(let i=0;i<20;i++){x.strokeStyle=`rgba(${i%2?'255,215,170':'40,16,16'},.14)`;x.lineWidth=2+i%3;x.beginPath();x.moveTo(0,i*22);x.bezierCurveTo(W*.3,i*22-8,W*.7,i*22+10,W,i*22+2);x.stroke();}x.restore();
+ // rail diamonds
+ for(let i=1;i<8;i++){for(const y of [22,H-22]){if(i===4)continue;paintShape(x,P(q=>{q.moveTo(i*W/8,y-7);q.lineTo(i*W/8+7,y);q.lineTo(i*W/8,y+7);q.lineTo(i*W/8-7,y);q.closePath();}),'#f4ead8',{box:[i*W/8-7,y-7,14,14],ow:1.8,hi:.6});}}
+ for(let i=1;i<4;i++){for(const xx of [22,W-22]){if(i===2)continue;paintShape(x,P(q=>{q.moveTo(xx,i*H/4-7);q.lineTo(xx+7,i*H/4);q.lineTo(xx,i*H/4+7);q.lineTo(xx-7,i*H/4);q.closePath();}),'#f4ead8',{box:[xx-7,i*H/4-7,14,14],ow:1.8,hi:.6});}}
+ // cushion + baize
+ paintShape(x,P(q=>q.roundRect(40,40,W-80,H-80,26)),'#2f6a4a',{box:[40,40,W-80,H-80],ow:4});
+ const fx=58,fy=58,fw=W-116,fh=H-116;const fg=x.createRadialGradient(W/2,H/2,20,W/2,H/2,W*.5);fg.addColorStop(0,'#5fb384');fg.addColorStop(1,'#2f7a55');x.fillStyle=fg;x.beginPath();x.roundRect(fx,fy,fw,fh,16);x.fill();x.strokeStyle=INK;x.lineWidth=3;x.stroke();
+ x.save();x.clip();for(let i=0;i<1400;i++){x.fillStyle=`rgba(${i%2?'190,255,200':'10,50,30'},${.03+(i%5)*.01})`;x.fillRect(fx+(i*37)%fw,fy+(i*91)%fh,2,2);}
+ x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=2;x.beginPath();x.moveTo(fx+fw*.25,fy);x.lineTo(fx+fw*.25,fy+fh);x.stroke();x.fillStyle='rgba(255,255,255,.45)';x.beginPath();x.arc(fx+fw*.75,H/2,4,0,6.3);x.fill();
+ const hl=x.createLinearGradient(fx,fy,fx+fw*.7,fy+fh);hl.addColorStop(0,'rgba(255,255,230,.28)');hl.addColorStop(.5,'rgba(255,255,230,0)');x.fillStyle=hl;x.fillRect(fx,fy,fw,fh);x.restore();
+ // pockets (world pocket x=±1.54,0 ; z=±.82)
+ for(const [px,py] of [[-1.54,-.82],[0,-.86],[1.54,-.82],[-1.54,.82],[0,.86],[1.54,.82]]){const cx=(px/3.6+.5)*W,cy=(py/2.15+.5)*H;paintShape(x,P(q=>q.arc(cx,cy,25,0,6.3)),'#d9b06d',{box:[cx-25,cy-25,50,50],ow:3,hi:.7});paintShape(x,P(q=>q.arc(cx,cy,18,0,6.3)),'#150e1c',{box:[cx-18,cy-18,36,36],ow:2,hi:0,sh:0});}
+ return c;
+}
+// Top-down game pieces: puck, mallets (knobbed), numbered balls
+export function paintDisc(kind,opt={}){
+ const S=128,c=document.createElement('canvas');c.width=c.height=S;const x=c.getContext('2d');const R=58;
+ if(kind==='puck'){paintShape(x,P(q=>q.arc(64,64,R,0,6.3)),'#f2e8d0',{box:[6,6,116,116],ow:6});x.strokeStyle='#e8584f';x.lineWidth=7;x.beginPath();x.arc(64,64,36,0,6.3);x.stroke();x.fillStyle='rgba(255,255,255,.6)';x.beginPath();x.ellipse(46,42,16,8,-.6,0,6.3);x.fill();}
+ else if(kind==='mallet'){const col=opt.color||'#e58b79';paintShape(x,P(q=>q.arc(64,64,R,0,6.3)),col,{box:[6,6,116,116],ow:6});paintShape(x,P(q=>q.arc(64,64,38,0,6.3)),mix(col,'#ffffff',.18),{box:[26,26,76,76],ow:5,hi:.7});paintShape(x,P(q=>q.arc(64,64,17,0,6.3)),mix(col,'#2b2036',.2),{box:[47,47,34,34],ow:4});x.fillStyle='rgba(255,255,255,.65)';x.beginPath();x.ellipse(50,46,13,7,-.6,0,6.3);x.fill();}
+ else if(kind==='ball'){const n=opt.n||0,col=opt.color||'#f5eddb';paintShape(x,P(q=>q.arc(64,64,R,0,6.3)),col,{box:[6,6,116,116],ow:6,hi:.5});if(n>=9){x.save();x.beginPath();x.arc(64,64,R-3,0,6.3);x.clip();x.fillStyle='#f6edd8';x.fillRect(0,0,S,34);x.fillRect(0,94,S,34);x.restore();x.strokeStyle=INK;x.lineWidth=3;x.beginPath();x.arc(64,64,R,0,6.3);x.stroke();}
+  if(n>0){x.fillStyle='#f8f1de';x.beginPath();x.arc(64,64,24,0,6.3);x.fill();x.strokeStyle=INK;x.lineWidth=3;x.stroke();x.fillStyle=INK;x.font='700 30px Fredoka, sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(String(n),64,66);}
+  x.fillStyle='rgba(255,255,255,.7)';x.beginPath();x.ellipse(44,40,15,8,-.6,0,6.3);x.fill();}
+ return c;
+}
+export function paintSoftShadow(){const c=document.createElement('canvas');c.width=256;c.height=160;const x=c.getContext('2d');const g=x.createRadialGradient(128,80,10,128,80,128);g.addColorStop(0,'rgba(18,6,26,.55)');g.addColorStop(.6,'rgba(18,6,26,.3)');g.addColorStop(1,'rgba(18,6,26,0)');x.fillStyle=g;x.fillRect(0,0,256,160);return c;}

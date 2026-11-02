@@ -2,7 +2,7 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.m
 import * as ART from './lobby-art.js';
 import { stepVelocity, turnToward } from './movement.js';
 import { createCrowd } from './lobby-crowd.js';
-import { createActor, CAST, createCabinetSprite, paintGalleryWall, paintGalleryFloor, createPlantSprite, paintTableTop, paintStoolTop, paintBarTop, createPokerSprite } from './lobby-sprites.js';
+import { createActor, CAST, createCabinetSprite, paintGalleryWall, paintGalleryFloor, createPlantSprite, paintTableTop, paintStoolTop, paintBarTop, createPokerSprite, paintAirTable, paintPoolTable, paintDisc, paintSoftShadow } from './lobby-sprites.js';
 import { RoundedBoxGeometry } from 'https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/geometries/RoundedBoxGeometry.js';
 
 const mount=document.querySelector('#arcade-world');
@@ -501,6 +501,14 @@ if(mount){
  makeTable(8.9,5.4,1);makeTable(8.9,9.2,2);makeTable(8.9,13.0,3);
  // Two full-size, walk-up floor attractions sit in the open centre of the district.
  const gameTables=[];
+
+ // Retire the sculpted table bodies: keep only the animated pieces (swapped for drawn discs) and lay an illustrated top-down table over them.
+ function illustrateTable(g,keep,canvas,w,d,discOf){
+  const keepSet=new Set(keep);
+  for(const ch of g.children){if(keepSet.has(ch)){ch.material.visible=false;const disc=discOf(ch);if(disc){const m=new THREE.Mesh(new THREE.PlaneGeometry(disc.size,disc.size),new THREE.MeshBasicMaterial({map:disc.tex,transparent:true,toneMapped:false,depthWrite:false}));m.rotation.x=-Math.PI/2;m.position.y=.2;m.renderOrder=3;ch.add(m);}}else ch.visible=false;}
+  const top=new THREE.Mesh(new THREE.PlaneGeometry(w,d),new THREE.MeshBasicMaterial({map:artTex(canvas,{aniso:4}),alphaTest:.06,toneMapped:false}));top.rotation.x=-Math.PI/2;top.position.y=1.0;g.add(top);
+  const sh=new THREE.Mesh(new THREE.PlaneGeometry(w+1.2,d+1.0),new THREE.MeshBasicMaterial({map:artTex(paintSoftShadow(),{aniso:1}),transparent:true,depthWrite:false,toneMapped:false}));sh.rotation.x=-Math.PI/2;sh.position.y=.03;g.add(sh);
+ }
  function makeAirHockeyTable(){
   const g=new THREE.Group();g.position.set(-8.6,0,-4.7);scene.add(g);
   box(3.55,.34,2.08,0,.69,0,clayMat(0x604653),g,.2);
@@ -519,6 +527,7 @@ if(mount){
   const mallets=[sphere(.22,-1.05,1.12,.48,clayMat(0xe58b79),g,1,.42,1),sphere(.22,1.05,1.12,-.48,clayMat(0x7fc8bf),g,1,.42,1)];
   const railGlow=mat(0x83d9d1,.32,.08,0x5bd5ce,.42);
   for(const x of [-1.72,1.72])box(.035,.045,1.72,x,1.2,0,railGlow,g,.015);
+  {const puckTex=artTex(paintDisc('puck'),{aniso:2}),m0=artTex(paintDisc('mallet',{color:'#e58b79'}),{aniso:2}),m1=artTex(paintDisc('mallet',{color:'#7fc8bf'}),{aniso:2});illustrateTable(g,[puck,...mallets],paintAirTable(),3.6,2.15,ch=>ch===puck?{size:.38,tex:puckTex}:{size:.62,tex:ch===mallets[0]?m0:m1});}
   gameTables.push({gameId:'airhockey',name:'COMET AIR HOCKEY',position:new THREE.Vector3(-8.6,0,-4.7),group:g,puck,mallets});
  }
  function makeBilliardsTable(){
@@ -539,6 +548,7 @@ if(mount){
   sphere(.092,0,1.115,.55,mat(0xf5eddb,.2),g);
   const brassCorners=mat(0xe2b77d,.35,.35);
   for(const x of [-1.6,1.6])for(const z of [-.92,.92])sphere(.065,x,1.18,z,brassCorners,g);
+  {const cueBall=g.children.find(ch=>ch.isMesh&&ch.geometry&&ch.geometry.type==='SphereGeometry'&&Math.abs(ch.position.z-.55)<.01&&Math.abs(ch.position.x)<.01);const ballTex=n=>artTex(paintDisc('ball',{n,color:n===8?'#252638':['#e9d8a8','#e6a05f','#78a9c0','#d77e79','#9d87bd','#82b58d'][(n-1)%6]}),{aniso:2});const keep=[...rack,cueBall].filter(Boolean);illustrateTable(g,keep,paintPoolTable(),3.6,2.15,ch=>ch===cueBall?{size:.34,tex:artTex(paintDisc('ball',{n:0}),{aniso:2})}:{size:.34,tex:ballTex(ch.userData.number)});}
   gameTables.push({gameId:'billiards',name:'MOONLIGHT BILLIARDS',position:new THREE.Vector3(8.9,0,-11.8),group:g,rack});
  }
  makeAirHockeyTable();makeBilliardsTable();

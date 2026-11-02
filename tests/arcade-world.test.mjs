@@ -725,3 +725,10 @@ test('illustrated sprite art layer: designed cast, cabinets, plants, tables, bar
  assert.match(world,/createActor\(THREE,CAST/);assert.match(world,/createCabinetSprite\(THREE,def/);assert.match(world,/hostActor/);assert.match(world,/staffActors/);assert.match(world,/createPokerSprite/);
  assert.doesNotMatch(world,/const stitch=box/);
 });
+
+test('air hockey and billiards tables are illustrated top-down tables with drawn moving pieces',async()=>{
+ const spr=await readFile(new URL('../lobby-sprites.js',import.meta.url),'utf8');
+ for(const f of ['paintAirTable','paintPoolTable','paintDisc','paintSoftShadow','vivid'])assert.match(spr,new RegExp('function '+f+'\\('));
+ assert.match(world,/function illustrateTable/);assert.match(world,/illustrateTable\(g,\[puck,\.\.\.mallets\]/);assert.match(world,/illustrateTable\(g,keep,paintPoolTable/);
+ assert.match(world,/alphaTest:\.06,toneMapped:false\}\)\);top\.rotation/);
+});
