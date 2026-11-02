@@ -6,7 +6,7 @@ export function createBall(position={x:0,y:1.35,z:5.4}) {
 export function launchBall(ball, aim={x:0,power:.55}) {
   const x=Math.max(-1,Math.min(1,aim.x||0));
   const power=Math.max(0,Math.min(1,aim.power??.55));
-  ball.velocity={x:x*2.15,z:-(7.9+power*1.8),y:7.15+power*2.5};
+  ball.velocity={x:x*1.05,z:-(7.9+power*1.8),y:7.1-power*.8};
   ball.active=true; ball.scored=false; ball.elapsed=0; ball.bounceCount=0;
   return ball;
 }
