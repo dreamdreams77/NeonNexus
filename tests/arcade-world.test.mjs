@@ -206,7 +206,7 @@ test('computer players can navigate pointer-led games with arrows and activate w
  assert.match(game,/cursorGames=!\['pulse','moto','moonquest','racer','sushi','meteor'\]/);
  assert.match(game,/e\.key==='Enter'&&keyboardAim/);
  assert.match(game,/ARROWS \+ ENTER/);
- assert.match(game,/keys\.ArrowRight\?1:0/);
+ assert.match(game,/arrowKeys=\['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'\]/);
 });
 test('mobile arcade movement eases joystick input and accelerates smoothly instead of snapping',()=>{
  assert.match(world,/targetX:0,targetY:0/);
