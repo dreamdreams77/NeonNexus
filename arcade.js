@@ -98,7 +98,8 @@ if(game==='racer'&&(e.key==='ArrowRight'||e.key.toLowerCase()==='d'))p.lane=Math
 if(game==='rhythm'){const lanes={d:0,f:1,j:2,k:3};const lane=lanes[e.key.toLowerCase()];if(lane!==undefined)hitRhythm(lane);}
 }
 function keyup(e){keys[e.key]=false;}
-$('#game-grid').addEventListener('click',e=>{const b=e.target.closest('[data-game]');if(b)open(b.dataset.game);});\nwindow.addEventListener('nexus:arcade-play',e=>{const id=e.detail?.gameId;if(id==='hoops'){window.location.href='./hoops.html';return;}if(games[id])open(id);});
+$('#game-grid').addEventListener('click',e=>{const b=e.target.closest('[data-game]');if(b)open(b.dataset.game);});
+window.addEventListener('nexus:arcade-play',e=>{const id=e.detail?.gameId;if(id==='hoops'){window.location.href='./hoops.html';return;}if(games[id])open(id);});
 $('#start').addEventListener('click',start);$('#close').addEventListener('click',()=>{running=false;cancelAnimationFrame(raf);overlay.hidden=true;});
 canvas.addEventListener('pointerdown',onDown);canvas.addEventListener('pointermove',onMove);canvas.addEventListener('pointerup',onUp);canvas.addEventListener('pointercancel',onUp);
 window.addEventListener('keydown',keydown);window.addEventListener('keyup',keyup);
