@@ -60,7 +60,7 @@ test('restaurant orders progress through preparation, pickup and table delivery'
  assert.match(game,/prepSeconds:12/);
  assert.match(game,/collectedAt/);
  assert.match(game,/servedAt/);
- assert.match(game,/first available table/);
+ assert.match(game,/find\(t=>!occupied\.includes\(t\)\)/);
 });
 test('cooking and mixology mistakes have real failure consequences',()=>{
  assert.match(game,/p\.ticketClock>9/);
