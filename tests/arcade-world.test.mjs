@@ -465,3 +465,33 @@ test('arcade games reward clean streaks, preserve per-game mastery and avoid sta
  assert.match(game,/running&&game==='memory'/);
  assert.match(game,/combo=0;sound\(100/);
 });
+
+test('each cabinet persists its own mastery XP, milestone perks and a visible progress track',()=>{
+ assert.match(game,/function masteryLevel\(xp\)/);
+ assert.match(game,/saved\.arcadeMastery\[game\]/);
+ assert.match(game,/xpGain=Math\.max\(15/);
+ assert.match(game,/prior\.level=masteryLevel\(prior\.xp\)/);
+ assert.match(game,/renderMastery\(game,prior\)/);
+ assert.match(html,/id="game-progression"/);
+ assert.match(css,/\.mastery-track/);
+});
+test('mastery perks alter Pulse Runner, Barrelstorm, Moonshard, Sushi, Meteor and Racer mechanics',()=>{
+ assert.match(game,/p\.hp=3\+\(p\.masteryLevel>=2\?1:0\)/);
+ assert.match(game,/p\.maxSpeed=430\+\(p\.masteryLevel>=6\?45:0\)/);
+ assert.match(game,/p\.swordLevel=1\+\(p\.masteryLevel>=4\?1:0\)/);
+ assert.match(game,/p\.catchWidth=52\+\(p\.masteryLevel>=2\?12:0\)/);
+ assert.match(game,/p\.starShield=p\.masteryLevel>=2\?1:0/);
+ assert.match(game,/p\.crashLimit=3\+\(p\.masteryLevel>=2\?1:0\)/);
+});
+test('higher mastery raises arcade challenge pacing while preserving earned counterplay',()=>{
+ assert.match(game,/Math\.max\(\.34,\.58-\(p\.masteryLevel\|\|0\)\*\.025\)/);
+ assert.match(game,/Math\.max\(\.3,\.48-\(p\.masteryLevel\|\|0\)\*\.018\)/);
+ assert.match(game,/Math\.max\(\.36,\.62-\(p\.masteryLevel\|\|0\)\*\.025\)/);
+ assert.match(game,/Math\.max\(\.25,\.38-\(p\.masteryLevel\|\|0\)\*\.012\)/);
+ assert.match(game,/Math\.max\(\.38,\.75-\(p\.masteryLevel\|\|0\)\*\.035\)/);
+});
+test('canvas arcade scenes receive a layered painterly practical-light pass',()=>{
+ assert.match(game,/createRadialGradient\(450,250,30,450,250,470\)/);
+ assert.match(game,/function painterlyFinish\(\)/);
+ assert.match(game,/paperPattern=ctx\.createPattern\(paper,'repeat'\)/);
+});
