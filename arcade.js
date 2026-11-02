@@ -321,7 +321,7 @@ function redeemPrize(item){
  saved.prizeHistory=saved.prizeHistory||[];saved.prizeHistory.unshift({id:item.id,name:item.name,cost:item.cost,at:Date.now()});saved.prizeHistory=saved.prizeHistory.slice(0,50);
  writePlayer(saved);serviceStatus.textContent='Prize redeemed! '+item.name+' has been added to your prize haul.';window.dispatchEvent(new CustomEvent('nexus:prize-redeemed',{detail:{name:item.name}}));renderPrizeExchange();
 }
-function openService(service,table){
+function openService(service,table,npc){
  serviceItems.innerHTML='';serviceItems.hidden=false;prizeToolbar.hidden=true;prizeCollection.hidden=true;prizeView='shop';serviceStatus.textContent='';serviceModal.hidden=false;
  if(service==='bar'){
   serviceKicker.textContent='THE GLOW BAR · KITCHEN';serviceTitle.textContent='Food & drink menu';serviceCopy.textContent='Choose something freshly made. Orders take a little time; collect them at the kitchen pass.';
@@ -335,6 +335,9 @@ function openService(service,table){
   if(!pending.length){const p=document.createElement('p');p.className='service-empty';p.textContent='No active kitchen tickets. Place an order at the Glow Bar.';serviceItems.append(p);}
   pending.forEach(order=>{const ready=Date.now()-order.at>=Number(order.prepSeconds||12)*1000;if(ready&&order.status==='Preparing'){order.status='Ready';window.dispatchEvent(new CustomEvent('nexus:order-ready',{detail:{name:order.name}}));}const b=document.createElement('button');b.className='service-item';b.innerHTML='<b>'+order.name+'</b><small>'+(ready?'Fresh from the kitchen · ready to collect':'Cooking · '+Math.max(1,Math.ceil((Number(order.prepSeconds||12)*1000-(Date.now()-order.at))/1000))+' seconds remaining')+'</small><strong>'+(ready?'COLLECT ORDER ✓':'STILL PREPARING')+'</strong>';b.disabled=!ready;b.addEventListener('click',()=>{const latest=readPlayer(),item=(latest.orders||[]).find(o=>o.id===order.id);if(!item||item.status!=='Ready')return;item.status='Carrying';item.collectedAt=Date.now();writePlayer(latest);serviceStatus.textContent=item.name+' collected. Take it to your table and interact to serve it.';b.disabled=true;b.querySelector('strong').textContent='COLLECTED ✓';});serviceItems.append(b);});
   writePlayer(saved);
+ }else if(service==='npc'){
+  serviceKicker.textContent='NEXUS DISTRICT · VISITOR';serviceTitle.textContent=npc?.name||'Arcade visitor';serviceCopy.textContent=npc?.intro||'A visitor catches your eye and seems happy to chat.';
+  const lines=npc?.dialogue||{};[['CHAT','Ask how their night is going',lines.chat||'Pretty great. This place has a little bit of everything.'],['ASK FOR A TIP','Ask about a game or the prize room',lines.tip||'Try a few different cabinets. You might find a favourite.'],['HEAR A RUMOUR','Ask what is happening around the arcade',lines.rumour||'I heard the lucky wheel has a very rare jackpot.'],['SAY GOODBYE','End the conversation','Catch you around the arcade!']].forEach(([label,desc,line])=>{const button=document.createElement('button');button.className='service-item';button.innerHTML='<b>'+label+'</b><small>'+desc+'</small><strong>CHAT ↗</strong>';button.addEventListener('click',()=>{serviceCopy.textContent=line;serviceStatus.textContent=npc?.name+' smiles and nods.';});serviceItems.append(button);});
  }else if(service==='jukebox'){
   serviceKicker.textContent='NEXUS SOUND SYSTEM · TOKEN JUKEBOX';serviceTitle.textContent='Choose the room soundtrack';serviceCopy.textContent='Five tokens queues an original synthesized house loop. Pick a mood; you can switch tracks whenever you like.';
   const tracks=[['Moonlit Lobby',[262,330,392,523,392,330,294,392]],['Neon Boardwalk',[196,247,294,392,330,294,247,220]],['Afterglow Lounge',[220,277,330,440,392,330,277,247]],['Pixel Parade',[330,392,494,587,494,392,330,294]]];
@@ -355,5 +358,5 @@ function openService(service,table){
  }
 }
 prizeViewToggle.addEventListener('click',()=>{prizeView=prizeView==='shop'?'haul':'shop';renderPrizeExchange();});
-window.addEventListener('nexus:service-open',e=>openService(e.detail.service,e.detail.table));$('#service-close').addEventListener('click',()=>{serviceModal.hidden=true;if(jukeboxTimer){clearInterval(jukeboxTimer);jukeboxTimer=null;}});
+window.addEventListener('nexus:service-open',e=>openService(e.detail.service,e.detail.table,e.detail.npc));$('#service-close').addEventListener('click',()=>{serviceModal.hidden=true;if(jukeboxTimer){clearInterval(jukeboxTimer);jukeboxTimer=null;}});
 })();
