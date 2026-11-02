@@ -759,3 +759,10 @@ test('finishing pass: counter front, garland, wall caps, sconces, stools, prize 
  assert.match(world,/paintCounterFront\(\)/);assert.match(world,/festoonRope\.visible=false/);assert.match(world,/paintWallCap\(2000,120\)/);assert.match(world,/drawSconce\(g\)/);assert.match(world,/drawStool\(g,/);assert.match(world,/drawPrizeCounter\),\{height:3\.0/);assert.match(world,/paintGalleryFacade\(\)/);
  assert.doesNotMatch(spr,/paintShape\([^;]*'rgba\(/);
 });
+
+test('floor and carpet are designed patterns, not random noise',async()=>{
+ const art=await readFile(new URL('../lobby-art.js',import.meta.url),'utf8');
+ const pq=art.slice(art.indexOf('export function paintParquet'),art.indexOf('function carpetMotif'));
+ assert.doesNotMatch(pq,/rand\(\)/);assert.doesNotMatch(pq,/paperGrain/);assert.match(pq,/const tones=\[/);
+ assert.match(art,/function carpetMotif\(\)/);assert.match(art,/half-drop repeat/);assert.doesNotMatch(art,/neon confetti: squiggles/);
+});

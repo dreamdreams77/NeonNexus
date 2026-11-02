@@ -35,30 +35,49 @@ function paperGrain(ctx,w,h,rand,n,light='255,244,220',dark='30,18,32'){
 
 // ───────────────────────── Floor ─────────────────────────
 export function paintParquet(){
- const S=512,c=mk(S,S),x=c.getContext('2d'),r=mk(S,S),rx=r.getContext('2d'),rand=rng(4417);
- const woods=['#8c5b3c','#9b6945','#7a4c33','#a87a50','#6f4631','#94623f'];
+ // Designed plank floor: a fixed three-tone sequence, half-offset rows, consistent drawn grain, placed knots and inked seams.
+ const S=512,c=mk(S,S),x=c.getContext('2d'),r=mk(S,S),rx=r.getContext('2d');
+ const tones=['#9a6644','#86583b','#a8744c'],rows=16,ph=S/rows,pl=256;
  rx.fillStyle='#8a8a8a';rx.fillRect(0,0,S,S);
- const rows=16,ph=S/rows,pl=128;
  for(let row=0;row<rows;row++){
-  const off=Math.floor(rand()*pl);
-  for(let k=0;k<4;k++){
-   const px=(off+k*pl)%S,py=row*ph,base=woods[Math.floor(rand()*woods.length)],jit=Math.floor((rand()-.5)*26);
-   for(const ox of [0,-S]){
-    const X=px+ox;if(X>S||X+pl<0)continue;
-    const g=x.createLinearGradient(X,py,X,py+ph);g.addColorStop(0,shade(base,jit+14));g.addColorStop(.5,shade(base,jit));g.addColorStop(1,shade(base,jit-16));x.fillStyle=g;x.fillRect(X,py,pl,ph);
-    // grain: long wavering dry-brush streaks following the plank
-    for(let s=0;s<13;s++){const yy=py+2+rand()*(ph-4),dark=rand()>.45;x.strokeStyle=dark?`rgba(48,26,20,${.08+rand()*.16})`:`rgba(255,214,160,${.05+rand()*.1})`;x.lineWidth=.6+rand()*1.3;x.beginPath();x.moveTo(X+rand()*10,yy);x.bezierCurveTo(X+pl*.3,yy+(rand()-.5)*5,X+pl*.65,yy+(rand()-.5)*5,X+pl-rand()*10,yy+(rand()-.5)*3);x.stroke();}
-    if(rand()<.22){const kx=X+16+rand()*(pl-32),ky=py+ph*.5+(rand()-.5)*8;for(let q=4;q>0;q--){x.strokeStyle=`rgba(40,20,16,${.12+q*.04})`;x.lineWidth=1;x.beginPath();x.ellipse(kx,ky,q*2.6,q*1.5,0,0,6.283);x.stroke();}}
-    // bevel + seam
-    x.fillStyle='rgba(255,226,180,.22)';x.fillRect(X,py,pl,1.4);x.fillStyle='rgba(28,14,14,.5)';x.fillRect(X,py+ph-1.6,pl,1.6);x.fillStyle='rgba(28,14,14,.42)';x.fillRect(X,py,1.6,ph);
-    // glossier centre, rougher worn ends for the specular response
-    const rg=rx.createLinearGradient(X,0,X+pl,0);const gl=120+Math.floor(rand()*40);rg.addColorStop(0,'rgb(190,190,190)');rg.addColorStop(.25,`rgb(${gl},${gl},${gl})`);rg.addColorStop(.75,`rgb(${gl},${gl},${gl})`);rg.addColorStop(1,'rgb(190,190,190)');rx.fillStyle=rg;rx.fillRect(X,py,pl,ph);
-   }
+  const off=row%2?pl/2:0;
+  for(let k=-1;k<3;k++){
+   const X=off+k*pl,py=row*ph,idx=(row*3+k*2+9)%3,base=tones[idx];
+   const g=x.createLinearGradient(X,py,X,py+ph);g.addColorStop(0,shade(base,16));g.addColorStop(.55,base);g.addColorStop(1,shade(base,-14));x.fillStyle=g;x.fillRect(X,py,pl,ph);
+   // three clean grain strokes that follow the plank
+   x.lineCap='round';
+   for(let s2=0;s2<3;s2++){const yy=py+6+s2*9,bend=(s2%2?3:-3);x.strokeStyle=s2===1?'rgba(255,220,170,.22)':'rgba(60,30,20,.28)';x.lineWidth=s2===1?1.4:1.2;x.beginPath();x.moveTo(X+10,yy);x.bezierCurveTo(X+pl*.35,yy+bend,X+pl*.65,yy-bend,X+pl-10,yy);x.stroke();}
+   // a drawn knot on every fifth plank, always in the same place in the plank
+   if((row*3+k+20)%5===0){const kx=X+pl*.62,ky=py+ph*.5;x.strokeStyle='rgba(60,28,18,.55)';x.lineWidth=1.3;for(let q=1;q<=3;q++){x.beginPath();x.ellipse(kx,ky,q*3.2,q*1.6,0,0,6.283);x.stroke();}x.fillStyle='rgba(60,28,18,.6)';x.beginPath();x.ellipse(kx,ky,2,1.1,0,0,6.283);x.fill();}
+   // bevel highlight and inked seams
+   x.fillStyle='rgba(255,232,190,.32)';x.fillRect(X+2,py+1,pl-4,1.6);
+   x.fillStyle='rgba(58,32,24,.75)';x.fillRect(X,py+ph-1.6,pl,1.6);x.fillRect(X,py,1.6,ph);
+   // roughness: glossy centres, satin ends
+   const rg=rx.createLinearGradient(X,0,X+pl,0);rg.addColorStop(0,'rgb(185,185,185)');rg.addColorStop(.3,'rgb(135,135,135)');rg.addColorStop(.7,'rgb(135,135,135)');rg.addColorStop(1,'rgb(185,185,185)');rx.fillStyle=rg;rx.fillRect(X,py,pl,ph);
   }
  }
- for(let i=0;i<70;i++){const sx=rand()*S,sy=rand()*S;rx.strokeStyle=`rgba(255,255,255,${.1+rand()*.2})`;rx.lineWidth=.6;rx.beginPath();rx.moveTo(sx,sy);rx.lineTo(sx+8+rand()*20,sy+(rand()-.5)*4);rx.stroke();}
- paperGrain(x,S,S,rand,1400);
  return {map:c,rough:r};
+}
+
+// One hand-composed carpet motif tile (ringed planet, star, squiggle, triangle, dots) used in a half-drop repeat.
+function carpetMotif(){
+ const T=112,c=mk(T,T),x=c.getContext('2d');
+ x.lineJoin='round';x.lineCap='round';
+ const ink='rgba(16,10,34,.85)';
+ const stroke=(w=2.4)=>{x.strokeStyle=ink;x.lineWidth=w;x.stroke();};
+ // ringed planet
+ x.fillStyle='#5fe0d4';x.beginPath();x.arc(28,30,11,0,6.283);x.fill();stroke();
+ x.fillStyle='rgba(255,255,255,.35)';x.beginPath();x.arc(24,26,4,0,6.283);x.fill();
+ x.strokeStyle='#ffc66b';x.lineWidth=3;x.beginPath();x.ellipse(28,30,19,6,-.4,0,6.283);x.stroke();x.strokeStyle=ink;x.lineWidth=1.2;x.beginPath();x.ellipse(28,30,21,7.5,-.4,0,6.283);x.stroke();
+ // five-point star
+ x.beginPath();for(let k=0;k<10;k++){const a=-Math.PI/2+k*Math.PI/5,q=k%2?4.5:10;x.lineTo(84+Math.cos(a)*q,26+Math.sin(a)*q);}x.closePath();x.fillStyle='#ffc66b';x.fill();stroke(2);
+ // squiggle
+ x.beginPath();x.moveTo(52,78);for(let k=1;k<=4;k++)x.quadraticCurveTo(52+k*10-5,78+(k%2?-9:9),52+k*10,78);x.strokeStyle=ink;x.lineWidth=6;x.stroke();x.strokeStyle='#ff7ab6';x.lineWidth=3.4;x.stroke();
+ // triangle
+ x.beginPath();x.moveTo(22,66);x.lineTo(34,88);x.lineTo(10,88);x.closePath();x.fillStyle='#a99bff';x.fill();stroke(2);
+ // little dots
+ for(const [dx,dy,col] of [[58,46,'#7ee08f'],[100,62,'#ff7ab6'],[96,98,'#5fe0d4'],[8,46,'#ffc66b']]){x.fillStyle=col;x.beginPath();x.arc(dx,dy,3.4,0,6.283);x.fill();stroke(1.4);}
+ return c;
 }
 
 // Arcade carpet runway painted as one unique overlay: neon confetti pattern, braided border, medallions,
@@ -72,21 +91,10 @@ export function paintCarpet(cabinets,W=768,H=1536,planeW=24,planeH=48,zTop=-25){
  };
  x.save();rough(x0,y0,x1-x0,y1-y0,3);
  const base=x.createLinearGradient(x0,0,x1,0);base.addColorStop(0,'#33295a');base.addColorStop(.5,'#40336e');base.addColorStop(1,'#33295a');x.fillStyle=base;x.fillRect(x0-6,y0-6,x1-x0+12,y1-y0+12);
- // washed tonal blotches so the pile never looks uniform
- for(let i=0;i<260;i++){x.fillStyle=`rgba(${rand()>.5?'90,60,120':'20,16,36'},${.05+rand()*.08})`;x.beginPath();x.ellipse(x0+rand()*(x1-x0),y0+rand()*(y1-y0),10+rand()*30,6+rand()*18,rand()*3,0,6.283);x.fill();}
- // neon confetti: squiggles, triangles, rings, stars, hand-drawn at uneven strength
- const neon=['#ff7ab6','#5fe0d4','#ffc66b','#a99bff','#7ee08f'];
- for(let i=0;i<520;i++){
-  const px=x0+10+rand()*(x1-x0-20),py=y0+10+rand()*(y1-y0-20),col=neon[Math.floor(rand()*neon.length)],kind=Math.floor(rand()*5),s=5+rand()*9;
-  x.globalAlpha=.34+rand()*.3;x.strokeStyle=col;x.fillStyle=col;x.lineWidth=1.5+rand()*1.3;x.lineCap='round';x.lineJoin='round';
-  x.save();x.translate(px,py);x.rotate(rand()*6.28);x.beginPath();
-  if(kind===0){x.moveTo(-s,0);for(let k=1;k<=4;k++)x.quadraticCurveTo(-s+k*s/2-s/4,(k%2?-1:1)*s*.7,-s+k*s/2,0);x.stroke();}
-  else if(kind===1){x.moveTo(0,-s);x.lineTo(s*.9,s*.7);x.lineTo(-s*.9,s*.7);x.closePath();x.stroke();}
-  else if(kind===2){x.arc(0,0,s*.7,0,6.283);x.stroke();}
-  else if(kind===3){for(let k=0;k<5;k++){const a=k*1.2566-1.57,b=a+.628;x.lineTo(Math.cos(a)*s,Math.sin(a)*s);x.lineTo(Math.cos(b)*s*.45,Math.sin(b)*s*.45);}x.closePath();x.fill();}
-  else{x.moveTo(-s,-s*.5);x.lineTo(s,s*.5);x.moveTo(-s,s*.5);x.lineTo(s,-s*.5);x.stroke();}
-  x.restore();
- }
+ // designed motif in a half-drop repeat (no random scatter)
+ const motif=carpetMotif(),T=Math.round(motif.width*.55);
+ x.globalAlpha=.62;
+ for(let ty=y0-T,row=0;ty<y1+T;ty+=T,row++)for(let tx=x0-T+(row%2?T/2:0);tx<x1+T;tx+=T)x.drawImage(motif,tx,ty,T,T);
  x.globalAlpha=1;
  // central runner with braided gold border and medallions
  const rx0=X(-2.7),rx1=X(2.7);
