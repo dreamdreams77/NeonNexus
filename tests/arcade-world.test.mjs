@@ -69,6 +69,17 @@ test('cooking and mixology mistakes have real failure consequences',()=>{
  assert.match(game,/function pourMix\(/);
  assert.match(game,/if\(game==='mixology'\)pourMix\(\)/);
 });
+test('Kitchen Rush runs as a dedicated Three.js claymation room with 3D ingredient interaction',()=>{
+ assert.match(html,/id="game3d-stage"/);
+ assert.match(html,/arcade-game3d\.js/);
+ assert.match(game,/nexus:game3d-open/);
+ assert.match(game,/nexus:game3d-start/);
+ assert.match(game,/nexus:game3d-stop/);
+ assert.match(game,/if\(game==='chef'\)\{window\.dispatchEvent/);
+ assert.match((await readFile(new URL('../arcade-game3d.js',import.meta.url),'utf8')),/new THREE\.WebGLRenderer/);
+ const immersive=await readFile(new URL('../arcade-game3d.js',import.meta.url),'utf8');
+ for(const feature of ['PerspectiveCamera','Raycaster','KITCHEN TICKET','THE NEXUS KITCHEN','misses>=3','arcadeBest\.chef','ingredients'])assert.ok(immersive.includes(feature),'missing 3D gameplay feature '+feature);
+});
 test('three new cabinets have distinct kitchen, catching and timing gameplay loops',()=>{
  for(const id of ['chef','sushi','mixology']){assert.ok(game.includes(id+':['));assert.ok(game.includes("case'"+id+"'"));}
  assert.match(game,/ticketTarget/);
