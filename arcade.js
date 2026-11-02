@@ -32,7 +32,7 @@ gemdig:['MOON GEM DIG','Excavate the glowing dig site. Find six moon gems before
 let game='',running=false,score=0,time=40,last=0,raf=0,objects=[],p={},mouse={x:450,y:400},swipeStartX=0,keys={},audio=null,muted=false,sequence=[],seqPos=0,seqPhase='show',seqClock=0,combo=0,round=0,particles=[],activeTableDuel=null,sequenceTimer=0;
 const rand=(a,b)=>a+Math.random()*(b-a),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function sound(freq=440,dur=.08,type='sine',vol=.035){if(muted)return;try{audio=audio||new(window.AudioContext||window.webkitAudioContext)();if(audio.state==='suspended')audio.resume();const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.setValueAtTime(freq,audio.currentTime);g.gain.setValueAtTime(vol,audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+dur);o.connect(g);g.connect(audio.destination);o.start();o.stop(audio.currentTime+dur);}catch{}}
-function scoreBy(n){score+=n;$('#score').textContent=score;popText('+'+n,mouse.x,mouse.y,'#ffe08a');}
+function scoreBy(n){score+=n;$('#score').textContent=score;popText('+'+n,mouse.x,mouse.y,'#ffe08a');addParticles(mouse.x,mouse.y,n>=25?'#ffe08a':'#9de3d1',3);sound(Math.min(860,340+n*5),.055,'sine',.018);}
 function awardStreak(points,x=mouse.x,y=mouse.y,color='#ffe08a'){combo++;p.bestCombo=Math.max(p.bestCombo||0,combo);const bonus=Math.min(30,Math.floor(combo/3)*5);scoreBy(points+bonus);if(combo>1)popText('STREAK ×'+combo,x,y,color);}
 function popText(t,x,y,c){particles.push({text:t,x,y,vy:-35,life:.8,c});}
 function addParticles(x,y,c,n=8){for(let i=0;i<n;i++)particles.push({x,y,vx:rand(-100,100),vy:rand(-150,30),life:rand(.3,.8),r:rand(2,6),c});}
