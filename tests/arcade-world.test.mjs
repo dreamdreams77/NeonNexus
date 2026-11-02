@@ -170,3 +170,24 @@ test('restaurant NPCs change expression and react to order creation, readiness a
  assert.match(game,/new CustomEvent\('nexus:order-ready'/);
  assert.match(game,/new CustomEvent\('nexus:order-served'/);
 });
+
+test('Moonshard Legend has three persistent dungeon areas with gated progression and a final guardian',()=>{
+ assert.match(game,/function buildMoonRoom\(room\)/);
+ assert.match(game,/OVERGROWN RUINS/);
+ assert.match(game,/SUNKEN SANCTUM/);
+ assert.match(game,/MOONKEEP/);
+ assert.match(game,/p\.room\+\+/);
+ assert.match(game,/p\.shards>=required/);
+ assert.match(game,/type:'boss'/);
+ assert.match(game,/p\.bossDefeated=true/);
+ assert.match(game,/telegraph/);
+});
+test('Moonshard equipment has gameplay effects rather than cosmetic labels',()=>{
+ assert.match(game,/p\.swordLevel=1/);
+ assert.match(game,/o\.hp-=p\.swordLevel/);
+ assert.match(game,/p\.boots\?275:210/);
+ assert.match(game,/if\(!p\.boots\)p\.boots=true/);
+ assert.match(game,/p\.shield=true/);
+ assert.match(game,/e\.key\.toLowerCase\(\)==='x'\)p\.shield=!p\.shield/);
+ assert.match(game,/p\.guard&&p\.shield/);
+});
