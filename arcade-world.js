@@ -2,7 +2,7 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.m
 import * as ART from './lobby-art.js';
 import { stepVelocity, turnToward } from './movement.js';
 import { createCrowd } from './lobby-crowd.js';
-import { createActor, CAST, createCabinetSprite, paintGalleryWall, paintGalleryFloor, createPlantSprite, paintTableTop, paintStoolTop, paintBarTop, createPokerSprite, paintAirTable, paintPoolTable, paintDisc, paintSoftShadow, drawWheel, WHEEL_W, WHEEL_H, paintBackBar } from './lobby-sprites.js';
+import { createActor, CAST, createCabinetSprite, paintGalleryWall, paintGalleryFloor, createPlantSprite, paintTableTop, paintStoolTop, paintBarTop, createPokerSprite, paintAirTable, paintPoolTable, paintDisc, paintSoftShadow, drawWheel, WHEEL_W, WHEEL_H, paintBackBar, createHostStandSprite } from './lobby-sprites.js';
 import { RoundedBoxGeometry } from 'https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/geometries/RoundedBoxGeometry.js';
 
 const mount=document.querySelector('#arcade-world');
@@ -495,6 +495,9 @@ if(mount){
  // Host podium and a friendly reservation bell.
  box(1.45,1.2,.85,1.4,.62,10.2,clayMat(0x98605e),dining,.15);box(1.52,.12,.92,1.4,1.26,10.2,cream,dining,.08);cyl(.09,.12,.12,1.4,1.4,10.2,brass,dining);
  const hostSign=box(2.4,.55,.16,1.4,2.25,10.15,clayMat(0x594052),dining,.1);const hostTex=textTexture('HOST','PLEASE WAIT TO BE SEATED','#ffe0ae');const hostPlane=new THREE.Mesh(new THREE.PlaneGeometry(2.2,.42),new THREE.MeshBasicMaterial({map:hostTex}));hostPlane.position.set(1.4,2.25,10.25);dining.add(hostPlane);
+ // Illustrated host stand replaces the sculpted podium and its sign.
+ dining.children.forEach(c=>{if(Math.abs(c.position.x-1.4)<.01&&Math.abs(c.position.z-10.2)<.13&&c.geometry&&c.geometry.type!=='PlaneGeometry'||(Math.abs(c.position.x-1.4)<.01&&Math.abs(c.position.z-10.25)<.01))c.visible=false;});
+ {const hs=createHostStandSprite(THREE,{anisotropy:mobileDevice?2:4});hs.root.position.set(1.4,0,10.2);scene.add(hs.root);}
  // Three intimate tables, upholstered chairs, plates, napkins and a centrepiece.
  const tables=[];
  function hideAndDecal(g,x,z,i){const d=new THREE.Mesh(new THREE.PlaneGeometry(3.7,3.7),new THREE.MeshBasicMaterial({map:artTex(paintTableTop(i),{aniso:4}),transparent:true,toneMapped:false,depthWrite:false}));d.rotation.x=-Math.PI/2;d.position.set(x,.06,z);scene.add(d);g.userData.decal=d;}
@@ -613,7 +616,7 @@ const jukebox=new THREE.Group();jukebox.position.set(-10.0,0,-12.6);jukebox.scal
   artAnimators.push(t=>{jukeFront.material.emissiveIntensity=.45+.25*Math.sin(t*4.4);jukeboxLamp.color.setHSL((t*.08)%1,.7,.65);notes.forEach(n=>{const u=(t*.32+n.phase)%1;n.m.position.set(-10.0+Math.sin(u*9+n.phase*6)*.45,3.3+u*1.5,-12.3+u*.3);n.m.material.opacity=Math.sin(u*Math.PI);n.m.scale.setScalar(.7+u*.5);});});
 }
 { // Ambient visitors: a living crowd with routines, queues and reactions.
-  const crowd=createCrowd({THREE,scene,clayMat,cabinets,count:mobileDevice?5:10,makeActor:i=>createActor(THREE,CAST[i%10],{anisotropy:mobileDevice?2:4})});
+  const crowd=createCrowd({THREE,scene,clayMat,cabinets,count:mobileDevice?5:10,makeActor:i=>createActor(THREE,CAST[i%10],{anisotropy:mobileDevice?2:4,res:mobileDevice?1:1.5})});
   if(location.search.includes('debug'))window.__crowd=crowd;
   artAnimators.push(t=>crowd.update(t,player.position));
 }
@@ -749,10 +752,10 @@ visitorProfiles.forEach((profile,i)=>{const g=new THREE.Group();const [x,z]=visi
 
  // Illustrated actors: the sculpted player and regulars stay as hidden animation rigs; the sprites are what you see.
  for(const ch of [...player.children])ch.visible=false;
- const playerActor=createActor(THREE,CAST.find(c=>c.name==='Hero'),{anisotropy:mobileDevice?2:4});player.add(playerActor.root);
- const hostActor=(()=>{for(const ch of host.children)ch.visible=false;const a=createActor(THREE,CAST.find(c=>c.name==='Mira'),{anisotropy:mobileDevice?2:4});host.add(a.root);return a;})();
+ const playerActor=createActor(THREE,CAST.find(c=>c.name==='Hero'),{anisotropy:mobileDevice?2:4,res:mobileDevice?1.5:2});player.add(playerActor.root);
+ const hostActor=(()=>{for(const ch of host.children)ch.visible=false;const a=createActor(THREE,CAST.find(c=>c.name==='Mira'),{anisotropy:mobileDevice?2:4,res:mobileDevice?1:1.5});host.add(a.root);return a;})();
  const staffActors=serviceStaff.map(st=>{for(const ch of st.group.children)ch.visible=false;const a=createActor(THREE,CAST.find(c=>c.name===(st.role==='bartender'?'Dex':'Ivo')),{anisotropy:mobileDevice?2:4});st.group.add(a.root);return a;});
- const npcActors=visitorNPCs.map((v,i)=>{for(const ch of v.group.children)ch.visible=false;const a=createActor(THREE,CAST[10+i],{anisotropy:mobileDevice?2:4});v.group.add(a.root);return a;}); function useCabinet(){if(!nearest)return;triggerGesture('excited',1.1);window.dispatchEvent(new CustomEvent('nexus:arcade-play',{detail:{gameId:nearest.userData.id}}));}
+ const npcActors=visitorNPCs.map((v,i)=>{for(const ch of v.group.children)ch.visible=false;const a=createActor(THREE,CAST[10+i],{anisotropy:mobileDevice?2:4,res:mobileDevice?1:1.5});v.group.add(a.root);return a;}); function useCabinet(){if(!nearest)return;triggerGesture('excited',1.1);window.dispatchEvent(new CustomEvent('nexus:arcade-play',{detail:{gameId:nearest.userData.id}}));}
  function useService(){if(!activeService)return;triggerGesture('wave',1.55);window.dispatchEvent(new CustomEvent('nexus:service-open',{detail:{service:activeService.type,table:activeService.table||null,npc:activeService.npc||null,machine:activeService.machine??null}}));}
  function useTableGame(){if(!activeTableGame)return;triggerGesture('excited',1.1);window.dispatchEvent(new CustomEvent('nexus:table-play',{detail:{gameId:activeTableGame.gameId}}));}
  window.addEventListener('nexus:character-celebrate',()=>triggerGesture('celebrate',2.1));

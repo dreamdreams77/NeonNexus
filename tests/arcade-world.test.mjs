@@ -745,3 +745,10 @@ test('crowd queues pick an open direction and visitors never deadlock on a playe
  const crowd=await readFile(new URL('../lobby-crowd.js',import.meta.url),'utf8');
  assert.match(crowd,/cb\.qdir=/);assert.match(crowd,/v\.cab\.qdir\*\(k\+1\)/);assert.match(crowd,/pd<1\.15&&v\.path\.length===1/);
 });
+
+test('host stand is illustrated and character sheets render at higher resolution without clipping',async()=>{
+ const spr=await readFile(new URL('../lobby-sprites.js',import.meta.url),'utf8');
+ assert.match(spr,/function drawHostStand\(/);assert.match(spr,/PLEASE WAIT TO BE SEATED/);assert.match(world,/createHostStandSprite\(THREE/);
+ assert.match(spr,/function buildSheet\(design,res=1\)/);assert.match(spr,/ctx\.scale\(res,res\)/);assert.match(spr,/translate\(ox,oy-6\)/);
+ assert.match(world,/res:mobileDevice\?1\.5:2/);assert.match(world,/res:mobileDevice\?1:1\.5/);
+});

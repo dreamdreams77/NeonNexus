@@ -261,7 +261,7 @@ function drawHat(ctx,d,view,hx,hy){
 // ───────── public: draw a full character cell ─────────
 export function drawCharacter(ctx,d,view,pose,ox=0,oy=0){
  const sk=skeleton(view,pose);sk.hipY=112;sk.shoulderY=64;
- ctx.save();ctx.translate(ox,oy);
+ ctx.save();ctx.translate(ox,oy-6); // lift the figure so shoe soles sit inside the cell
  if(d.backpack&&view!=='front'){paint(ctx,rrect(view==='side'?30:34,sk.shoulderY+6+sk.bob,view==='side'?14:36,38,8),d.backpack,{box:[30,sk.shoulderY,36,44],ow:2.4});}
  // far arm behind body (side view) / legs, torso, arms, head
  if(view==='side')drawArm(ctx,d,view,sk,-1);
@@ -296,8 +296,8 @@ export const CAST=[
 ];
 
 // Render a whole pose sheet for one design into a canvas.
-export function buildSheet(design){
- const {w,h}=atlasSize(),c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d');
+export function buildSheet(design,res=1){
+ const {w,h}=atlasSize(),c=document.createElement('canvas');c.width=Math.round(w*res);c.height=Math.round(h*res);const ctx=c.getContext('2d');ctx.scale(res,res);
  for(const view of ['front','side','back'])for(const pose of POSES[view]){const r=cellRect(view,pose);drawCharacter(ctx,design,view,pose,r.x,r.y);}
  return c;
 }
@@ -305,14 +305,14 @@ export function buildSheet(design){
 
 // ───────── actors: sprite stand-ins placed in the 3D lobby ─────────
 const sheetCache=new Map();
-export function createActor(THREE,design,{anisotropy=4,height=2.05}={}){
- let tex=sheetCache.get(design.name);
+export function createActor(THREE,design,{anisotropy=4,height=2.05,res=1}={}){
+ const ckey=design.name+'@'+res;let tex=sheetCache.get(ckey);
  const {w,h}=atlasSize();
- if(!tex){tex=new THREE.CanvasTexture(buildSheet(design));tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=anisotropy;tex.minFilter=THREE.LinearMipmapLinearFilter;sheetCache.set(design.name,tex);}
+ if(!tex){tex=new THREE.CanvasTexture(buildSheet(design,res));tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=anisotropy;tex.minFilter=THREE.LinearMipmapLinearFilter;sheetCache.set(ckey,tex);}
  const map=tex.clone();map.needsUpdate=true;map.repeat.set(CELL_W/w,CELL_H/h);
  const mat=new THREE.MeshBasicMaterial({map,transparent:true,alphaTest:.04,toneMapped:false,depthWrite:true});
  const width=height*CELL_W/CELL_H,mesh=new THREE.Mesh(new THREE.PlaneGeometry(width,height),mat);
- mesh.position.y=height/2-height*(8/CELL_H);
+ mesh.position.y=height/2-height*(14/CELL_H);
  const tilt=new THREE.Group();tilt.rotation.x=-.5;tilt.add(mesh);
  const root=new THREE.Group();root.add(tilt);
  let cur='';
@@ -674,4 +674,37 @@ export function paintBackBar(){
  x.strokeStyle='rgba(30,10,30,.7)';x.lineWidth=2;x.beginPath();x.moveTo(20,20);x.quadraticCurveTo(600,70,1180,20);x.stroke();for(let i=0;i<14;i++){const t=i/13,px=20+t*1160,py=20+Math.sin(t*Math.PI)*28;x.fillStyle=['#ffd98a','#ff9acb','#9fe0cf'][i%3];x.shadowColor=x.fillStyle;x.shadowBlur=12;x.beginPath();x.arc(px,py+8,6,0,6.3);x.fill();}x.shadowBlur=0;
  x.lineWidth=12;x.strokeStyle='#a56d44';x.beginPath();x.roundRect(6,6,W-12,H-12,24);x.stroke();x.lineWidth=3;x.strokeStyle=INK;x.beginPath();x.roundRect(1,1,W-2,H-2,26);x.stroke();
  return c;
+}
+
+// ───────── host stand ─────────
+export const HOST_W=240,HOST_H=260;
+export function drawHostStand(ctx){
+ const sg=ctx.createRadialGradient(120,250,2,120,250,100);sg.addColorStop(0,'rgba(20,8,28,.4)');sg.addColorStop(1,'rgba(20,8,28,0)');ctx.fillStyle=sg;ctx.beginPath();ctx.ellipse(120,250,96,10,0,0,6.3);ctx.fill();
+ // hanging sign on two posts
+ for(const x of [44,196])line(ctx,[[x,40],[x,150]],6,'#5a3a44');
+ paintShape(ctx,rrect(30,6,180,64,14),'#4a2f56',{box:[30,6,180,64],ow:3.4});paintShape(ctx,rrect(38,12,164,52,10),'#2f1f3c',{box:[38,12,164,52],ow:2});
+ ctx.font='700 30px Fredoka, "Arial Rounded MT Bold", sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineWidth=6;ctx.strokeStyle=INK;ctx.strokeText('HOST',120,32);ctx.shadowColor='#ffb347';ctx.shadowBlur=10;ctx.fillStyle='#ffe0ae';ctx.fillText('HOST',120,32);ctx.shadowBlur=0;
+ ctx.font='600 11px Fredoka, sans-serif';ctx.fillStyle='#e8c9a4';ctx.fillText('PLEASE WAIT TO BE SEATED',120,54);
+ for(const x of [38,202]){ctx.fillStyle='#ffd98a';ctx.shadowColor='#ffd98a';ctx.shadowBlur=10;ctx.beginPath();ctx.arc(x,10,4,0,6.3);ctx.fill();}ctx.shadowBlur=0;
+ // podium body
+ paintShape(ctx,P(p=>{p.moveTo(44,246);p.lineTo(52,132);p.lineTo(188,132);p.lineTo(196,246);p.closePath();}),'#98605e',{box:[44,132,152,114],ow:3.4});
+ ctx.save();ctx.clip(P(p=>{p.moveTo(44,246);p.lineTo(52,132);p.lineTo(188,132);p.lineTo(196,246);p.closePath();}));
+ paintShape(ctx,rrect(66,150,108,78,8),'#b0746a',{box:[66,150,108,78],ow:2.4});ctx.strokeStyle='rgba(255,226,180,.4)';ctx.lineWidth=2;ctx.strokeRect(74,158,92,62);
+ for(let i=0;i<10;i++){ctx.strokeStyle=`rgba(${i%2?'255,210,170':'50,20,26'},.16)`;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(40,140+i*11);ctx.bezierCurveTo(100,134+i*11,150,148+i*11,200,140+i*11);ctx.stroke();}
+ ctx.restore();
+ paintShape(ctx,P(p=>p.arc(120,189,14,0,6.3)),'#e8c47a',{box:[106,175,28,28],ow:2.6,hi:.7});drawStarShape(ctx,120,189,9,'#e8584f');
+ // slanted desktop with open book, bell and lamp
+ paintShape(ctx,P(p=>{p.moveTo(36,134);p.lineTo(204,134);p.lineTo(196,112);p.lineTo(44,112);p.closePath();}),'#f0d9b0',{box:[36,112,168,22],ow:3.2,hi:.6});
+ paintShape(ctx,P(p=>{p.moveTo(70,126);p.lineTo(118,126);p.lineTo(120,106);p.lineTo(74,106);p.closePath();p.moveTo(122,126);p.lineTo(170,126);p.lineTo(166,106);p.lineTo(124,106);p.closePath();}),'#fffaf0',{box:[70,106,100,20],ow:2,hi:.2});
+ for(let i=0;i<4;i++){line(ctx,[[78,111+i*4],[112,111+i*4]],1.2,'#b9a28a');line(ctx,[[130,111+i*4],[162,111+i*4]],1.2,'#b9a28a');}
+ paintShape(ctx,P(p=>{p.moveTo(176,126);p.quadraticCurveTo(176,108,189,108);p.quadraticCurveTo(202,108,202,126);p.closePath();}),'#e8c47a',{box:[176,108,26,18],ow:2.6,hi:.8});paintShape(ctx,P(p=>p.arc(189,106,3.4,0,6.3)),'#e8584f',{ow:1.8});
+ paintShape(ctx,rrect(176,126,26,5,2),'#c99a52',{ow:1.8});
+ line(ctx,[[54,126],[54,92]],3.4,'#c99a52');paintShape(ctx,P(p=>{p.moveTo(40,92);p.lineTo(68,92);p.lineTo(62,76);p.lineTo(46,76);p.closePath();}),'#7fd7c4',{box:[40,76,28,16],ow:2.6,hi:.7});
+ const gl=ctx.createRadialGradient(54,84,2,54,84,26);gl.addColorStop(0,'rgba(255,240,170,.7)');gl.addColorStop(1,'rgba(255,240,170,0)');ctx.fillStyle=gl;ctx.beginPath();ctx.arc(54,84,26,0,6.3);ctx.fill();
+}
+export function createHostStandSprite(THREE,{anisotropy=4,height=2.7}={}){
+ const c=document.createElement('canvas');c.width=HOST_W*2;c.height=HOST_H*2;const g=c.getContext('2d');g.scale(2,2);drawHostStand(g);
+ const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=anisotropy;tex.minFilter=THREE.LinearMipmapLinearFilter;
+ const mesh=new THREE.Mesh(new THREE.PlaneGeometry(height*HOST_W/HOST_H,height),new THREE.MeshBasicMaterial({map:tex,transparent:true,alphaTest:.04,toneMapped:false}));mesh.position.y=height/2-height*(10/HOST_H);
+ const tilt=new THREE.Group();tilt.rotation.x=-.45;tilt.add(mesh);const root=new THREE.Group();root.add(tilt);return{root,mesh};
 }
