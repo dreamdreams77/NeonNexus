@@ -43,6 +43,10 @@ The lobby's characters and props are authored illustrations (`lobby-sprites.js`)
 - **Prize gallery:** a sloped collection wall showing all 17 prizes — owned ones in full colour with a ×N badge, unowned ones as "?" silhouettes — over a tiled floor with a sunburst rug.
 - Everything keeps the existing A* crowd, interactions, collision, lighting budget and mobile support. Draw calls dropped from ~1,500 to ~300 as sculpted geometry was retired.
 
+## Voice
+
+Everything the lobby says lives in `dialogue.js`: dry, deadpan and quietly fond of its regulars. Pip, Moxie, Juniper and Rook each have several lines per topic (chat, tips, rumours), rotating intros and quest-complete lines. A shuffle-bag guarantees every line is used before any repeats. Ambient visitors speak in speech bubbles when they win, lose, queue, drink, browse the prize wall, dance, greet you, or strike up a paired chat. The host, bartender and chef have their own lines. Result screens add a one-line quip that reacts to rhythm grades, race placings, zero scores and personal bests, and every shop, bar and prize message is rewritten in the same voice. To add or tweak a line, edit `dialogue.js`; `tests/dialogue.test.mjs` checks that every line is unique, short enough for a bubble and fully filled in.
+
 ## Title screen and settings
 
 The arcade opens on a title screen with an honest load bar (it completes when the 3D world has rendered), a friendly fallback if loading stalls, and **Settings** for sound, reduced motion and graphics quality (saved on your device).

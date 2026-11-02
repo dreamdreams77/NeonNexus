@@ -539,7 +539,7 @@ test('arcade visitors have individualized sculpted props and readable nameplates
 
 test('prize rarity styling follows the catalogue and quest claims retain their success message after re-render',()=>{
  assert.match(game,/card\.dataset\.rarity=item\.rarity/);
- assert.match(game,/openService\('npc',null,npc\);serviceStatus\.textContent='Quest complete! '/);
+ assert.match(game,/openService\('npc',null,npc\);serviceStatus\.textContent=NV\('s','quest'/);
 });
 
 test('daily district circuit tracks three distinct cabinets, grants one claim per UTC day, and persists its ticket reward',()=>{
@@ -774,7 +774,7 @@ test('north end: illustrated welcome desk and a composed back wall replace the s
 });
 
 test('retired sculpted geometry is detached from the scene; named regulars keep stored rig references',async()=>{
- assert.match(world,/Prune retired geometry/);assert.match(world,/roots\.forEach\(o=>\{o\.removeFromParent\(\)/);assert.match(world,/protect=new Set\(cabinets\.map\(c=>c\.userData\.discoveryRing\)\)/);
+ assert.match(world,/Prune retired geometry/);assert.match(world,/\.forEach\(o=>\{o\.removeFromParent\(\)/);assert.match(world,/protect=new Set\(cabinets\.map\(c=>c\.userData\.discoveryRing\)\)/);
  assert.match(world,/v\.rig=\[v\.group\.children\[0\],v\.group\.children\[1\]\]/);assert.match(world,/visitor\.rig\[0\]\.rotation\.z/);assert.doesNotMatch(world,/g\.children\[0\]\.rotation\.z/);
 });
 test('crowd watchdog snaps a wedged visitor to the nearest walkable cell before re-planning',async()=>{
@@ -787,4 +787,17 @@ test('meteor mayhem has hearts, invulnerability frames, a difficulty ramp and su
 });
 test('kitchen rush uses the shared diminishing-returns payout and refreshes the HUD before finishing',()=>{
  assert.match(immersive,/eff=Math\.round\(300\*\(1-Math\.exp\(-score\/300\)\)\)/);assert.match(immersive,/updateHud\(\);finish\(true\)/);assert.match(immersive,/window\.__kitchen=/);
+});
+
+test('voice is wired into the regulars, shop messages, result quips, host, staff and ambient visitors',async()=>{
+ const crowd=await readFile(new URL('../lobby-crowd.js',import.meta.url),'utf8');
+ assert.match(html,/<script src="\.\/dialogue\.js"><\/script><script src="\.\/intro\.js">/);assert.match(html,/id="result-quip"/);
+ assert.match(game,/NV\('reg',npc\?\.name,'chat'\)/);assert.match(game,/NV\('s','redeemed'/);assert.match(game,/NV\('bye'\)/);assert.match(game,/V\.quip\(game,\{win,score,newBest,gradeLabel:p\.gradeLabel\}\)/);
+ assert.match(immersive,/V\.quip\('chef'/);
+ assert.match(crowd,/function say\(follow,text/);assert.match(crowd,/tryBark\(v,v\.react==='win'\?'win':'lose'/);assert.match(crowd,/chatPairs/);
+ assert.match(world,/staffLine\('host'\)/);assert.match(world,/staffLine\(staff\.role==='bartender'/);
+});
+test('runtime-toggled objects are protected from pruning',async()=>{
+ const crowd=await readFile(new URL('../lobby-crowd.js',import.meta.url),'utf8');
+ assert.match(world,/o\.userData\.keep/);assert.match(crowd,/sp\.userData\.keep=true/);assert.match(crowd,/m\.userData\.keep=true/);assert.match(crowd,/plush\.userData\.keep=true/);
 });

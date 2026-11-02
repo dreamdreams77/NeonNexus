@@ -344,7 +344,7 @@ if(mount){
  }
  definitions.forEach((d,i)=>{const side=i<9?-1:1,slot=i%9;makeCabinet(d,i,side,cabinetZ(i));});
  // ───────── Painted environment pass ─────────
- const artAnimators=[];
+ const artAnimators=[];let crowdApi=null;
  {
   // Floor: tiling painted parquet + one unique hand-painted carpet overlay (neon spill baked in).
   scene.remove(floorTiles);floorTiles.geometry.dispose();
@@ -417,7 +417,7 @@ if(mount){
  const hostHead=sphere(.055,0,1.96,.03,clayMat(0xeac09e),host,.9,.7,.7);
  const hostEyeLids=[];
  for(const side of [-1,1]){const lid=sphere(.05,side*.13,1.68,.34,clayMat(0xeac09e),host,1,.015,.4);hostEyeLids.push(lid);}
- let hostWelcomeUntil=0,hostBlinkAt=2.7,hostBlinkUntil=0;
+ let hostBarkAt=6,hostWelcomeUntil=0,hostBlinkAt=2.7,hostBlinkUntil=0;
  // The restaurant is part of this same continuous floor: no scene swap or second page.
  const dining= new THREE.Group();scene.add(dining);
  const wood=clayMat(0x80564b),cream=clayMat(0xf0d3a8),brass=mat(0xd6a15f,.38,.35,0x9c6130,.22),leaf=clayMat(0x6c9b78);
@@ -623,7 +623,7 @@ const jukebox=new THREE.Group();jukebox.position.set(-10.0,0,-12.6);jukebox.scal
   artAnimators.push(t=>{jukeFront.material.emissiveIntensity=.45+.25*Math.sin(t*4.4);jukeboxLamp.color.setHSL((t*.08)%1,.7,.65);notes.forEach(n=>{const u=(t*.32+n.phase)%1;n.m.position.set(-10.0+Math.sin(u*9+n.phase*6)*.45,3.3+u*1.5,-12.3+u*.3);n.m.material.opacity=Math.sin(u*Math.PI);n.m.scale.setScalar(.7+u*.5);});});
 }
 { // Ambient visitors: a living crowd with routines, queues and reactions.
-  const crowd=createCrowd({THREE,scene,clayMat,cabinets,count:mobileDevice?5:10,makeActor:i=>createActor(THREE,CAST[i%10],{anisotropy:mobileDevice?2:4,res:mobileDevice?1:1.5})});
+  const crowd=crowdApi=createCrowd({THREE,scene,clayMat,cabinets,count:mobileDevice?5:10,makeActor:i=>createActor(THREE,CAST[i%10],{anisotropy:mobileDevice?2:4,res:mobileDevice?1:1.5})});
   if(location.search.includes('debug'))window.__crowd=crowd;
   artAnimators.push(t=>crowd.update(t,player.position));
 }
@@ -833,6 +833,7 @@ visitorProfiles.forEach((profile,i)=>{const g=new THREE.Group();const [x,z]=visi
   const hostDistance=player.position.distanceTo(host.position);
   const hostNear=hostDistance<4.8;
   if(hostNear&&hostWelcomeUntil<t)hostWelcomeUntil=t+2.8;
+  if(hostNear&&crowdApi&&window.NEXUS_VOICE&&t>hostBarkAt){hostBarkAt=t+18+Math.random()*10;crowdApi.say(host,window.NEXUS_VOICE.staffLine('host'),4400);}
   if(t>=hostBlinkAt){hostBlinkUntil=t+.14;hostBlinkAt=t+3.1+Math.abs(Math.sin(t*2.3))*1.8;}
   const hostBlink=hostBlinkUntil>t?Math.sin(Math.PI*(t-(hostBlinkUntil-.14))/.14):0;
   hostEyeLids.forEach(lid=>lid.scale.y=.015+Math.max(0,hostBlink)*.085);
@@ -845,7 +846,7 @@ visitorProfiles.forEach((profile,i)=>{const g=new THREE.Group();const [x,z]=visi
   // Staff routines have different rhythms; nearby guests make them look up and acknowledge them.
   serviceStaff.forEach((staff,i)=>{{const sa=staffActors[i],g=staff.group;sa.root.rotation.y=-g.rotation.y;sa.set(g.rotation.y,staff.near&&Math.sin(t*2+i*2)>0?'wave':(Math.sin(t*.9+i*3)>.55?'talk':'idle'),'front',Math.sin(t*1.5+i)*.008);}
    const g=staff.group,dx=player.position.x-g.position.x,dz=player.position.z-g.position.z,dist=Math.hypot(dx,dz),near=dist<4.4;
-   staff.near=near;staff.phase+=dt*(near?1.25:1);
+   staff.near=near;if(near&&crowdApi&&window.NEXUS_VOICE&&t>(staff.barkAt||4)){staff.barkAt=t+20+Math.random()*12;crowdApi.say(g,window.NEXUS_VOICE.staffLine(staff.role==='bartender'?'bartender':'chef'),4400);}staff.phase+=dt*(near?1.25:1);
    staff.head.rotation.y=near?clamp(Math.atan2(dx,dz)*.42,-.55,.55):Math.sin(t*.55+i)*.08;
    staff.head.rotation.x=Math.sin(t*.9+i)*.018;
    if(t>=staff.blinkAt){staff.blinkUntil=t+.13;staff.blinkAt=t+2.6+Math.abs(Math.sin(t*1.7+i))*2;}
@@ -899,7 +900,7 @@ visitorProfiles.forEach((profile,i)=>{const g=new THREE.Group();const [x,z]=visi
   for(const z of [-15,-3,9,21])for(const side of [-1,1]){if(side>0&&z===-3)continue;const s=makeSpriteFromCanvas(THREE,sconceCv,{height:1.25,anisotropy:mobileDevice?2:4});s.root.position.set(side*11.55,2.5,z);scene.add(s.root);}
  }
  // Prune retired geometry: detach every hidden sculpted object from the scene graph (they stay referenced as invisible animation rigs).
- {const protect=new Set(cabinets.map(c=>c.userData.discoveryRing));const roots=[];scene.traverse(o=>{if(o===scene||o.isLight||protect.has(o)||o.visible!==false||!o.parent)return;let p=o.parent;while(p&&p!==scene){if(p.visible===false)return;p=p.parent;}roots.push(o);});roots.forEach(o=>{o.removeFromParent();o.traverse(c=>{if(c.geometry)c.geometry.dispose();});});window.__pruned=roots.length;}
+ {const protect=new Set(cabinets.map(c=>c.userData.discoveryRing));const roots=[];scene.traverse(o=>{if(o===scene||o.isLight||protect.has(o)||o.userData.keep||o.visible!==false||!o.parent)return;let p=o.parent;while(p&&p!==scene){if(p.visible===false)return;p=p.parent;}roots.push(o);});roots.filter(o=>{let keep=false;o.traverse(c=>{if(c.userData.keep)keep=true;});return!keep;}).forEach(o=>{o.removeFromParent();o.traverse(c=>{if(c.geometry)c.geometry.dispose();});});window.__pruned=roots.length;}
  let announcedReady=false,frameCount=0;function animate(){requestAnimationFrame(animate);if(!announcedReady&&frameCount++>2){announcedReady=true;window.dispatchEvent(new CustomEvent('nexus:world-ready'));}const paused=document.hidden||!gameOverlay.hidden;if(paused){clock.getDelta();return;}const dt=Math.min(clock.getDelta(),.05),t=clock.elapsedTime;update(dt,t);renderer.render(scene,camera);}
  animate();
 }

@@ -155,3 +155,5 @@ body.intro-open{overflow:hidden}
  .cabinet-discovery .discovery-meta{display:none}
  .cabinet-discovery .discovery-kicker,.cabinet-discovery small{font-size:9.5px}
 }
+
+.result-quip{margin:2px 0 0;min-height:1.3em;text-align:center;font:italic 500 15px Kalam,Fredoka,system-ui;color:#f3c6a2;letter-spacing:.01em}.result-quip:empty{display:none}

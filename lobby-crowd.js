@@ -34,9 +34,42 @@ export function createCrowd(ctx){
   const blob=(cx,cy,rx,ry,col)=>{const gr=x.createRadialGradient(cx-rx*.3,cy-ry*.4,2,cx,cy,Math.max(rx,ry)*1.1);gr.addColorStop(0,'#ffd2e4');gr.addColorStop(.6,col);gr.addColorStop(1,'#c9648f');x.fillStyle=gr;x.beginPath();x.ellipse(cx,cy,rx,ry,0,0,6.3);x.fill();x.stroke();};
   blob(30,22,10,13,'#f4a6c4');blob(66,22,10,13,'#f4a6c4');blob(48,56,30,28,'#f4a6c4');blob(48,70,17,14,'#fbd5e3');x.fillStyle='#2a1a2d';x.beginPath();x.ellipse(38,50,3.2,4.2,0,0,6.3);x.ellipse(58,50,3.2,4.2,0,0,6.3);x.fill();x.fillStyle='#fff';x.beginPath();x.arc(39.2,48.5,1.2,0,6.3);x.arc(59.2,48.5,1.2,0,6.3);x.fill();x.strokeStyle='#2a1a2d';x.beginPath();x.moveTo(44,60);x.quadraticCurveTo(48,64,52,60);x.stroke();
   const t=new THREE.CanvasTexture(cv);t.colorSpace=THREE.SRGBColorSpace;return t;})();
+
+ // Speech bubbles: a small pool of billboard sprites that follow whoever is talking.
+ const bubbles=[];
+ for(let i=0;i<5;i++){const cv=document.createElement('canvas');cv.width=512;cv.height=200;const tex=new THREE.CanvasTexture(cv);tex.colorSpace=THREE.SRGBColorSpace;
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false,toneMapped:false,opacity:0}));sp.scale.set(3.4,1.328,1);sp.center.set(.5,.07);sp.renderOrder=30;sp.visible=false;sp.userData.keep=true;scene.add(sp);bubbles.push({sp,cv,tex,until:0,follow:null,born:0,busy:false});}
+ const wrap=(g,text,maxW)=>{const words=text.split(' '),lines=[];let cur='';for(const w of words){const t=cur?cur+' '+w:w;if(g.measureText(t).width>maxW&&cur){lines.push(cur);cur=w;}else cur=t;}if(cur)lines.push(cur);return lines.slice(0,4);};
+ function drawBubble(b,text){
+  const g=b.cv.getContext('2d');g.clearRect(0,0,512,200);g.font='700 27px Fredoka, "Arial Rounded MT Bold", sans-serif';g.textAlign='center';g.textBaseline='middle';
+  const lines=wrap(g,text,396),lw=Math.min(430,Math.max(...lines.map(l=>g.measureText(l).width))+44),lh=lines.length*34+26,x0=256-lw/2,y0=170-lh-14;
+  g.lineJoin='round';g.fillStyle='#fff6e4';g.strokeStyle='#2a1a2d';g.lineWidth=5;
+  g.beginPath();g.roundRect(x0,y0,lw,lh,22);g.fill();g.stroke();
+  g.beginPath();g.moveTo(236,y0+lh-1);g.lineTo(256,y0+lh+22);g.lineTo(276,y0+lh-1);g.closePath();g.fill();g.beginPath();g.moveTo(236,y0+lh);g.lineTo(256,y0+lh+22);g.lineTo(276,y0+lh);g.stroke();g.fillStyle='#fff6e4';g.fillRect(238,y0+lh-4,36,6);
+  g.fillStyle='#3a2230';lines.forEach((l,i)=>g.fillText(l,256,y0+22+i*34+12));
+  b.tex.needsUpdate=true;
+ }
+ let now=0;
+ function say(follow,text,ms=3600){
+  const live=bubbles.filter(b=>b.busy).length;if(live>=3)return false;
+  const b=bubbles.find(b=>!b.busy);if(!b)return false;
+  drawBubble(b,text);b.busy=true;b.follow=follow;b.born=now;b.until=now+ms/1000;b.sp.visible=true;b.sp.material.opacity=0;return true;
+ }
+ function updateBubbles(t){
+  now=t;for(const b of bubbles){if(!b.busy)continue;const age=t-b.born,left=b.until-t;
+   const op=Math.min(1,age/.18,left/.3);b.sp.material.opacity=Math.max(0,op);
+   if(b.follow){b.sp.position.set(b.follow.position.x,(b.follow.position.y||0)+2.3,b.follow.position.z+.05);}
+   if(left<=0){b.busy=false;b.sp.visible=false;}}
+ }
+ const V=()=>window.NEXUS_VOICE;
+ function tryBark(v,cat,prob,playerPos){
+  const voice=V();if(!voice||now<(v.barkAt||0)||Math.random()>prob)return;
+  if(playerPos&&Math.hypot(v.g.position.x-playerPos.x,v.g.position.z-playerPos.z)>10)return;
+  if(say(v.g,voice.bark(cat)))v.barkAt=now+10+Math.random()*14;
+ }
  const crowd=[],bursts=[];
  const burstMat=new THREE.MeshBasicMaterial({color:0xffe08a,toneMapped:false});
- for(let i=0;i<18;i++){const m=new THREE.Mesh(new THREE.OctahedronGeometry(.07),burstMat);m.visible=false;scene.add(m);bursts.push({m,life:0,vx:0,vy:0,vz:0});}
+ for(let i=0;i<18;i++){const m=new THREE.Mesh(new THREE.OctahedronGeometry(.07),burstMat);m.visible=false;m.userData.keep=true;scene.add(m);bursts.push({m,life:0,vx:0,vy:0,vz:0});}
  function spark(x,y,z,n=6){let k=0;for(const b of bursts){if(b.life>0)continue;b.life=.9;b.m.visible=true;b.m.position.set(x,y,z);const a=rand()*6.28;b.vx=Math.cos(a)*(.6+rand()*.8);b.vz=Math.sin(a)*(.6+rand()*.8);b.vy=1.8+rand()*1.2;if(++k>=n)break;}}
 
  function build(i){
@@ -45,7 +78,7 @@ export function createCrowd(ctx){
   const actor=ctx.makeActor(i);g.add(actor.root);
   const o=()=>new THREE.Object3D(),mouth=o();mouth.scale.set(.06,.045,.05);
   const prop=o(),cup=o(),plush=new THREE.Mesh(new THREE.PlaneGeometry(.55,.55),new THREE.MeshBasicMaterial({map:plushTex,transparent:true,toneMapped:false}));
-  plush.position.set(0,.85,.22);plush.visible=false;actor.root.add(plush);
+  plush.position.set(0,.85,.22);plush.visible=false;plush.userData.keep=true;actor.root.add(plush);
   return{g,actor,body:o(),torso:o(),legs:[o(),o()],arms:[o(),o()],head:o(),mouth,prop,cup,plush};
  }
  function nearestFree(){for(let k=0;k<40;k++){const x=(rand()-.5)*8,z=-20+rand()*38;if(free(x,z))return[x,z];}return[0,0];}
@@ -120,9 +153,18 @@ export function createCrowd(ctx){
  let last=0;
  function update(t,player){
   const dt=Math.min(.05,Math.max(0,t-last));last=t;if(dt<=0)return;
+  updateBubbles(t);
   for(const b of bursts){if(b.life<=0)continue;b.life-=dt;b.vy-=5*dt;b.m.position.x+=b.vx*dt;b.m.position.y+=b.vy*dt;b.m.position.z+=b.vz*dt;b.m.rotation.y+=dt*8;b.m.scale.setScalar(Math.max(.01,b.life/.9));if(b.life<=0)b.m.visible=false;}
   for(const v of crowd){
-   v.t=t;const g=v.g,p=g.position,m=v.m;v.zone=zoneOf(p.x,p.z);let moving=0,heading=null,bob=0,armLift=[0,0],torsoLean=0,headYaw=0,smile=1,hop=0;
+   v.t=t;const g=v.g,p=g.position,m=v.m;
+   if(v.state!==v.lastState){const prev=v.lastState;v.lastState=v.state;
+    if(v.state==='react'&&prev==='play')tryBark(v,v.react==='win'?'win':'lose',.85,player);
+    else if(v.state==='drink')tryBark(v,'drink',.55,player);else if(v.state==='browse'&&prev!=='browse')tryBark(v,'browse',.5,player);
+    else if(v.state==='dance')tryBark(v,'dance',.8,player);else if(v.state==='queue')v.queueBarkAt=t+4+Math.random()*3;
+    else if(v.state==='idle'&&prev==='walk'&&v.act==='wander')tryBark(v,'wander',.12,player);
+    else if(v.state==='chat'&&v.lead&&V()){const pair=V().pick('pair',V().chatPairs),o=v.buddy;if(o&&Math.hypot(p.x-(player?player.x:0),p.z-(player?player.z:0))<11){say(g,pair[0],3200);o.replyAt=t+3.4;o.replyText=pair[1];}}}
+   if(v.state==='queue'&&v.queueBarkAt&&t>v.queueBarkAt){v.queueBarkAt=0;tryBark(v,'queue',.7,player);}
+   if(v.replyAt&&t>v.replyAt){v.replyAt=0;if(v.state==='chat')say(g,v.replyText,3200);}v.zone=zoneOf(p.x,p.z);let moving=0,heading=null,bob=0,armLift=[0,0],torsoLean=0,headYaw=0,smile=1,hop=0;
    if(v.prop&&v.state!=='drink'&&t>v.propUntil){v.prop=null;m.prop.visible=false;}
    switch(v.state){
     case'idle':v.timer-=dt;heading=v.face?Math.atan2(v.face[0]-p.x,v.face[1]-p.z):null;headYaw=Math.sin(t*.7+v.i)*.5;if(v.timer<=0)chooseActivity(v);break;
@@ -147,13 +189,13 @@ export function createCrowd(ctx){
     case'drink':{v.timer-=dt;heading=Math.atan2(v.face[0]-p.x,v.face[1]-p.z);const sip=Math.max(0,Math.sin(t*.9+v.i*2));armLift=[.05,.15+sip*1.9];headYaw=Math.sin(t*.5+v.i)*.35;if(v.timer<=0){leave(v);v.state='idle';v.timer=.5;}break;}
     case'browse':{v.timer-=dt;heading=Math.atan2(v.face[0]-p.x,v.face[1]-p.z);headYaw=Math.sin(t*1.1+v.i)*.55;armLift=[.05,Math.max(0,Math.sin(t*1.7))*.5];if(v.timer<=0){if(v.spots&&v.spots.length){const nx=v.spots.shift();v.path=[[nx.x,nx.z]];v.state='walk';v.onArrive=()=>startBrowse(v);}else{if(rand()<.5)showProp(v,'plush');v.act='wander';const[x,z]=nearestFree();route(v,[x,z],'floor');v.onArrive=()=>{v.state='idle';v.timer=2+rand()*3;};}}break;}
     case'dance':{v.timer-=dt;heading=Math.atan2(v.face[0]-p.x,v.face[1]-p.z);bob=Math.abs(Math.sin(t*6+v.i))*.05;hop=Math.abs(Math.sin(t*6+v.i))*.06;armLift=[1.2+Math.sin(t*6+v.i)*.9,1.2-Math.sin(t*6+v.i)*.9];torsoLean=Math.sin(t*3+v.i)*.08;headYaw=Math.sin(t*3)*.25;if(v.timer<=0){v.state='idle';v.timer=.5;}break;}
-    case'waitmate':{v.timer+=dt;const o=v.buddy;heading=o?Math.atan2(o.g.position.x-p.x,o.g.position.z-p.z):null;if(!o||v.timer>9){if(o)o.buddy=null;v.buddy=null;v.state='idle';v.timer=.5;}else if(o.state==='waitmate'&&Math.hypot(o.g.position.x-p.x,o.g.position.z-p.z)<1.7){v.state=o.state='chat';v.timer=o.timer=6+rand()*5;v.talk=rand()*6;o.talk=v.talk+3;}break;}
+    case'waitmate':{v.timer+=dt;const o=v.buddy;heading=o?Math.atan2(o.g.position.x-p.x,o.g.position.z-p.z):null;if(!o||v.timer>9){if(o)o.buddy=null;v.buddy=null;v.state='idle';v.timer=.5;}else if(o.state==='waitmate'&&Math.hypot(o.g.position.x-p.x,o.g.position.z-p.z)<1.7){v.state=o.state='chat';v.lead=true;o.lead=false;v.timer=o.timer=6+rand()*5;v.talk=rand()*6;o.talk=v.talk+3;}break;}
     case'chat':{v.timer-=dt;const o=v.buddy;if(o)heading=Math.atan2(o.g.position.x-p.x,o.g.position.z-p.z);const speaking=Math.sin(t*1.3+v.talk)>0;armLift=[.1,speaking?.9+Math.sin(t*7)*.35:.1];headYaw=speaking?Math.sin(t*5)*.12:0;torsoLean=speaking?.05:0;if(Math.sin(t*1.3+v.talk)>.95&&Math.random()<dt*3)smile=1;if(v.timer<=0){if(o){o.buddy=null;}v.buddy=null;v.state='idle';v.timer=.4+rand()*.8;}break;}
    }
    // notice the player: look, and occasionally wave
    if(player){const dx=player.x-p.x,dz=player.z-p.z,d=Math.hypot(dx,dz);
     if(d<.7&&v.state!=='walk'&&v.state!=='play'&&v.state!=='react'){p.x-=dx/(d||1)*(.7-d)*.6;p.z-=dz/(d||1)*(.7-d)*.6;}
-    if(d<3.4&&(v.state==='idle'||v.state==='queue'||v.state==='drink'||v.state==='browse')){const want=Math.atan2(dx,dz)-g.rotation.y;let a=want;while(a>Math.PI)a-=6.283;while(a<-Math.PI)a+=6.283;headYaw=Math.max(-.7,Math.min(.7,a));v.waveCool-=dt;if(v.waveCool<=0&&v.state==='idle'){v.wave=1.4;v.waveCool=14+rand()*14;}}}
+    if(d<3.4&&(v.state==='idle'||v.state==='queue'||v.state==='drink'||v.state==='browse')){const want=Math.atan2(dx,dz)-g.rotation.y;let a=want;while(a>Math.PI)a-=6.283;while(a<-Math.PI)a+=6.283;headYaw=Math.max(-.7,Math.min(.7,a));v.waveCool-=dt;if(v.waveCool<=0&&v.state==='idle'){v.wave=1.4;v.waveCool=14+rand()*14;tryBark(v,'greet',.7,player);}}}
    if(v.wave>0){v.wave-=dt;armLift[1]=2.4+Math.sin(t*14)*.25;}
    // soft separation between visitors
    for(const o of crowd){if(o===v)continue;const dx=p.x-o.g.position.x,dz=p.z-o.g.position.z,d=Math.hypot(dx,dz);if(d>0&&d<.7&&!(v.state==='chat'&&v.buddy===o)&&!(v.state==='waitmate'&&v.buddy===o)){const k=(.7-d)*.5;p.x+=dx/d*k*dt*6;p.z+=dz/d*k*dt*6;}}
@@ -185,5 +227,5 @@ export function createCrowd(ctx){
     m.actor.set(hdg,pose,force,moving>0?0:Math.sin(t*1.7+v.i)*.008);}
   }
  }
- return{update,crowd,count:target};
+ return{update,crowd,count:target,say};
 }
