@@ -31,7 +31,7 @@ test('player avatar is a detailed articulated clay character, not a flat SVG/blo
 test('walk-up restaurant services are detected and take priority over cabinet prompts',()=>{
  assert.match(world,/activeService=null;let serviceDistance=3\.5;for\(const service of services\)/);
  assert.match(world,/nexus:service-open/);
- assert.match(world,/if\(activeService\)useService\(\);else useCabinet\(\)/);
+ assert.match(world,/if\(activeService\)useService\(\);else if\(activeTableGame\)useTableGame\(\);else useCabinet\(\)/);
  assert.match(world,/activeService\.type==='table'/);
 });
 
@@ -44,7 +44,7 @@ test('every playable cabinet has a 3D model and launches its matching game',()=>
 
 test('arcade includes keyboard, touch and proximity interactions',()=>{
  assert.match(world,/arrowup/);assert.match(world,/arcade-touch-pad/);
- assert.match(world,/dmin=4\.1/);assert.match(world,/if\(k==='e'\)\{if\(activeService\)useService\(\);else useCabinet\(\);\}/);
+ assert.match(world,/dmin=4\.1/);assert.match(world,/if\(k==='e'\)\{if\(activeService\)useService\(\);else if\(activeTableGame\)useTableGame\(\);else useCabinet\(\);\}/);
 });
 
 test('each mini-game defines a distinct instruction set and scoring mechanics',()=>{
@@ -340,4 +340,20 @@ test('mobile rendering reduces GPU cost and world camera smoothing reuses its ta
  assert.match(world,/cameraTarget\.set\(player\.position\.x/);
  assert.match(world,/if\(\(moteFrame\+\+%2\)===0\)/);
  assert.match(world,/nextPreviewRefresh=t\+\.25/);
+});
+
+test('arcade floor uses instanced textured tiles to cut draw calls while preserving the handmade surface',()=>{
+ assert.match(world,/new THREE\.InstancedMesh\(new RoundedBoxGeometry\(1\.92,\.035,1\.92,2,\.035\)/);
+ assert.match(world,/floorTiles\.setColorAt/);
+ assert.match(world,/floorTiles\.instanceMatrix\.needsUpdate=true/);
+ assert.match(world,/function feltTexture\(base\)/);
+ assert.match(world,/map:airFelt,roughness:\.72,bumpMap:grain/);
+ assert.match(world,/map:poolFelt,roughness:\.88,bumpMap:grain/);
+ assert.match(world,/blockedX=gameTables\.some/);
+});
+test('billiards rack contains one each of balls 1–15 with the eight ball at the triangle centre',()=>{
+ assert.match(game,/const eight=rack\[4\],swap=rack\[7\];eight\.number=8;swap\.number=5/);
+ assert.match(game,/b\.number>8/);
+ assert.match(game,/b\.number===8/);
+ assert.match(game,/!b\.pocketed&&b\.number!==8/);
 });
