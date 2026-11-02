@@ -495,3 +495,16 @@ test('canvas arcade scenes receive a layered painterly practical-light pass',()=
  assert.match(game,/function painterlyFinish\(\)/);
  assert.match(game,/paperPattern=ctx\.createPattern\(paper,'repeat'\)/);
 });
+
+test('the remaining cabinets have distinct mastery perks beyond XP-only progression',()=>{
+ assert.match(game,/p\.malletReach=43\+\(p\.masteryLevel>=2\?8:0\)/);
+ assert.match(game,/p\.balls=3\+\(p\.masteryLevel>=2\?1:0\)/);
+ assert.match(game,/p\.clawReach=p\.masteryLevel>=2\?34:24/);
+ assert.match(game,/p\.masteryLevel>=2\?65:55/);
+ assert.match(game,/p\.masteryLevel>=2\?\.12:0/);
+ assert.match(game,/p\.masteryLevel>=2\?1\.12:1/);
+ assert.match(game,/p\.masteryLevel>=4\?8:0/);
+ assert.match(game,/p\.masteryLevel>=4\?35:25/);
+ assert.match(immersive,/saved\.arcadeMastery\.chef=record/);
+ assert.match(immersive,/missLimit=3\+\(masteryLevel>=4\?1:0\)/);
+});
