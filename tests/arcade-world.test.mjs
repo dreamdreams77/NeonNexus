@@ -194,3 +194,24 @@ test('Moonshard equipment has gameplay effects rather than cosmetic labels',()=>
  assert.match(game,/p\.touchGuard=false/);
  assert.match(game,/keys\.C\|\|p\.touchGuard/);
 });
+
+test('arcade mini-games have a hand-drawn paper finish and tactile clay detailing',()=>{
+ assert.match(game,/paperPattern=ctx\.createPattern\(paper,'repeat'\)/);
+ assert.match(game,/function painterlyFinish\(\)/);
+ assert.match(game,/function drawKeyboardCursor\(\)/);
+ assert.match(game,/quadraticCurveTo\(-r\*\.48,r\*\.42/);
+ assert.match(game,/Kalam, cursive/);
+});
+test('computer players can navigate pointer-led games with arrows and activate with Enter',()=>{
+ assert.match(game,/cursorGames=!\['pulse','moto','moonquest','racer','sushi','meteor'\]/);
+ assert.match(game,/e\.key==='Enter'&&keyboardAim/);
+ assert.match(game,/ARROWS \+ ENTER/);
+ assert.match(game,/keys\.ArrowRight\?1:0/);
+});
+test('mobile arcade movement eases joystick input and accelerates smoothly instead of snapping',()=>{
+ assert.match(world,/targetX:0,targetY:0/);
+ assert.match(world,/Math\.exp\(-dt\*17\)/);
+ assert.match(world,/motion\.x\+\=\(x\*5\.1-motion\.x\)\*response/);
+ assert.match(world,/touch\.targetX=touch\.targetY=0/);
+ assert.match(world,/Math\.min\(devicePixelRatio\|\|1,matchMedia/);
+});
