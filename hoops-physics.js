@@ -49,7 +49,7 @@ export function stepBall(ball,dt) {
     if(Math.abs(ball.velocity.y)<1.05 || ball.bounceCount>=3){ball.active=false;return {grounded:true};}
     return {bounce:true};
   }
-  if(ball.elapsed>4.2 || Math.abs(ball.position.x)>7 || ball.position.z>9 || ball.position.z< -9){ball.active=false;return {grounded:true};}
+  if(ball.elapsed>4.2 || Math.abs(ball.position.x)>7 || ball.position.z>9 || ball.position.z< -16){ball.active=false;return {grounded:true};}
   return {};
 }
 export function evaluateShot(ball) {
