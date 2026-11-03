@@ -282,7 +282,7 @@ export const CAST=[
  {name:'Juniper',skin:'#f0c9a5',hair:'#c0492f',hairstyle:'long',eye:'#2f6b57',top:'#d8806f',pants:'#3f5568',shoes:'#e7d6b8',outfit:'hoodie',build:'slim',freckles:true,glasses:null,headphones:'#5fe0d4'},
  {name:'Cass',skin:'#a8745a',hair:'#1f1722',hairstyle:'curly',eye:'#3b2a44',top:'#e0b46f',pants:'#4a4660',shoes:'#c9553f',outfit:'jacket',accent:'#f4ead8',build:'avg',earrings:true},
  {name:'Moss',skin:'#e9b99a',hair:'#4c6a4a',hairstyle:'short',eye:'#4b3a2c',top:'#6aa58f',pants:'#5a4a52',shoes:'#3a2c3a',outfit:'overalls',accent:'#5c7fa8',hat:'#e8c25a',hatKind:'cap',build:'stocky'},
- {name:'Pip',skin:'#d9a07e',hair:'#2c2230',hairstyle:'bun',eye:'#2a1c34',top:'#b09bd1',pants:'#3f5568',shoes:'#f4ead8',outfit:'sweater',stripe:'#e9e0f4',build:'slim',glasses:'#2a1a2d'},
+ {name:'Ace',skin:'#d9a07e',hair:'#2c2230',hairstyle:'bun',eye:'#2a1c34',top:'#b09bd1',pants:'#3f5568',shoes:'#f4ead8',outfit:'sweater',stripe:'#e9e0f4',build:'slim',glasses:'#2a1a2d'},
  {name:'Tamsin',skin:'#f0c9a5',hair:'#d9b36a',hairstyle:'pony',eye:'#3f6a96',top:'#e58fa8',pants:'#474a5c',shoes:'#f2e6d0',outfit:'dress',accent:'#fbe3ea',build:'avg'},
  {name:'Bram',skin:'#8d5b45',hair:'#241a22',hairstyle:'buzz',eye:'#2a1c34',top:'#7ea6d6',pants:'#6a5a48',shoes:'#2f2434',outfit:'tee',build:'stocky',beard:true,scarf:'#e6786a'},
  {name:'Odie',skin:'#c98e70',hair:'#7a4a3a',hairstyle:'spiky',eye:'#3b2a44',top:'#9ccb8a',pants:'#474a5c',shoes:'#e8c25a',outfit:'vest',accent:'#4b3a63',bow:'#e6786a',build:'avg',hat:null},

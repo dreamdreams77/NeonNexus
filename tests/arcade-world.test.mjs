@@ -512,7 +512,7 @@ test('Moonlight Billiards cabinet mastery improves controlled cue-shot power',()
 });
 
 test('visitor NPCs offer persistent character-specific quests with tracked objectives and ticket rewards',()=>{
- for(const id of ['pip','moxie','juniper','rook'])assert.match(world,new RegExp("questId:'"+id+"'"));
+ for(const id of ['ace','moxie','juniper','laryn'])assert.match(world,new RegExp("questId:'"+id+"'"));
  for(const term of ['Warm-up Circuit','Find the Pocket','Cabinet Explorer','Rack and Return','visitorQuests','CLAIM REWARD','QUEST IN PROGRESS'])assert.ok(game.includes(term),'missing visitor quest system: '+term);
  assert.match(game,/latest\.tickets=\(Number\(latest\.tickets\)\|\|0\)\+quest\.reward/);
 });
@@ -791,7 +791,7 @@ test('kitchen rush uses the shared diminishing-returns payout and refreshes the 
 
 test('voice is wired into the regulars, shop messages, result quips, host, staff and ambient visitors',async()=>{
  const crowd=await readFile(new URL('../lobby-crowd.js',import.meta.url),'utf8');
- assert.match(html,/<script src="\.\/dialogue\.js"><\/script><script src="\.\/intro\.js">/);assert.match(html,/id="result-quip"/);
+ assert.match(html,/<script src="\.\/dialogue\.js"><\/script><script src="\.\/dialogue-memory\.js"><\/script><script src="\.\/intro\.js">/);assert.match(html,/id="result-quip"/);
  assert.match(game,/NV\('reg',npc\?\.name,'chat'\)/);assert.match(game,/NV\('s','redeemed'/);assert.match(game,/NV\('bye'\)/);assert.match(game,/V\.quip\(game,\{win,score,newBest,gradeLabel:p\.gradeLabel\}\)/);
  assert.match(immersive,/V\.quip\('chef'/);
  assert.match(crowd,/function say\(follow,text/);assert.match(crowd,/tryBark\(v,v\.react==='win'\?'win':'lose'/);assert.match(crowd,/chatPairs/);

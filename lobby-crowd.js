@@ -3,7 +3,7 @@
 // Pure scene logic lives here so arcade-world.js only has to call update(). Movement reuses the shared movement helpers.
 import { turnToward } from './movement.js';
 
-const NAMES=['Juniper','Cass','Moss','Pip','Tamsin','Bram','Odie','Wren','Ivo','Maple','Fenn','Lark','Nell','Rue'];
+const NAMES=['Hux','Cass','Moss','Dot','Tamsin','Bram','Odie','Wren','Ivo','Maple','Fenn','Lark','Nell','Rue'];
 const FAVS=['cabinet','cabinet','bar','prize','social','jukebox'];
 
 export function createCrowd(ctx){

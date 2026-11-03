@@ -160,3 +160,8 @@ body.intro-open{overflow:hidden}
 
 .discovery-quip{margin:6px 0 10px;font:italic 500 14px Kalam,Fredoka,system-ui;color:#f3c6a2}.discovery-quip:empty{display:none}
 @media (max-width:700px){.cabinet-discovery .discovery-quip{display:none}}
+
+/* Regular conversation menu: rapport meter and story button */
+.service-rapport{grid-column:1/-1;align-self:start;justify-self:start;margin:0;padding:.4rem .85rem;border:1px solid rgba(150,90,80,.35);border-radius:999px;font-size:.72rem;font-weight:700;letter-spacing:.12em;color:#8a4a3e;background:rgba(255,235,205,.7);max-width:100%}
+.service-item.talked{border-color:rgba(131,199,186,.6)}
+.service-item.locked{opacity:.6}

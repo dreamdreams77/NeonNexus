@@ -4,6 +4,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --check arcade.js && node --check arcade-world.js && node --check arcade-game3d.js && node --check app.js && node --check hoops.js && node --check hoops-physics.js && node --check movement.js && node --check lobby-art.js && node --check lobby-crowd.js && node --check lobby-sprites.js && node --check dialogue.js && node --check art-slots.js && node --check intro.js && node --test tests/*.test.mjs"
+    "test": "node --check arcade.js && node --check arcade-world.js && node --check arcade-game3d.js && node --check app.js && node --check hoops.js && node --check hoops-physics.js && node --check movement.js && node --check lobby-art.js && node --check lobby-crowd.js && node --check lobby-sprites.js && node --check dialogue.js && node --check dialogue-memory.js && node --check art-slots.js && node --check intro.js && node --test tests/*.test.mjs"
   }
 }
