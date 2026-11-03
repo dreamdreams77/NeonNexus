@@ -3,7 +3,7 @@ import * as ART from './lobby-art.js';
 import { stepVelocity, turnToward } from './movement.js';
 import { createCrowd } from './lobby-crowd.js';
 import './art-slots.js';
-import { slotHook, createActor, CAST, createCabinetSprite, paintGalleryWall, paintGalleryFloor, createPlantSprite, paintTableTop, paintBarTop, createPokerSprite, paintAirTable, paintPoolTable, paintDisc, paintSoftShadow, drawWheel, WHEEL_W, WHEEL_H, paintBackBar, createHostStandSprite, paintCounterFront, paintGarland, paintWallCap, drawSconce, SCONCE_W, SCONCE_H, drawStool, STOOL_W, STOOL_H, makeSpriteFromCanvas, canvasFrom, drawPrizeCounter, PCOUNTER_W, PCOUNTER_H, paintGalleryFacade, drawWelcomeDesk, DESK_W, DESK_H, paintBackWall } from './lobby-sprites.js';
+import { clayify, slotHook, createActor, CAST, createCabinetSprite, paintGalleryWall, paintGalleryFloor, createPlantSprite, paintTableTop, paintBarTop, createPokerSprite, paintAirTable, paintPoolTable, paintDisc, paintSoftShadow, drawWheel, WHEEL_W, WHEEL_H, paintBackBar, createHostStandSprite, paintCounterFront, paintGarland, paintWallCap, drawSconce, SCONCE_W, SCONCE_H, drawStool, STOOL_W, STOOL_H, makeSpriteFromCanvas, canvasFrom, drawPrizeCounter, PCOUNTER_W, PCOUNTER_H, paintGalleryFacade, drawWelcomeDesk, DESK_W, DESK_H, paintBackWall } from './lobby-sprites.js';
 import { RoundedBoxGeometry } from 'https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/geometries/RoundedBoxGeometry.js';
 
 const mount=document.querySelector('#arcade-world');
@@ -32,7 +32,7 @@ if(mount){
   const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(1.4,1.4);t.generateMipmaps=true;t.minFilter=THREE.LinearMipmapLinearFilter;return t;
  }
  const grain=clayMaps();
- const artTex=(canvas,{srgb=true,repeat=null,aniso=4,slot=null}={})=>{const t=new THREE.CanvasTexture(canvas);if(slot&&slotHook.fn)slotHook.fn(slot,t);if(srgb)t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=Math.min(aniso,renderer.capabilities.getMaxAnisotropy());if(repeat){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(repeat[0],repeat[1]);}return t;};
+ const artTex=(canvas,{srgb=true,repeat=null,aniso=4,slot=null,clay=true}={})=>{if(clay&&srgb&&canvas&&canvas.getContext)clayify(canvas,{tile:!!repeat});const t=new THREE.CanvasTexture(canvas);if(slot&&slotHook.fn)slotHook.fn(slot,t);if(srgb)t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=Math.min(aniso,renderer.capabilities.getMaxAnisotropy());if(repeat){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(repeat[0],repeat[1]);}return t;};
  function clayMat(color,rough=.9){return new THREE.MeshPhysicalMaterial({color,roughness:rough,metalness:0,bumpMap:grain,bumpScale:.072,roughnessMap:grain,clearcoat:.08,clearcoatRoughness:.82});}
  function feltTexture(base){const c=document.createElement('canvas');c.width=512;c.height=256;const x=c.getContext('2d');x.fillStyle=base;x.fillRect(0,0,512,256);for(let i=0;i<2100;i++){x.fillStyle=i%2?'rgba(255,244,218,.055)':'rgba(25,45,38,.065)';x.fillRect((i*97)%512,(i*53)%256,1+(i%3),1);}for(let i=0;i<48;i++){x.strokeStyle='rgba(240,224,190,.055)';x.lineWidth=1;x.beginPath();x.moveTo((i*83)%512,(i*37)%256);x.quadraticCurveTo((i*83)%512+18,(i*37)%256-4,(i*83)%512+34,(i*37)%256+2);x.stroke();}const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;}
  const airFelt=feltTexture('#b8d9ce'),poolFelt=feltTexture('#356e59');
@@ -235,7 +235,7 @@ if(mount){
  const topperFrameMat=mat(0xc99560,.38,.55),topperBackMat=mat(0x2a1c30,.8);
  const marqueeLights=[],topperGroups=[];
  function addCabinetTopper(def,i,side,z,color){
-  const [name,id,genre]=def,tex=artTex(ART.paintMarquee(id,name,genre,color,i+1),{aniso:2,slot:'marquee-'+id}),pg=new THREE.Group();pg.position.set(side*5.2-side*.25,3.3,z-1.05);pg.rotation.x=-.93;pg.scale.setScalar(1.12);scene.add(pg);
+  const [name,id,genre]=def,tex=artTex(ART.paintMarquee(id,name,genre,color,i+1),{aniso:2,slot:'marquee-'+id,clay:false}),pg=new THREE.Group();pg.position.set(side*5.2-side*.25,3.3,z-1.05);pg.rotation.x=-.93;pg.scale.setScalar(1.12);scene.add(pg);
   const back=box(1.62,1.0,.1,0,0,-.07,topperBackMat,pg,.04);back.castShadow=false;
   const panel=new THREE.Mesh(new THREE.PlaneGeometry(1.5,.75),new THREE.MeshBasicMaterial({map:tex,toneMapped:false}));panel.position.z=.0;pg.add(panel);
   new THREE.Color(color);pg.userData.base=1;marqueeLights.push({panel,phase:i*1.3});topperGroups[i]=pg;

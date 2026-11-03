@@ -63,8 +63,10 @@ export function paintParquet(){
 function carpetMotif(){
  const T=112,c=mk(T,T),x=c.getContext('2d');
  x.lineJoin='round';x.lineCap='round';
- const ink='rgba(16,10,34,.85)';
- const stroke=(w=2.4)=>{x.strokeStyle=ink;x.lineWidth=w;x.stroke();};
+ // pressed clay bits: each shape sits slightly raised on the pile with a soft shadow and only a faint rim
+ const ink='rgba(16,10,34,.28)';
+ x.shadowColor='rgba(20,8,30,.55)';x.shadowBlur=3;x.shadowOffsetX=1;x.shadowOffsetY=2;
+ const stroke=(w=2.4)=>{x.save();x.shadowColor='transparent';x.strokeStyle=ink;x.lineWidth=w*.6;x.stroke();x.restore();};
  // ringed planet
  x.fillStyle='#5fe0d4';x.beginPath();x.arc(28,30,11,0,6.283);x.fill();stroke();
  x.fillStyle='rgba(255,255,255,.35)';x.beginPath();x.arc(24,26,4,0,6.283);x.fill();
@@ -72,11 +74,12 @@ function carpetMotif(){
  // five-point star
  x.beginPath();for(let k=0;k<10;k++){const a=-Math.PI/2+k*Math.PI/5,q=k%2?4.5:10;x.lineTo(84+Math.cos(a)*q,26+Math.sin(a)*q);}x.closePath();x.fillStyle='#ffc66b';x.fill();stroke(2);
  // squiggle
- x.beginPath();x.moveTo(52,78);for(let k=1;k<=4;k++)x.quadraticCurveTo(52+k*10-5,78+(k%2?-9:9),52+k*10,78);x.strokeStyle=ink;x.lineWidth=6;x.stroke();x.strokeStyle='#ff7ab6';x.lineWidth=3.4;x.stroke();
+ x.beginPath();x.moveTo(52,78);for(let k=1;k<=4;k++)x.quadraticCurveTo(52+k*10-5,78+(k%2?-9:9),52+k*10,78);x.strokeStyle='#c4588e';x.lineWidth=6;x.stroke();x.shadowColor='transparent';x.strokeStyle='#ff8cc0';x.lineWidth=3.6;x.stroke();x.shadowColor='rgba(20,8,30,.55)';
  // triangle
  x.beginPath();x.moveTo(22,66);x.lineTo(34,88);x.lineTo(10,88);x.closePath();x.fillStyle='#a99bff';x.fill();stroke(2);
  // little dots
  for(const [dx,dy,col] of [[58,46,'#7ee08f'],[100,62,'#ff7ab6'],[96,98,'#5fe0d4'],[8,46,'#ffc66b']]){x.fillStyle=col;x.beginPath();x.arc(dx,dy,3.4,0,6.283);x.fill();stroke(1.4);}
+ x.shadowColor='transparent';
  return c;
 }
 
