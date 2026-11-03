@@ -57,7 +57,8 @@ export function createCrowd(ctx){
  function tryBark(v,cat,prob,playerPos){
   const voice=V();if(!voice||now<(v.barkAt||0)||Math.random()>prob)return;
   if(playerPos&&Math.hypot(v.g.position.x-playerPos.x,v.g.position.z-playerPos.z)>10)return;
-  if(say(v.g,voice.bark(cat)))v.barkAt=now+10+Math.random()*14;
+  const mem=(cat==='greet'||cat==='wander')&&voice.memoryBark&&Math.random()<.3?voice.memoryBark():'';
+  if(say(v.g,mem||voice.bark(cat)))v.barkAt=now+10+Math.random()*14;
  }
  const crowd=[],bursts=[];
  const burstMat=new THREE.MeshBasicMaterial({color:0xffe08a,toneMapped:false});

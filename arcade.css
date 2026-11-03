@@ -165,3 +165,8 @@ body.intro-open{overflow:hidden}
 .service-rapport{grid-column:1/-1;align-self:start;justify-self:start;margin:0;padding:.4rem .85rem;border:1px solid rgba(150,90,80,.35);border-radius:999px;font-size:.72rem;font-weight:700;letter-spacing:.12em;color:#8a4a3e;background:rgba(255,235,205,.7);max-width:100%}
 .service-item.talked{border-color:rgba(131,199,186,.6)}
 .service-item.locked{opacity:.6}
+
+/* Daily featured cabinet chip */
+.daily-chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border:1px solid rgba(240,200,140,.5);border-radius:999px;font-size:11px;font-weight:600;letter-spacing:.08em;color:#f0d3a2;background:rgba(80,44,70,.55)}
+.daily-chip.done{opacity:.6}
+@media(max-width:900px){.daily-chip{display:none}}

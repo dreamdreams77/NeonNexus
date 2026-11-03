@@ -5,11 +5,11 @@
  'use strict';
  const V=window.NEXUS_VOICE;if(!V)return;
  const KEY='neon-nexus-voice-v1',PKEY='neon-nexus-player-v1',HALF_HOUR=30*60*1000,DAY=24*60*60*1000;
- const GN={skeeball:'Cosmic Skee-Ball',airhockey:'Comet Air Hockey',billiards:'Moonlight Billiards',whack:'Moon Moles',target:'Bubble Blaster',memory:'Prism Sequence',rhythm:'Beat Foundry',meteor:'Meteor Mayhem',racer:'Turbo Tunnels',stack:'Clay Stack',pinball:'Starlight Pinball',claw:'Lucky Claw',chef:'Kitchen Rush',sushi:'Sushi Catch',mixology:'Mixology Master',pulse:'Pulse Runner',moto:'Barrelstorm Moto',moonquest:'Moonshard Legend',ringtoss:'Comet Ring Toss',gemdig:'Moon Gem Dig'};
+ const GN=window.NEXUS_GAME_NAMES||{};
 
  // ───────── memory (its own small save, so a bad voice save can never touch the player's progress) ─────────
- const blank=()=>({v:1,visits:0,lastVisit:0,talks:{},heard:{}});
- function load(){try{const m=JSON.parse(localStorage.getItem(KEY)||'null');if(!m||typeof m!=='object'||Array.isArray(m))return blank();const b=blank();b.visits=Math.max(0,Number(m.visits)||0);b.lastVisit=Number(m.lastVisit)||0;for(const k of ['talks','heard']){if(m[k]&&typeof m[k]==='object'&&!Array.isArray(m[k]))for(const n of Object.keys(m[k]))b[k][n]=Math.max(0,Math.min(99,Number(m[k][n])||0));}return b;}catch{return blank();}}
+ const blank=()=>({v:1,visits:0,lastVisit:0,talks:{},heard:{},said:{},feud:{}});
+ function load(){try{const m=JSON.parse(localStorage.getItem(KEY)||'null');if(!m||typeof m!=='object'||Array.isArray(m))return blank();const b=blank();b.visits=Math.max(0,Number(m.visits)||0);b.lastVisit=Number(m.lastVisit)||0;for(const k of ['talks','heard','said','feud']){if(m[k]&&typeof m[k]==='object'&&!Array.isArray(m[k]))for(const n of Object.keys(m[k]))b[k][n]=Math.max(0,Math.min(99,Number(m[k][n])||0));}return b;}catch{return blank();}}
  function save(){try{localStorage.setItem(KEY,JSON.stringify(mem));}catch{}}
  const mem=load();
  const now=Date.now();let away=0;
@@ -22,11 +22,13 @@
   const sv=player(),ss=(Array.isArray(sv.arcadeSessions)?sv.arcadeSessions:[]).filter(x=>x&&typeof x==='object'),plays={};
   for(const x of ss)if(x.game)plays[x.game]=(plays[x.game]||0)+1;
   let fav='',favN=0;for(const k of Object.keys(plays))if(plays[k]>favN){fav=k;favN=plays[k];}
+  const stats=sv.arcadeStats&&typeof sv.arcadeStats==='object'?sv.arcadeStats:{};let statPlays=0;for(const k of Object.keys(stats))statPlays+=Number(stats[k]&&stats[k].plays)||0;
   const last=ss[0]||null,prizes=Array.isArray(sv.prizes)?sv.prizes:[],owned=prizes.reduce((n,p)=>n+(Number(p&&p.quantity)||0),0);
   const bear=prizes.some(p=>p&&p.id==='comet-bear'&&Number(p.quantity)>0),tickets=Number(sv.tickets)||0;
-  return{visits:mem.visits,away,sessions:ss.length,distinct:Object.keys(plays).length,plays,billiards:plays.billiards||0,fav,favN,favName:GN[fav]||'',
+  const daily=window.NEXUS_DAILY?window.NEXUS_DAILY.today(sv):{};
+  return{visits:mem.visits,away,sessions:Math.max(ss.length,statPlays),distinct:Math.max(Object.keys(plays).length,Object.keys(stats).filter(k=>Number(stats[k]&&stats[k].plays)>0).length),plays,billiards:Math.max(plays.billiards||0,Number(stats.billiards&&stats.billiards.plays)||0),fav,favN,favName:GN[fav]||'',
    last:last?last.game:'',lastName:last?(GN[last.game]||'that one'):'',lastWin:!!(last&&last.win),lastScore:last?Number(last.score)||0:0,
-   tokens:Number(sv.tokens??250)||0,tickets,bear,owned,orders:(Array.isArray(sv.orders)?sv.orders:[]).length,wins:ss.filter(x=>x.win).length,hour:new Date().getHours(),
+   tokens:Number(sv.tokens??250)||0,tickets,bear,owned,orders:(Array.isArray(sv.orders)?sv.orders:[]).length,wins:Math.max(ss.filter(x=>x.win).length,Object.keys(stats).reduce((n,k)=>n+(Number(stats[k]&&stats[k].wins)||0),0)),dailyName:daily.name||'',dailyDone:!!(daily.played&&daily.won&&daily.partnerDone),dailyStreak:daily.streak||1,hour:new Date().getHours(),
    bearStatus:bear?'yours, somehow':tickets>=980?'affordable, which is rude':'out of reach, for now'};
  }
  const late=c=>c.hour>=22||c.hour<5;
@@ -224,11 +226,90 @@
   ]
  };
 
+
+ // ───────── one-off moments: said exactly once, the first time they become true ─────────
+ const MOMENTS={
+  Ace:[
+   {id:'bearOwned',w:c=>c.bear,t:'Hang on. You own the bear? Give me a second. I need to sit down on something that is not the floor.'},
+   {id:'bearReach',w:c=>c.tickets>=980&&!c.bear,t:'You have enough for the bear. I can feel it from here. The bear told me. Do not tell it I said so.'}
+  ],
+  Moxie:[
+   {id:'firstWin',w:c=>c.wins>=1,t:'First win on the books. Mark the date. I will pretend I did not tear up.'},
+   {id:'streak3',w:c=>c.dailyStreak>=3,t:'Three days running. You are either dedicated or lost. Either way, welcome.'}
+  ],
+  Juniper:[
+   {id:'fifty',w:c=>c.sessions>=50,t:'Fifty sessions. I am updating the chart legend. It never had a category for you.'},
+   {id:'allTwenty',w:c=>c.distinct>=20,t:'All twenty cabinets. I need to sit down. I need to laminate something.'}
+  ],
+  Laryn:[
+   {id:'firstRack',w:c=>c.billiards>=1,t:'Saw you at the table. Not bad for a first rack. Not good either. Honest.'},
+   {id:'wins25',w:c=>c.wins>=25,t:'Twenty five wins. I have counted. I count things when I am impressed. Do not read into it.'}
+  ]
+ };
+ function moment(name){
+  const c=ctx();
+  for(const m of MOMENTS[name]||[]){try{if(!mem.said[m.id]&&m.w(c)){mem.said[m.id]=1;save();return fillCtx(m.t,c);}}catch{}}
+  return '';
+ }
+
+ // ───────── The Kitchen Feud: the staff's own running story, told at the bar and at the pass, unlocked by ordering ─────────
+ const FEUD_TITLES=['The Lemons','The Signs','The Review','The Cold War','The Truce'],FEUD_GATES=[0,2,4,7,10];
+ const FEUD={
+  bar:[
+   'Quick one. The chef has been nicking my lemons. Not many. Just enough to ruin my day and, I assume, a fish.',
+   'I put up a sign. Lemons belong to the bar. By lunch there was a second sign under it. Lemons belong to whoever has the nerve. In the chef\'s handwriting. Very neat. Enraging.',
+   'The chef reviewed my gin and tonic. Out loud. In front of customers. Interesting, they said. Interesting. Do you know what that does to a person?',
+   'We are no longer speaking. Everything goes through the host, who is thrilled. I am told I speak to the host at length.',
+   'It is over. The chef sent a plate with a single lemon on it and a note that said Truce. I made them a drink. We have never mentioned it. It was a very good lemon.'
+  ],
+  pass:[
+   'Do not ask about the lemons. I am not stealing them. I am borrowing them with intent.',
+   'The bar put up a sign about lemons. I put up a better sign. Mine has a drawing of a lemon. Theirs has a threat. We both know who won.',
+   'I may have said the gin and tonic was interesting. It was. I meant it kindly. It came out like a verdict.',
+   'Cold war. Everything goes through the host. The host has started charging us a small fee in compliments. It is the worst.',
+   'Sent over a lemon with Truce on it. They sent back a drink with no ice, which is the nicest thing they have ever done. We have never spoken of it.'
+  ]
+ };
+ const FEUD_WAIT={bar:['Not yet. Order a few more things and I will have been wronged further.','Give it time. The grudge is still ripening.'],pass:['Nothing new yet. Order a few more plates and the story will develop. Like a sauce.','Come back after a few more orders. I am still deciding how upset to be.']};
+ function feudInfo(side){
+  const beats=FEUD[side];if(!beats)return null;const c=ctx();let open=0;for(const g of FEUD_GATES)if(c.orders>=g)open++;
+  const heard=Math.min(mem.feud[side]||0,beats.length),next=heard<beats.length?heard:-1,ready=next>=0&&next<open,need=next>=0&&!ready?Math.max(1,FEUD_GATES[next]-c.orders):0;
+  return{heard,total:beats.length,next,ready,need,done:next<0,label:next>=0?'THE KITCHEN FEUD · CHAPTER '+(next+1)+' · '+FEUD_TITLES[next].toUpperCase():'THE KITCHEN FEUD · COMPLETE'};
+ }
+ function feudTell(side){
+  const i=feudInfo(side);if(!i)return '';
+  if(i.done)return V.pick('fd:'+side,FEUD[side].slice(-2));
+  if(!i.ready)return V.pick('fw:'+side,FEUD_WAIT[side]);
+  mem.feud[side]=i.next+1;save();return FEUD[side][i.next];
+ }
+
+ // ───────── what the background visitors say when they notice you ─────────
+ const CROWD_RX=[
+  {w:c=>c.bear,t:'Is that the bear owner? I have so many questions and one is about the stuffing.'},
+  {w:c=>c.tickets>=980&&!c.bear,t:'Someone here can afford the bear. I am at peace with it. Barely.'},
+  {w:c=>c.sessions>=40,t:'I have seen you here more than the furniture. Thanks for your service.'},
+  {w:c=>!!c.dailyName&&!c.dailyDone,t:'Today\'s featured is {dailyName}. The bonus is real. A plush told me.'},
+  {w:late,t:'Bit late for an arcade. Perfect time, actually. No witnesses.'},
+  {w:c=>c.away>=2,t:'Back after {away} days. We kept your spot warm. Not literally. Floor is cold.'},
+  {w:c=>c.tokens>=1000,t:'That wallet looks heavy. I would hold it for you. For free. Mostly.'},
+  {w:c=>c.wins>=25,t:'A winner walks among us. I am going to stand near you and absorb it.'}
+ ];
+ const DAILY_LINES={
+  Ace:{w:c=>!!c.dailyName&&!c.dailyDone,t:'Today\'s featured cabinet is {dailyName}. Bonus tickets, bro. I would play it, but I am busy staring at a bear.'},
+  Moxie:{w:c=>!!c.dailyName&&!c.dailyDone,t:'{dailyName} is today\'s featured. Free tickets for turning up. My favourite kind of effort.'},
+  Juniper:{w:c=>!!c.dailyName&&!c.dailyDone,t:'Chart update: {dailyName} is the featured cabinet today. I have highlighted it. Twice.'},
+  Laryn:{w:c=>!!c.dailyName&&!c.dailyDone,t:'{dailyName} is paying a bonus today. Just so you know. Not that I am looking out for you.'}
+ };
+ for(const n of Object.keys(DAILY_LINES))REACT[n].push(DAILY_LINES[n]);
+ STAFF_RX.host.push({w:c=>!!c.dailyName&&!c.dailyDone,t:'Today\'s featured cabinet is {dailyName}. Bonus tickets. I get nothing. Do enjoy.'});
+ STAFF_RX.bartender.push({w:c=>c.dailyStreak>=3,t:'{dailyStreak} days in a row. I am starting to think you have nowhere better to be. Welcome.'});
+
  // ───────── the shared API ─────────
  const fillCtx=(t,c)=>t.replace(/\{(\w+)\}/g,(_,k)=>c[k]!==undefined?c[k]:'');
  const eligible=(list,c)=>{const o=[];for(const e of list||[]){try{if(e.w(c))o.push(e.t);}catch{}}return o;};
  const baseRegular=V.regular,baseStaff=V.staffLine;
  V.regular=(name,topic)=>{
+  if(topic==='chat'||topic==='tip'||topic==='rumour'||topic==='stats'){const m=moment(name);if(m){bump(name);return m;}}
   if(topic==='stats'){bump(name);const c=ctx();const pool=REPORT[name]||GENERIC_REPORT;return fillCtx(V.pick('rp:'+name+':'+TIER(c),[pool[TIER(c)]||pool[0]]),c);}
   if(topic==='chat'||topic==='tip'||topic==='rumour'){
    bump(name);
@@ -240,7 +321,8 @@
   if(Math.random()<.4){const c=ctx(),ok=eligible(STAFF_RX[who],c);if(ok.length)return fillCtx(V.pick('sx:'+who,ok),c);}
   return baseStaff(who);
  };
- V.memory={ctx,rapport,storyInfo,storyTell,STORY,CHAPTERS,GATES,REACT,STAFF_RX,REPORT,WAIT,AFTER,bump,
+ V.memoryBark=()=>{const c=ctx(),ok=eligible(CROWD_RX,c);return ok.length?fillCtx(V.pick('cx',ok),c):'';};
+ V.memory={feudInfo,feudTell,FEUD,FEUD_GATES,FEUD_TITLES,FEUD_WAIT,MOMENTS,CROWD_RX,moment,ctx,rapport,storyInfo,storyTell,STORY,CHAPTERS,GATES,REACT,STAFF_RX,REPORT,WAIT,AFTER,bump,
   reset(){const b=blank();for(const k of Object.keys(b))mem[k]=b[k];mem.visits=1;mem.lastVisit=Date.now();save();}};
  // Keep the "pick" keys of every extra pool in the lines that the regular approach barks can use too.
  window.NEXUS_VOICE=V;

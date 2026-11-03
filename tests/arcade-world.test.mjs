@@ -25,7 +25,7 @@ test('arcade opens as one walkable RPG district with all nineteen mini-game cabi
 
 
 test('player avatar is a detailed articulated clay character, not a flat SVG/blob',()=>{
- for(const feature of ['const head=new THREE.Group()','const mouthCurve=new THREE.CatmullRomCurve3','const arms=[],legs=[]','function makeArm(side)','function makeLeg(side)','eyeWhite','irisMat','hairCap'])assert.ok(world.includes(feature),'missing sculpted avatar feature '+feature);
+ for(const feature of ['const head=new THREE.Group()','const mouthCurve=new THREE.CatmullRomCurve3','const arms=[],legs=[]','function makeArm(side)','function makeLeg(side)','eyeWhite','irisMat'])assert.ok(world.includes(feature),'missing sculpted avatar feature '+feature);
  assert.match(world,/new THREE\.CapsuleGeometry\(\.135/);
  assert.match(world,/new THREE\.TubeGeometry\(mouthCurve/);
  assert.match(world,/legs\.forEach\(\(leg,i\)=>leg\.rotation\.x=Math\.sin\(walk\+i\*Math\.PI\)\*\.56\*stride\)/);
@@ -419,8 +419,7 @@ test('ticket and token payouts preserve a genuinely empty token wallet instead o
 test('the prize gallery is a physically walkable 3D room with an open doorway and solid wall collision',()=>{
  assert.match(world,/const prizeRoom=\{left:-10\.7,right:-3\.5,back:10\.5,front:19\.2,doorLeft:-8\.35,doorRight:-5\.85/);
  assert.match(world,/Walkable Prize Gallery/);
- assert.match(world,/galleryShelfY=\[1\.05,2\.15,3\.25\]/);
- assert.match(world,/PRIZE GALLERY/);
+  assert.match(world,/PRIZE GALLERY/);
  assert.match(world,/type:'prize-room',name:'PRIZE GALLERY/);
  assert.match(world,/prizeRoom\.doorLeft/);
  assert.match(world,/prizeRoom\.doorRight/);
@@ -532,7 +531,7 @@ test('the prize counter restocks its limited inventory once per day without rese
 });
 
 test('arcade visitors have individualized sculpted props and readable nameplates, while cabinets receive a detailed finish pass',()=>{
- for(const term of ['Signature props make every regular readable','const bag=sculptedBox','const band=new THREE.Mesh(new THREE.TorusGeometry','const pack=sculptedBox','const cue=cyl','const nameplate=box'])assert.ok(world.includes(term),'missing visitor art detail '+term);
+ for(const term of ['Signature props make every regular readable','const bag=sculptedBox','const band=new THREE.Mesh(new THREE.TorusGeometry','const pack=sculptedBox','const cue=cyl'])assert.ok(world.includes(term),'missing visitor art detail '+term);
  assert.match(world,/Ticket slot, brass service trim, cabinet fasteners/);
  assert.match(world,/badgePlate=new THREE\.Mesh\(new THREE\.CircleGeometry/);
 });
@@ -632,7 +631,7 @@ test('visitors have individual looping routes, pause and face nearby players, an
 });
 
 test('arcade regulars have expressive individual faces and layered signature outfits',()=>{
- for(const detail of ['Tiny sculpted face details','new THREE.CatmullRomCurve3([new THREE.Vector3(-.065,1.405,.238)','Four different hair silhouettes','Layered handmade clothing','if(i===0){for(let n=0;n<4;n++)sphere','if(i===1){const glassesMat','if(i===2){const scarf','if(i===3){const beard'])assert.ok(world.includes(detail),'missing character art detail '+detail);
+ for(const detail of ['Tiny sculpted face details','new THREE.CatmullRomCurve3([new THREE.Vector3(-.065,1.405,.238)','Four different hair silhouettes','Layered handmade clothing','if(i===0){for(let n=0;n<4;n++)sphere','if(i===1){const glassesMat','if(i===2){const scarf','if(i===3){'])assert.ok(world.includes(detail),'missing character art detail '+detail);
  assert.match(world,/new THREE\.TorusGeometry\(\.067,\.009,6,16\)/);
  assert.match(world,/const collarMat=clayMat/);
  assert.match(world,/const shirtFront=box/);

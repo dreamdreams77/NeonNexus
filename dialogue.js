@@ -7,7 +7,7 @@
  function pick(key,list){
   if(!list||!list.length)return'';
   let bag=bags.get(key);
-  if(!bag||!bag.length){bag=list.map((_,i)=>i);for(let i=bag.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[bag[i],bag[j]]=[bag[j],bag[i]];}
+  if(!bag||!bag.length||bag.len!==list.length){bag=list.map((_,i)=>i);bag.len=list.length;for(let i=bag.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[bag[i],bag[j]]=[bag[j],bag[i]];}
    if(list.length>1&&list[bag[bag.length-1]]===lastLine)bag.unshift(bag.pop());bags.set(key,bag);}
   const line=list[bag.pop()];lastLine=line;return line;
  }

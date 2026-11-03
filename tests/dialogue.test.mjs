@@ -4,10 +4,11 @@ import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 
 const src=await readFile(new URL('../dialogue.js',import.meta.url),'utf8');
+const dailySrc=await readFile(new URL('../daily.js',import.meta.url),'utf8');
 const memSrc=await readFile(new URL('../dialogue-memory.js',import.meta.url),'utf8');
 const store=new Map();
 const localStorage={getItem:k=>store.has(k)?store.get(k):null,setItem:(k,v)=>store.set(k,String(v)),removeItem:k=>store.delete(k)};
-const sandbox={window:{},Math,Date,JSON,localStorage};vm.createContext(sandbox);vm.runInContext(src,sandbox);vm.runInContext(memSrc,sandbox);
+const sandbox={window:{},Math,Date,JSON,localStorage};vm.createContext(sandbox);vm.runInContext(dailySrc,sandbox);vm.runInContext(src,sandbox);vm.runInContext(memSrc,sandbox);const D=sandbox.window.NEXUS_DAILY;
 const V=sandbox.window.NEXUS_VOICE;
 const setPlayer=o=>store.set('neon-nexus-player-v1',JSON.stringify(o));
 const sessions=(n,extra={})=>Array.from({length:n},(_,i)=>({game:i%2?'claw':'rhythm',score:50,win:i%3===0,bestCombo:3,at:Date.now()-i,...extra}));
@@ -49,9 +50,9 @@ test('result quips respond to grades, placings, zero scores and personal bests',
 });
 
 test('no em or en dashes anywhere in the dialogue or visible intro copy',async()=>{
- for(const f of ['../dialogue.js','../dialogue-memory.js','../intro.js']){const text=await readFile(new URL(f,import.meta.url),'utf8');assert.doesNotMatch(text,/[—–]/,f+' contains an em or en dash');}
+ for(const f of ['../dialogue.js','../dialogue-memory.js','../daily.js','../intro.js']){const text=await readFile(new URL(f,import.meta.url),'utf8');assert.doesNotMatch(text,/[—–]/,f+' contains an em or en dash');}
  const all=[];const walk=(o)=>{if(typeof o==='string')all.push(o);else if(Array.isArray(o))o.forEach(walk);else if(o&&typeof o==='object')Object.values(o).forEach(walk);};
- walk([V.memory.STORY,V.memory.WAIT,V.memory.AFTER,V.memory.REPORT,V.memory.REACT.Ace.map(r=>r.t),V.memory.REACT.Moxie.map(r=>r.t),V.memory.REACT.Juniper.map(r=>r.t),V.memory.REACT.Laryn.map(r=>r.t),Object.values(V.memory.STAFF_RX).flat().map(r=>r.t),V.regulars,V.regularBarks,V.barks,V.chatPairs,V.staff,V.generic,V.status,V.cabinetQuips]);
+ walk([Object.values(V.memory.FEUD),V.memory.FEUD_WAIT,V.memory.CROWD_RX.map(r=>r.t),Object.values(V.memory.MOMENTS).flat().map(r=>r.t),V.memory.STORY,V.memory.WAIT,V.memory.AFTER,V.memory.REPORT,V.memory.REACT.Ace.map(r=>r.t),V.memory.REACT.Moxie.map(r=>r.t),V.memory.REACT.Juniper.map(r=>r.t),V.memory.REACT.Laryn.map(r=>r.t),Object.values(V.memory.STAFF_RX).flat().map(r=>r.t),V.regulars,V.regularBarks,V.barks,V.chatPairs,V.staff,V.generic,V.status,V.cabinetQuips]);
  for(const l of all)assert.doesNotMatch(l,/[—–]/,l);
 });
 test('every quoted line in dialogue.js is unique, readable and fits where it is shown',async()=>{
@@ -111,4 +112,42 @@ test('bartender and chef have far more to say, and corrupt saves never throw',()
  store.set('neon-nexus-player-v1','{bad');assert.doesNotThrow(()=>V.memory.ctx());
  store.set('neon-nexus-player-v1',JSON.stringify({arcadeSessions:'x',prizes:5,orders:9,tokens:'a'}));assert.doesNotThrow(()=>V.regular('Moxie','chat'));
  store.set('neon-nexus-voice-v1','{bad');assert.doesNotThrow(()=>V.memory.rapport('Ace'));
+});
+
+test('daily goals: one featured cabinet per day, every cabinet gets a turn, bonuses pay once',()=>{
+ const seen=new Set();for(let n=20000;n<20020;n++){const f=D.featuredOn(n);assert.notEqual(f.game,f.partner);seen.add(f.game);}
+ assert.equal(seen.size,20,'all twenty cabinets rotate through');
+ const t=D.today(),sv={tickets:0};
+ assert.equal(sv.daily,undefined);
+ let msg=D.apply(sv,'nothing-special',false);assert.equal(msg,'');
+ msg=D.apply(sv,t.game,false);assert.match(msg,/FEATURED \+30/);assert.equal(sv.tickets,30);
+ msg=D.apply(sv,t.game,false);assert.equal(msg,'','play bonus only once');
+ msg=D.apply(sv,t.game,true);assert.match(msg,/FEATURED WIN \+30/);assert.equal(sv.tickets,60);
+ msg=D.apply(sv,t.partner,false);assert.match(msg,/DOUBLE FEATURE \+25/);assert.equal(sv.tickets,85);
+ assert.equal(D.apply(sv,t.partner,true),'');
+ assert.match(D.pitchFor(t.game,D.today(sv)),/bonuses claimed/);assert.equal(D.pitchFor('zzz',t),'');
+});
+test('daily streak pays a capped bonus for consecutive days and resets after a gap',()=>{
+ const day=D.dayNum();
+ const sv={tickets:0,daily:{day:day-1,streak:3,lastDay:day-1,played:true,won:true,partner:true}};
+ const msg=D.apply(sv,'nothing',false);assert.match(msg,/DAY 4 STREAK \+12/);assert.equal(sv.daily.streak,4);
+ const cap={tickets:0,daily:{day:day-1,streak:30,lastDay:day-1}};D.apply(cap,'x',false);assert.equal(cap.tickets,21);
+ const gap={tickets:0,daily:{day:day-3,streak:9,lastDay:day-3}};assert.equal(D.apply(gap,'x',false),'');assert.equal(gap.daily.streak,1);
+});
+test('one-off moments fire once, the Kitchen Feud unlocks by orders, crowd barks fit a bubble',()=>{
+ const m=V.memory;m.reset();setPlayer({tickets:2000,arcadeSessions:sessions(2),prizes:[]});
+ assert.match(V.regular('Ace','chat'),/enough for the bear/);
+ let again='';for(let k=0;k<60;k++)again+=V.regular('Ace','chat')+'|';assert.doesNotMatch(again,/The bear told me/,'moment is one-off');
+ const orders=n=>Array.from({length:n},(_,i)=>({id:'o'+i,name:'x',status:'Served'}));
+ setPlayer({orders:orders(0)});assert.ok(m.feudInfo('bar').ready);assert.match(m.feudTell('bar'),/lemons/i);
+ assert.ok(!m.feudInfo('bar').ready);assert.equal(m.feudInfo('bar').need,2);assert.match(m.feudTell('bar'),/Not yet|ripening|time/i);
+ setPlayer({orders:orders(2)});assert.ok(m.feudInfo('bar').ready);m.feudTell('bar');
+ setPlayer({orders:orders(10)});for(let k=0;k<3;k++)m.feudTell('bar');assert.match(m.feudTell('bar'),/speaking|lemon/);assert.ok(m.feudInfo('bar').done);
+ for(const side of ['bar','pass']){assert.equal(m.FEUD[side].length,5);}
+ for(const r of m.CROWD_RX)assert.ok(r.t.replace(/\{\w+\}/g,'Beat Foundry 12').length<=96,r.t);
+ setPlayer({tickets:1500,arcadeSessions:sessions(60)});const seen=new Set();for(let k=0;k<200;k++){const b=V.memoryBark();if(b)seen.add(b);}assert.ok(seen.size>=2);
+});
+test('story gating counts lifetime plays, not the 25 session log',()=>{
+ const m=V.memory;m.reset();setPlayer({arcadeSessions:sessions(25),arcadeStats:{claw:{plays:40,wins:9},rhythm:{plays:30,wins:3}}});
+ const c=m.ctx();assert.equal(c.sessions,70);assert.equal(c.wins>=12,true);
 });
