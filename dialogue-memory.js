@@ -45,7 +45,7 @@
    'Update: the bear moved. It was facing left on Tuesday. Now it faces me. I am not saying it is a rivalry, but I have started wearing my good jacket to the claw machine.',
    'I bought a rubber duck. Two hundred tickets. I do not even like ducks. It was a stress buy. It is in my pocket now, judging me quietly, the way only a duck can.',
    'Word on the floor is there is one bear left. One. I have been standing at the shelf since the interval. Security asked if I was waiting for someone. I said yes, and pointed at the bear. They let me stay.',
-   {bear:'You got the bear. You actually got the bear. Mate. I am not crying, it is the plush dust. Can I visit it? Weekends? I will bring snacks. For me. The bear is fine.',
+   {bear:'You got the bear. You actually got the bear. Bro. I am not crying, it is the plush dust. Can I visit it? Weekends? I will bring snacks. For me. The bear is fine.',
     plain:'I got it. Eleven months, one rubber duck and a loan from Laryn. It is smaller than I remembered. Do not tell it I said that. It is right there. It can hear.'}
   ],
   Moxie:[
@@ -87,13 +87,13 @@
   mem.heard[name]=info.next+1;bump(name);return text;
  }
  const WAIT={
-  Ace:['Not yet, mate. Go and play a few rounds first. I need to rest my voice. And my dignity.','There is more to the bear business. Not yet. It needs a bit of time to ferment.'],
+  Ace:['Not yet, bro. Go and play a few rounds first. I need to rest my voice. And my dignity.','There is more to the bear business. Not yet. It needs a bit of time to ferment.'],
   Moxie:['Yeah, nah. Not yet. The next verse needs a few more rounds from you. Pace yourself, it is a long song.','I have more. Play a bit first. A good story, like a good bass line, needs room.'],
   Juniper:['I have more notes, but they are not in order yet. Play a few more rounds and I will have them tidied.','Chapter pending. I am waiting on more data. By data, I mean you playing things.'],
   Laryn:['Not yet. Play some more. Story will keep.','Nothing to add right now. Go and play. I will be here. I am always here.']
  };
  const AFTER={
-  Ace:['That is the whole bear saga, mate. If you want it again, I am happy to tell it badly.','Nothing new on the bear. I am sitting with it. Quietly. Next to the duck.'],
+  Ace:['That is the whole bear saga, bro. If you want it again, I am happy to tell it badly.','Nothing new on the bear. I am sitting with it. Quietly. Next to the duck.'],
   Moxie:['That is the whole song. Encore is just me humming. You have been warned.','Story is done. The theme lives on in my head, rent free.'],
   Juniper:['The bear file is closed. I am onto the next one. It is about the carpet. It is quite long.','All caught up. The spreadsheet is laminated. I am a little sad about it.'],
   Laryn:['That is the story. It is not much of a story. It is a decent one.','All told. Shout me a drink sometime and I will pretend it was your idea.']
@@ -102,14 +102,14 @@
  // ───────── reactive lines: what each regular says because of what you have actually done ─────────
  const REACT={
   Ace:[
-   {w:c=>c.tickets>=980&&!c.bear,t:'{tickets} tickets and no bear? Mate. I could cry. I will cry later. First, why are you not at the prize counter.'},
+   {w:c=>c.tickets>=980&&!c.bear,t:'{tickets} tickets and no bear? Bro. I could cry. I will cry later. First, why are you not at the prize counter.'},
    {w:c=>c.bear,t:'You own the bear. I am fine with this. I am fine. Ask me again in a week.'},
    {w:c=>c.sessions===0,t:'New here? Welcome. Do not touch the bear. I have named it. It has a middle name.'},
    {w:c=>c.away>=2,t:'Not seen you in {away} days. I would say I missed you, but I was busy staring at a bear.'},
    {w:c=>c.last&&!c.lastWin,t:'Rough one on {lastName}? Happens. Happened to me twice today, before lunch. It was a thin lunch.'},
    {w:c=>c.last&&c.lastWin,t:'Saw you won on {lastName}. Good for you. I am thrilled. I am a bit sick of your face, but thrilled.'},
    {w:c=>c.fav==='claw',t:'You are on the claw a fair bit. Fellow believer, or fellow victim. We will find out.'},
-   {w:c=>c.tickets>0&&c.tickets<100,t:'Only {tickets} tickets? Mate, that is a keychain. A good keychain. But still.'},
+   {w:c=>c.tickets>0&&c.tickets<100,t:'Only {tickets} tickets? Bro, that is a keychain. A good keychain. But still.'},
    {w:c=>c.tokens<30,t:'Running low on tokens, are we. Do not look at me. I am running low on dignity.'}
   ],
   Moxie:[
