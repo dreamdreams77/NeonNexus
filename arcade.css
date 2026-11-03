@@ -157,3 +157,6 @@ body.intro-open{overflow:hidden}
 }
 
 .result-quip{margin:2px 0 0;min-height:1.3em;text-align:center;font:italic 500 15px Kalam,Fredoka,system-ui;color:#f3c6a2;letter-spacing:.01em}.result-quip:empty{display:none}
+
+.discovery-quip{margin:6px 0 10px;font:italic 500 14px Kalam,Fredoka,system-ui;color:#f3c6a2}.discovery-quip:empty{display:none}
+@media (max-width:700px){.cabinet-discovery .discovery-quip{display:none}}

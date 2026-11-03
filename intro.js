@@ -21,7 +21,7 @@
  const tick=()=>{
   if(ready){pct=100;}else{const el=(performance.now()-t0)/1000;pct=Math.min(94,pct+(94-pct)*.03+.12);if(el>12)err.hidden=false;}
   fill.style.width=pct.toFixed(1)+'%';
-  const ph=[...phases].reverse().find(p=>pct>=p[0]);status.textContent=ready?'READY — WELCOME IN':ph[1];
+  const ph=[...phases].reverse().find(p=>pct>=p[0]);status.textContent=ready?'READY. WELCOME IN':ph[1];
   if(!ready)requestAnimationFrame(tick);else{playBtn.disabled=false;playBtn.focus({preventScroll:true});}
  };
  requestAnimationFrame(tick);

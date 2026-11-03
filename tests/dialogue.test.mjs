@@ -42,3 +42,25 @@ test('result quips respond to grades, placings, zero scores and personal bests',
  assert.match(V.quip('whack',{win:true,score:50,newBest:true,gradeLabel:''}),/best/i);
  for(const g of ['claw','billiards','airhockey','meteor','stack','memory','chef','pulse'])assert.ok(V.quip(g,{win:Math.random()<.5,score:30,newBest:false,gradeLabel:''}).length>10,g);
 });
+
+test('no em or en dashes anywhere in the dialogue or visible intro copy',async()=>{
+ for(const f of ['../dialogue.js','../intro.js']){const text=await readFile(new URL(f,import.meta.url),'utf8');assert.doesNotMatch(text,/[—–]/,f+' contains an em or en dash');}
+ const all=[];const walk=(o)=>{if(typeof o==='string')all.push(o);else if(Array.isArray(o))o.forEach(walk);else if(o&&typeof o==='object')Object.values(o).forEach(walk);};
+ walk([V.regulars,V.regularBarks,V.barks,V.chatPairs,V.staff,V.generic,V.status,V.cabinetQuips]);
+ for(const l of all)assert.doesNotMatch(l,/[—–]/,l);
+});
+test('every quoted line in dialogue.js is unique, readable and fits where it is shown',async()=>{
+ const text=await readFile(new URL('../dialogue.js',import.meta.url),'utf8');
+ const lines=[...text.matchAll(/'((?:[^'\\\n]|\\.)+)'/g)].map(m=>m[1].replace(/\\'/g,"'")).filter(l=>/\s/.test(l)&&l.length>14&&!/^\s|[()=;]|\bfunction\b/.test(l)&&!/^(q:|s:|b:|rb:|r:|st:|intro:|bye)/.test(l));
+ assert.ok(lines.length>300,'plenty of content: '+lines.length);
+ const dup=lines.filter((l,i)=>lines.indexOf(l)!==i);assert.deepEqual(dup,[],'duplicate lines');
+ for(const l of lines){assert.ok(l.length<=260,'too long: '+l);}
+});
+test('regular approach barks, cabinet quips and plush barks exist and fit a bubble or card',()=>{
+ for(const n of ['Pip','Moxie','Juniper','Rook']){assert.ok(V.regularBarks[n].length>=4,n);for(const l of V.regularBarks[n])assert.ok(l.length<=96,l);}
+ for(const id of ['hoops','skeeball','airhockey','whack','target','memory','rhythm','meteor','racer','stack','pinball','claw','chef','sushi','mixology','pulse','moto','moonquest','ringtoss','gemdig'])assert.ok(V.cabinetQuip(id).length>10&&V.cabinetQuip(id).length<=80,id);
+ assert.ok(V.barks.plush.length>=4);assert.equal(typeof V.regularBark('Pip'),'string');
+});
+test('more material: the regulars now have at least 7 chat lines, 5 tips and 5 rumours each',()=>{
+ for(const n of ['Pip','Moxie','Juniper','Rook']){const r=V.regulars[n];assert.ok(r.chat.length>=7,n+' chat '+r.chat.length);assert.ok(r.tip.length>=5,n+' tip '+r.tip.length);assert.ok(r.rumour.length>=5,n+' rumour '+r.rumour.length);assert.ok(r.done.length>=3,n+' done');}
+});

@@ -515,13 +515,13 @@ window.addEventListener('nexus:arcade-play',e=>{const id=e.detail?.gameId;if(id=
 $('#start').addEventListener('click',start);$('#close').addEventListener('click',()=>{running=false;cancelAnimationFrame(raf);window.dispatchEvent(new CustomEvent('nexus:game3d-stop'));overlay.hidden=true;activeTableDuel=null;});
 canvas.addEventListener('pointerdown',e=>{keyboardAim=false;try{canvas.setPointerCapture(e.pointerId);}catch{}onDown(e);});canvas.addEventListener('pointermove',onMove);canvas.addEventListener('pointerup',onUp);canvas.addEventListener('pointercancel',onUp);
 window.addEventListener('keydown',keydown);window.addEventListener('keyup',keyup);
-const saved=(()=>{try{return JSON.parse(localStorage.getItem('neon-nexus-player-v1')||'{}')}catch{return {}}})();$('#arcade-tokens').textContent=saved.tokens??250;$('#arcade-tickets').textContent=Number(saved.tickets)||0;
+const saved=readPlayer();$('#arcade-tokens').textContent=saved.tokens??250;$('#arcade-tickets').textContent=Number(saved.tickets)||0;
 const serviceModal=$('#service-modal'),serviceTitle=$('#service-title'),serviceKicker=$('#service-kicker'),serviceCopy=$('#service-copy'),serviceItems=$('#service-items'),serviceStatus=$('#service-status'),prizeToolbar=$('#prize-toolbar'),prizeBalance=$('#prize-balance'),prizeFilters=$('#prize-filters'),prizeCollection=$('#prize-collection'),prizeViewToggle=$('#prize-view-toggle');
 const foodMenu=[['Clay Oven Flatbread','Roasted tomato, basil and whipped ricotta',38],['Moon Garden Bowl','Warm grains, greens, avocado and citrus',32],['Crispy Comet Tenders','Golden crunchy tenders with herb dip',30],['Starlight Mac & Cheese','Creamy three-cheese comfort bowl',28],['Sushi Garden Plate','Six fresh garden and salmon-style rolls',42],['Mini Meteor Sliders','Three little house sliders with fries',45],['Honey Cloud Sundae','Vanilla, honeycomb and berry ripple',24],['Warm Cinnamon Knots','Soft baked knots with vanilla glaze',20]];
 const drinkMenu=[['Nebula Berry Fizz','Blueberry, lime, soda and crushed ice',18],['Peach Moon Cooler','Peach nectar, mint and sparkling water',18],['Glow Garden Lemonade','Fresh lemon, basil and a little sparkle',16],['Cosmic Cocoa','Warm chocolate, vanilla cloud and cinnamon',20],['Stardust Smoothie','Mango, banana and coconut',22],['Midnight Mocha','Espresso, cocoa and steamed milk',22],['Ginger Beer','Bright, spicy ginger with a crisp finish',17],['Wine','A glass of the house red or white',34],['Gin and Tonic','Juniper gin, tonic and fresh lime',38]];
 let jukeboxTimer=null,jukeboxStep=0;
-function readPlayer(){try{return JSON.parse(localStorage.getItem('neon-nexus-player-v1')||'{}')}catch{return {}}}
-function writePlayer(saved){localStorage.setItem('neon-nexus-player-v1',JSON.stringify(saved));$('#arcade-tokens').textContent=saved.tokens??250;$('#arcade-tickets').textContent=Number(saved.tickets)||0;}
+function readPlayer(){try{const v=JSON.parse(localStorage.getItem('neon-nexus-player-v1')||'{}');if(!v||typeof v!=='object'||Array.isArray(v))return {};if(!Array.isArray(v.prizes))v.prizes=[];v.prizes=v.prizes.filter(x=>x&&typeof x==='object');if(!v.arcadeMastery||typeof v.arcadeMastery!=='object')v.arcadeMastery={};return v}catch{return {}}}
+function writePlayer(saved){try{localStorage.setItem('neon-nexus-player-v1',JSON.stringify(saved));}catch{}$('#arcade-tokens').textContent=saved.tokens??250;$('#arcade-tickets').textContent=Number(saved.tickets)||0;}
 const prizeCatalog=[
  {id:'sticker-pack',name:'Nexus Sticker Pack',category:'Collectibles',description:'A glossy set of arcade mascots and neon district decals.',icon:'✨',cost:65,rarity:'COMMON',stock:40},
  {id:'keychain',name:'Comet Keychain',category:'Collectibles',description:'A little hand-painted comet to take home.',icon:'☄️',cost:95,rarity:'COMMON',stock:32},
@@ -544,7 +544,7 @@ const prizeCatalog=[
 const prizeCategories=['All','Plush','Toys','Collectibles','Tech','Big Wins','Experiences'];let prizeCategory='All',prizeView='shop';
 function renderPrizeExchange(){
  const saved=readPlayer(),today=new Date().toISOString().slice(0,10);if(saved.prizeRestockDay!==today){saved.prizeStock=Object.fromEntries(prizeCatalog.map(item=>[item.id,item.stock]));saved.prizeRestockDay=today;writePlayer(saved);}
- const tickets=Number(saved.tickets)||0,haul=saved.prizes||[],owned=haul.reduce((n,item)=>n+(Number(item.quantity)||0),0);
+ const tickets=Number(saved.tickets)||0,haul=Array.isArray(saved.prizes)?saved.prizes:[],owned=haul.reduce((n,item)=>n+(Number(item.quantity)||0),0);
  prizeBalance.textContent='🎟 '+tickets.toLocaleString()+' TICKETS AVAILABLE  ·  '+owned+' PRIZES IN YOUR HAUL';
  prizeFilters.innerHTML='';prizeCategories.forEach(category=>{const b=document.createElement('button');b.className='prize-filter';b.type='button';b.textContent=category;b.setAttribute('aria-pressed',String(prizeCategory===category));b.addEventListener('click',()=>{prizeCategory=category;renderPrizeExchange();});prizeFilters.append(b);});
  prizeViewToggle.textContent=prizeView==='shop'?'MY PRIZE HAUL':'BACK TO PRIZE SHOP';

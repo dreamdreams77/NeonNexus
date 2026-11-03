@@ -4,21 +4,13 @@
 import { turnToward } from './movement.js';
 
 const NAMES=['Juniper','Cass','Moss','Pip','Tamsin','Bram','Odie','Wren','Ivo','Maple','Fenn','Lark','Nell','Rue'];
-const SKIN=[0xf0c9a5,0xe9b99a,0xd9a07e,0xc98e70,0xa8745a,0x8d5b45];
-const SHIRT=[0xd98c7d,0x83bcb0,0xb09bd1,0xe0b46f,0x7ea6d6,0xe58fa8,0x9ccb8a,0xd2c06e];
-const PANTS=[0x4a4660,0x5a4a52,0x3f5568,0x6a5a48,0x474a5c];
-const HAIR=[0x2c2230,0x5a3a2c,0x8a5a3a,0xc99a52,0x3a3350,0xb86a58,0x707680];
 const FAVS=['cabinet','cabinet','bar','prize','social','jukebox'];
 
 export function createCrowd(ctx){
  const {THREE,scene,clayMat,cabinets,count,rand=Math.random,onCabinetCheer}=ctx;
- const gSphere=new THREE.SphereGeometry(1,14,10),gCyl=new THREE.CylinderGeometry(1,1,1,10),gTorus=new THREE.TorusGeometry(1,.16,6,14,Math.PI),gBox=new THREE.BoxGeometry(1,1,1);
- const matCache=new Map(),mat=c=>{let m=matCache.get(c);if(!m){m=clayMat(c);matCache.set(c,m);}return m;};
- const dark=new THREE.MeshBasicMaterial({color:0x2a1a2c,side:THREE.DoubleSide}),cheek=new THREE.MeshBasicMaterial({color:0xf08a8a,transparent:true,opacity:.55});
  const shadowMat=new THREE.MeshBasicMaterial({color:0x14081c,transparent:true,opacity:.5,depthWrite:false});
  const shadowGeo=new THREE.CircleGeometry(.4,16);
  const pick=a=>a[Math.floor(rand()*a.length)];
- const mesh=(geo,m,parent,x,y,z,sx,sy,sz)=>{const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);o.scale.set(sx,sy,sz);o.castShadow=true;parent.add(o);return o;};
 
  // Points of interest (world space). Fronts face the aisle; routes always travel the central aisle first.
  const cabs=cabinets.map((c,i)=>{const side=c.position.x<0?-1:1;return{i,side,z:c.position.z,front:{x:side*3.55,z:c.position.z},occ:null,queue:[],cab:c};});
@@ -136,7 +128,7 @@ export function createCrowd(ctx){
  function chooseWander(v){v.act='wander';const[x,z]=nearestFree();route(v,[x,z],'floor');v.onArrive=()=>{v.state='idle';v.timer=2+rand()*4;v.face=null;};}
  function startPlay(v){v.state='play';v.timer=7+rand()*8;v.face=[v.cab.side*5.2,v.cab.z];v.playSeed=rand()*6;}
  function startBrowse(v){v.state='browse';v.timer=3+rand()*3;v.face=[v.g.position.x+(rand()<.5?-1:1)*2,v.g.position.z-2];}
- function showProp(v,kind){v.prop=kind;v.propUntil=1e9;v.m.prop.visible=true;v.m.cup.visible=kind==='cup';v.m.plush.visible=kind==='plush';}
+ function showProp(v,kind){if(kind==='plush')v.barkNext='plush';v.prop=kind;v.propUntil=1e9;v.m.prop.visible=true;v.m.cup.visible=kind==='cup';v.m.plush.visible=kind==='plush';}
  function leave(v){ // release whatever the visitor was occupying, then pick something new
   if(v.cab&&v.cab.occ===v){v.cab.occ=null;const nxt=v.cab.queue.shift();if(nxt){v.cab.occ=nxt;route(nxt,[v.cab.front.x,v.cab.z],'floor');nxt.onArrive=()=>startPlay(nxt);v.cab.queue.forEach((q,k)=>{if(q.state==='queue')q.path=[[v.cab.front.x,v.cab.z+v.cab.qdir*(k+1)*1.15]],q.state='walk',q.onArrive=()=>{q.state='queue';};});}}
   if(v.stool&&v.stool.occ===v)v.stool.occ=null;
@@ -157,6 +149,7 @@ export function createCrowd(ctx){
   for(const b of bursts){if(b.life<=0)continue;b.life-=dt;b.vy-=5*dt;b.m.position.x+=b.vx*dt;b.m.position.y+=b.vy*dt;b.m.position.z+=b.vz*dt;b.m.rotation.y+=dt*8;b.m.scale.setScalar(Math.max(.01,b.life/.9));if(b.life<=0)b.m.visible=false;}
   for(const v of crowd){
    v.t=t;const g=v.g,p=g.position,m=v.m;
+   if(v.barkNext&&t>(v.barkAt||0)){const c=v.barkNext;v.barkNext=null;tryBark(v,c,.85,player);}
    if(v.state!==v.lastState){const prev=v.lastState;v.lastState=v.state;
     if(v.state==='react'&&prev==='play')tryBark(v,v.react==='win'?'win':'lose',.85,player);
     else if(v.state==='drink')tryBark(v,'drink',.55,player);else if(v.state==='browse'&&prev!=='browse')tryBark(v,'browse',.5,player);
