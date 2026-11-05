@@ -57,7 +57,7 @@
   stack:[S('Build past 100 points',r=>r.win),S('Land 4 perfect drops',r=>(r.stats.perfect||0)>=4),S('Top out at 14 blocks',r=>(r.p.blocks||0)>=14)],
   pinball:[S('Score 250',r=>r.score>=250),S('Spell N-E-X-U-S',r=>(r.stats.nexus||0)>=1),S('Score 800',r=>r.score>=800)],
   claw:[S('Win a prize',r=>(r.stats.prizes||0)>=1),S('Grab the golden prize',r=>(r.stats.golden||0)>=1),S('Win 4 prizes',r=>(r.stats.prizes||0)>=4)],
-  sushi:[S('Survive the conveyor',r=>r.win),S('Reach a ×12 streak',r=>r.bestCombo>=12),S('Trigger Fever twice',r=>r.fevers>=2)],
+  sushi:[S('Survive the conveyor',r=>r.win),S('Fill 3 order tickets',r=>(r.stats.orders||0)>=3),S('Reach a ×12 streak',r=>r.bestCombo>=12)],
   mixology:[S('Serve all six drinks',r=>r.win),S('Pour 4 dead-centre layers',r=>(r.stats.centre||0)>=4),S('Serve without a spill',r=>r.win&&(r.p.misses||0)===0)],
   pulse:[S('Beat the boss',r=>r.win),S('Win without losing health',r=>r.win&&(r.stats.hurt||0)===0),S('Trigger Fever',r=>r.fevers>0)],
   moto:[S('Ride to the finish',r=>r.win),S('Finish without a crash',r=>r.win&&(r.stats.crashes||0)===0),S('Trigger Fever',r=>r.fevers>0)],
