@@ -45,7 +45,7 @@
  // r = {score, win, bestCombo, fevers, grade, place, timeLeft, stats, p}
  const S=(label,test)=>({label,test});
  const STARS={
-  skeeball:[S('Win the round (150 points)',r=>r.win),S('Trigger Fever',r=>r.fevers>0),S('Score 300',r=>r.score>=300)],
+  skeeball:[S('Win the round (150 points)',r=>r.win),S('Sink a corner cup',r=>(r.stats.corners||0)>=1),S('Score 400',r=>r.score>=400)],
   airhockey:[S('Win the match',r=>r.win),S('Win by 3 or more',r=>r.win&&(r.p.goal-r.p.botGoal)>=3),S('Win without conceding',r=>r.win&&r.p.botGoal===0)],
   billiards:[S('Win the frame',r=>r.win),S('Pot 4 of your group',r=>(r.p.playerPotted||[]).length>=4),S('Win with 2 minutes left',r=>r.win&&r.timeLeft>=120)],
   whack:[S('Score 250 to win',r=>r.win),S('Bonk 3 golden moles',r=>(r.stats.golden||0)>=3),S('Reach a ×15 streak',r=>r.bestCombo>=15)],
@@ -55,8 +55,8 @@
   meteor:[S('Survive the shower',r=>r.win),S('Survive without losing a heart',r=>r.win&&(r.stats.hits||0)===0),S('Catch 4 stars',r=>(r.stats.stars||0)>=4)],
   racer:[S('Finish on the podium',r=>r.place>0&&r.place<=3),S('Finish top two',r=>r.win),S('Take first place',r=>r.place===1)],
   stack:[S('Build past 100 points',r=>r.win),S('Land 4 perfect drops',r=>(r.stats.perfect||0)>=4),S('Top out at 14 blocks',r=>(r.p.blocks||0)>=14)],
-  pinball:[S('Score 250',r=>r.score>=250),S('Trigger Fever',r=>r.fevers>0),S('Score 600',r=>r.score>=600)],
-  claw:[S('Win a prize',r=>(r.stats.prizes||0)>=1),S('Win 3 prizes',r=>(r.stats.prizes||0)>=3),S('Clear the whole machine',r=>r.win)],
+  pinball:[S('Score 250',r=>r.score>=250),S('Spell N-E-X-U-S',r=>(r.stats.nexus||0)>=1),S('Score 800',r=>r.score>=800)],
+  claw:[S('Win a prize',r=>(r.stats.prizes||0)>=1),S('Grab the golden prize',r=>(r.stats.golden||0)>=1),S('Win 4 prizes',r=>(r.stats.prizes||0)>=4)],
   sushi:[S('Survive the conveyor',r=>r.win),S('Reach a ×12 streak',r=>r.bestCombo>=12),S('Trigger Fever twice',r=>r.fevers>=2)],
   mixology:[S('Serve all six drinks',r=>r.win),S('Pour 4 dead-centre layers',r=>(r.stats.centre||0)>=4),S('Serve without a spill',r=>r.win&&(r.p.misses||0)===0)],
   pulse:[S('Beat the boss',r=>r.win),S('Win without losing health',r=>r.win&&(r.stats.hurt||0)===0),S('Trigger Fever',r=>r.fevers>0)],

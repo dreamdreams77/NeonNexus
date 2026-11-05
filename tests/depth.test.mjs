@@ -40,7 +40,7 @@ test('arcade.js wires fever, stars and the new cabinet mechanics',()=>{
  assert.match(game,/NEXUS_DEPTH\.begin\(game,\{duel:!!p\.tableDuel\}\)/);
  assert.match(game,/D2\.award\(saved,game,/);
  assert.match(game,/NEXUS_DEPTH\.panelHTML\(saved,id\)/);
- for(const s of ["p.stats.perfect","p.stats.golden","kind==='bomb'","p.stats.chain","p.mirror","function mixBand","function gemGrid","p.stats.prizes","p.stats.hits","p.stats.crashes"])assert.ok(game.includes(s),s);
+ for(const s of ["p.stats.perfect","p.stats.golden","kind==='bomb'","p.stats.chain","p.mirror","function mixBand","function gemGrid","p.stats.prizes","p.stats.hits","p.stats.crashes","p.stats.corners","p.hot","p.nexusMult","p.stats.nexus","heavy:!gold","TOO HEAVY"])assert.ok(game.includes(s),s);
  assert.match(game,/WIN_SCORE=\{skeeball:150,target:150,stack:100,whack:250,memory:200\}/);
 });
 test('Moon Gem Dig boards are always winnable: 8 gems and 3 cracks',()=>{
