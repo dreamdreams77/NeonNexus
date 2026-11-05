@@ -35,23 +35,33 @@ function paperGrain(ctx,w,h,rand,n,light='255,244,220',dark='30,18,32'){
 
 // ───────────────────────── Floor ─────────────────────────
 export function paintParquet(){
- // Designed plank floor: a fixed three-tone sequence, half-offset rows, consistent drawn grain, placed knots and inked seams.
+ // Clay-slab plank floor: fewer, wider boards, each one a rolled slab of clay (pillowed edges, a soft top light, one
+ // gentle thumb dent) laid in half-offset rows. Tones follow a fixed sequence and the wrapped half-boards on the tile
+ // edge share their tone and dent so the repeat stays seamless. Everything is placed, nothing random.
  const S=512,c=mk(S,S),x=c.getContext('2d'),r=mk(S,S),rx=r.getContext('2d');
- const tones=['#9a6644','#86583b','#a8744c'],rows=16,ph=S/rows,pl=256;
+ const tones=['#9a6644','#91603f','#a06c48'],rows=8,ph=S/rows,pl=512;
+ x.fillStyle='#7a4c33';x.fillRect(0,0,S,S);
  rx.fillStyle='#8a8a8a';rx.fillRect(0,0,S,S);
  for(let row=0;row<rows;row++){
   const off=row%2?pl/2:0;
-  for(let k=-1;k<3;k++){
-   const X=off+k*pl,py=row*ph,idx=(row*3+k*2+9)%3,base=tones[idx];
-   const g=x.createLinearGradient(X,py,X,py+ph);g.addColorStop(0,shade(base,16));g.addColorStop(.55,base);g.addColorStop(1,shade(base,-14));x.fillStyle=g;x.fillRect(X,py,pl,ph);
-   // three clean grain strokes that follow the plank
+  for(let k=-1;k<2;k++){
+   const X=off+k*pl,py=row*ph,kk=((k%2)+2)%2,idx=(row*2+kk*(row%3===1?2:1))%3,base=tones[idx],g0=2.2;
+   x.save();x.beginPath();x.roundRect(X+g0,py+g0,pl-g0*2,ph-g0*2,14);x.clip();
+   // slab body: lit from the upper left, rolling darker toward the lower edge
+   const g=x.createLinearGradient(X,py,X+pl*.15,py+ph);g.addColorStop(0,shade(base,14));g.addColorStop(.5,base);g.addColorStop(1,shade(base,-18));x.fillStyle=g;x.fillRect(X,py,pl,ph);
+   // pillowed ends
+   for(const [ex,dir] of [[X,1],[X+pl,-1]]){const eg=x.createLinearGradient(ex,0,ex+dir*34,0);eg.addColorStop(0,dir>0?'rgba(255,226,186,.14)':'rgba(40,18,12,.32)');eg.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=eg;x.fillRect(Math.min(ex,ex+dir*34),py,34,ph);}
+   // one soft thumb dent per board, shadowed on its upper left, lit on its lower right
+   const dx=X+pl*(.25+.5*((row*7+kk*3)%5)/4),dy=py+ph*.52,dr=ph*.42;
+   let dg=x.createRadialGradient(dx-dr*.25,dy-dr*.25,0,dx-dr*.25,dy-dr*.25,dr);dg.addColorStop(0,'rgba(40,18,12,.2)');dg.addColorStop(1,'rgba(40,18,12,0)');x.fillStyle=dg;x.fillRect(dx-dr*2,dy-dr*2,dr*4,dr*4);
+   dg=x.createRadialGradient(dx+dr*.3,dy+dr*.3,0,dx+dr*.3,dy+dr*.3,dr*.8);dg.addColorStop(0,'rgba(255,226,186,.14)');dg.addColorStop(1,'rgba(255,226,186,0)');x.fillStyle=dg;x.fillRect(dx-dr*2,dy-dr*2,dr*4,dr*4);
+   // two soft drag marks that follow the board (a modelling tool, not a wood grain)
    x.lineCap='round';
-   for(let s2=0;s2<3;s2++){const yy=py+6+s2*9,bend=(s2%2?3:-3);x.strokeStyle=s2===1?'rgba(255,220,170,.22)':'rgba(60,30,20,.28)';x.lineWidth=s2===1?1.4:1.2;x.beginPath();x.moveTo(X+10,yy);x.bezierCurveTo(X+pl*.35,yy+bend,X+pl*.65,yy-bend,X+pl-10,yy);x.stroke();}
-   // a drawn knot on every fifth plank, always in the same place in the plank
-   if((row*3+k+20)%5===0){const kx=X+pl*.62,ky=py+ph*.5;x.strokeStyle='rgba(60,28,18,.55)';x.lineWidth=1.3;for(let q=1;q<=3;q++){x.beginPath();x.ellipse(kx,ky,q*3.2,q*1.6,0,0,6.283);x.stroke();}x.fillStyle='rgba(60,28,18,.6)';x.beginPath();x.ellipse(kx,ky,2,1.1,0,0,6.283);x.fill();}
-   // bevel highlight and inked seams
-   x.fillStyle='rgba(255,232,190,.32)';x.fillRect(X+2,py+1,pl-4,1.6);
-   x.fillStyle='rgba(58,32,24,.75)';x.fillRect(X,py+ph-1.6,pl,1.6);x.fillRect(X,py,1.6,ph);
+   for(let s2=0;s2<2;s2++){const yy=py+ph*(.32+s2*.36),bend=(s2?5:-5);x.strokeStyle='rgba(60,30,20,.16)';x.lineWidth=2.4;x.beginPath();x.moveTo(X+30,yy);x.bezierCurveTo(X+pl*.35,yy+bend,X+pl*.65,yy-bend,X+pl-30,yy);x.stroke();x.strokeStyle='rgba(255,224,180,.12)';x.lineWidth=1.6;x.beginPath();x.moveTo(X+30,yy+2);x.bezierCurveTo(X+pl*.35,yy+bend+2,X+pl*.65,yy-bend+2,X+pl-30,yy+2);x.stroke();}
+   // rounded rim: a lit top lip and a shaded bottom lip instead of an inked seam
+   x.lineWidth=6;x.strokeStyle='rgba(40,18,12,.2)';x.beginPath();x.roundRect(X+g0+1,py+g0+2,pl-g0*2-2,ph-g0*2-2,14);x.stroke();
+   x.lineWidth=2.4;x.strokeStyle='rgba(255,228,190,.13)';x.beginPath();x.moveTo(X+18,py+g0+2);x.lineTo(X+pl-18,py+g0+2);x.stroke();
+   x.restore();
    // roughness: glossy centres, satin ends
    const rg=rx.createLinearGradient(X,0,X+pl,0);rg.addColorStop(0,'rgb(185,185,185)');rg.addColorStop(.3,'rgb(135,135,135)');rg.addColorStop(.7,'rgb(135,135,135)');rg.addColorStop(1,'rgb(185,185,185)');rx.fillStyle=rg;rx.fillRect(X,py,pl,ph);
   }
@@ -59,27 +69,26 @@ export function paintParquet(){
  return {map:c,rough:r};
 }
 
-// One hand-composed carpet motif tile (ringed planet, star, squiggle, triangle, dots) used in a half-drop repeat.
+// One hand-composed carpet motif tile used in a half-drop repeat. Claymation sets use few, big, soft shapes, so the tile
+// holds just a ringed planet, a star and a pebble, each a rounded clay inlay lit from the upper left and pressed into the
+// pile with a soft shadow. No rims: the edges come from the shading.
 function carpetMotif(){
- const T=112,c=mk(T,T),x=c.getContext('2d');
- x.lineJoin='round';x.lineCap='round';
- // pressed clay bits: each shape sits slightly raised on the pile with a soft shadow and only a faint rim
- const ink='rgba(16,10,34,.28)';
- x.shadowColor='rgba(20,8,30,.55)';x.shadowBlur=3;x.shadowOffsetX=1;x.shadowOffsetY=2;
- const stroke=(w=2.4)=>{x.save();x.shadowColor='transparent';x.strokeStyle=ink;x.lineWidth=w*.6;x.stroke();x.restore();};
- // ringed planet
- x.fillStyle='#5fe0d4';x.beginPath();x.arc(28,30,11,0,6.283);x.fill();stroke();
- x.fillStyle='rgba(255,255,255,.35)';x.beginPath();x.arc(24,26,4,0,6.283);x.fill();
- x.strokeStyle='#ffc66b';x.lineWidth=3;x.beginPath();x.ellipse(28,30,19,6,-.4,0,6.283);x.stroke();x.strokeStyle=ink;x.lineWidth=1.2;x.beginPath();x.ellipse(28,30,21,7.5,-.4,0,6.283);x.stroke();
- // five-point star
- x.beginPath();for(let k=0;k<10;k++){const a=-Math.PI/2+k*Math.PI/5,q=k%2?4.5:10;x.lineTo(84+Math.cos(a)*q,26+Math.sin(a)*q);}x.closePath();x.fillStyle='#ffc66b';x.fill();stroke(2);
- // squiggle
- x.beginPath();x.moveTo(52,78);for(let k=1;k<=4;k++)x.quadraticCurveTo(52+k*10-5,78+(k%2?-9:9),52+k*10,78);x.strokeStyle='#c4588e';x.lineWidth=6;x.stroke();x.shadowColor='transparent';x.strokeStyle='#ff8cc0';x.lineWidth=3.6;x.stroke();x.shadowColor='rgba(20,8,30,.55)';
- // triangle
- x.beginPath();x.moveTo(22,66);x.lineTo(34,88);x.lineTo(10,88);x.closePath();x.fillStyle='#a99bff';x.fill();stroke(2);
- // little dots
- for(const [dx,dy,col] of [[58,46,'#7ee08f'],[100,62,'#ff7ab6'],[96,98,'#5fe0d4'],[8,46,'#ffc66b']]){x.fillStyle=col;x.beginPath();x.arc(dx,dy,3.4,0,6.283);x.fill();stroke(1.4);}
- x.shadowColor='transparent';
+ const T=176,c=mk(T,T),x=c.getContext('2d');
+ const lump=(path,col,cx,cy,r)=>{ // clay inlay: soft drop shadow, then a puffy radial body
+  x.save();x.shadowColor='rgba(14,6,26,.5)';x.shadowBlur=7;x.shadowOffsetX=2;x.shadowOffsetY=3.5;x.fillStyle=shade(col,-40);x.fill(path);x.restore();
+  const g=x.createRadialGradient(cx-r*.38,cy-r*.42,r*.08,cx,cy,r*1.2);g.addColorStop(0,shade(col,40));g.addColorStop(.5,col);g.addColorStop(1,shade(col,-46));
+  x.fillStyle=g;x.fill(path);
+ };
+ const circ=(cx,cy,r)=>{const p=new Path2D();p.arc(cx,cy,r,0,6.283);return p;};
+ // ringed planet: the back half of the ring, the ball, then the front half
+ const ring=(from,to)=>{x.save();x.lineCap='round';x.strokeStyle='#b88a4e';x.lineWidth=7;x.beginPath();x.ellipse(50,52,30,10,-.38,from,to);x.stroke();x.strokeStyle='#e4b672';x.lineWidth=4;x.beginPath();x.ellipse(49,51,30,10,-.38,from,to);x.stroke();x.restore();};
+ ring(Math.PI,Math.PI*2);lump(circ(50,52,17),'#4fb8b0',50,52,17);ring(0,Math.PI);
+ // fat five-point star with rounded tips
+ const st=new Path2D();for(let k=0;k<10;k++){const a=-Math.PI/2+k*Math.PI/5,q=k%2?8:17;st.lineTo(128+Math.cos(a)*q,128+Math.sin(a)*q);}st.closePath();
+ x.save();x.lineJoin='round';x.lineWidth=7;x.strokeStyle='#d9a456';x.stroke(st);x.restore();lump(st,'#d9a456',128,128,17);
+ // pebble
+ const pb=new Path2D();pb.ellipse(132,40,9,7,.4,0,6.283);lump(pb,'#c46a98',132,40,9);
+ const pb2=new Path2D();pb2.ellipse(40,140,6,5,-.3,0,6.283);lump(pb2,'#8f82d6',40,140,6);
  return c;
 }
 
@@ -92,33 +101,39 @@ export function paintCarpet(cabinets,W=768,H=1536,planeW=24,planeH=48,zTop=-25){
  const rough=(rx,ry,rw,rh,amt)=>{ // frayed, hand-cut edges
   x.save();x.beginPath();x.moveTo(rx,ry);for(let i=0;i<=40;i++)x.lineTo(rx+rw*i/40,ry+(rand()-.5)*amt);for(let i=0;i<=80;i++)x.lineTo(rx+rw+(rand()-.5)*amt,ry+rh*i/80);for(let i=40;i>=0;i--)x.lineTo(rx+rw*i/40,ry+rh+(rand()-.5)*amt);for(let i=80;i>=0;i--)x.lineTo(rx+(rand()-.5)*amt,ry+rh*i/80);x.closePath();x.clip();
  };
+ // a rolled clay coil: soft contact shadow, rounded body, lit top edge
+ const coil=(ax,ay,bx,by,w,col)=>{x.save();x.lineCap='round';x.shadowColor='rgba(12,6,20,.5)';x.shadowBlur=w*.9;x.shadowOffsetX=w*.2;x.shadowOffsetY=w*.35;x.strokeStyle=shade(col,-50);x.lineWidth=w;x.beginPath();x.moveTo(ax,ay);x.lineTo(bx,by);x.stroke();x.restore();
+  x.save();x.lineCap='round';x.strokeStyle=col;x.lineWidth=w*.7;x.beginPath();x.moveTo(ax-w*.08,ay-w*.1);x.lineTo(bx-w*.08,by-w*.1);x.stroke();x.strokeStyle=shade(col,60);x.globalAlpha=.55;x.lineWidth=w*.22;x.beginPath();x.moveTo(ax-w*.18,ay-w*.2);x.lineTo(bx-w*.18,by-w*.2);x.stroke();x.restore();};
+ const ringCoil=(cx,cy,r,w,col)=>{x.save();x.shadowColor='rgba(12,6,20,.5)';x.shadowBlur=w;x.shadowOffsetX=w*.2;x.shadowOffsetY=w*.4;x.strokeStyle=shade(col,-50);x.lineWidth=w;x.beginPath();x.arc(cx,cy,r,0,6.283);x.stroke();x.restore();
+  x.save();x.strokeStyle=col;x.lineWidth=w*.7;x.beginPath();x.arc(cx-w*.1,cy-w*.12,r,0,6.283);x.stroke();x.strokeStyle=shade(col,60);x.globalAlpha=.6;x.lineWidth=w*.25;x.beginPath();x.arc(cx-w*.2,cy-w*.22,r,3.3,5.2);x.stroke();x.restore();};
  x.save();rough(x0,y0,x1-x0,y1-y0,3);
  const base=x.createLinearGradient(x0,0,x1,0);base.addColorStop(0,'#33295a');base.addColorStop(.5,'#40336e');base.addColorStop(1,'#33295a');x.fillStyle=base;x.fillRect(x0-6,y0-6,x1-x0+12,y1-y0+12);
  // designed motif in a half-drop repeat (no random scatter)
- const motif=carpetMotif(),T=Math.round(motif.width*.55);
- x.globalAlpha=.62;
+ const motif=carpetMotif(),T=Math.round(motif.width*.8);
+ x.globalAlpha=.5;
  for(let ty=y0-T,row=0;ty<y1+T;ty+=T,row++)for(let tx=x0-T+(row%2?T/2:0);tx<x1+T;tx+=T)x.drawImage(motif,tx,ty,T,T);
  x.globalAlpha=1;
  // central runner with braided gold border and medallions
  const rx0=X(-2.7),rx1=X(2.7);
  const runner=x.createLinearGradient(rx0,0,rx1,0);runner.addColorStop(0,'#5e2a5a');runner.addColorStop(.5,'#74366c');runner.addColorStop(1,'#5e2a5a');x.fillStyle=runner;x.fillRect(rx0,y0+10,rx1-rx0,y1-y0-20);
- for(let i=0;i<900;i++){x.fillStyle=`rgba(255,190,220,${.02+rand()*.05})`;x.fillRect(rx0+rand()*(rx1-rx0),y0+10+rand()*(y1-y0-20),1.5,1.5);}
- for(const ex of [rx0,rx1]){brush(x,ex,y0+10,ex,y1-10,3.4,'#e8b867',.85,rand);brush(x,ex+(ex===rx0?7:-7),y0+10,ex+(ex===rx0?7:-7),y1-10,1.6,'#ffe2a0',.7,rand);}
+ // runner edges: one rolled clay coil each side (soft shadow, rounded body, a sheen along the top)
+ for(const ex of [rx0,rx1])coil(ex,y0+10,ex,y1-10,9,'#c99a52');
+ // medallions: a pressed clay disc with a raised gold ring, fewer and calmer than a woven rosette
  for(let z=-21;z<=20;z+=6.2){
   const cy=Z(z),cx=X(0);
-  x.fillStyle='rgba(12,6,20,.28)';x.beginPath();x.ellipse(cx+2,cy+3,29,29,0,0,6.283);x.fill();
-  blob(x,cx,cy,27,'#7b3b62',rand,{noShine:true});blob(x,cx,cy,20,'#321f46',rand,{noShine:true});
-  for(let k=0;k<8;k++){const a=k*.7854;brush(x,cx+Math.cos(a)*8,cy+Math.sin(a)*8,cx+Math.cos(a)*18,cy+Math.sin(a)*18,1.8,'#e8b867',.9,rand);}
-  blob(x,cx,cy,6,'#ffd98a',rand,{noShine:true});
+  x.save();x.shadowColor='rgba(12,6,20,.5)';x.shadowBlur=10;x.shadowOffsetX=3;x.shadowOffsetY=5;x.fillStyle='#5a2b55';x.beginPath();x.arc(cx,cy,28,0,6.283);x.fill();x.restore();
+  const g=x.createRadialGradient(cx-10,cy-11,2,cx,cy,30);g.addColorStop(0,'#94507c');g.addColorStop(.55,'#713a66');g.addColorStop(1,'#4a2347');x.fillStyle=g;x.beginPath();x.arc(cx,cy,28,0,6.283);x.fill();
+  ringCoil(cx,cy,18,5,'#c99a52');
+  const g2=x.createRadialGradient(cx-3,cy-3,1,cx,cy,8);g2.addColorStop(0,'#ffe6a8');g2.addColorStop(.6,'#e2b05e');g2.addColorStop(1,'#9c6c34');x.save();x.shadowColor='rgba(12,6,20,.45)';x.shadowBlur=4;x.shadowOffsetX=1;x.shadowOffsetY=2;x.fillStyle=g2;x.beginPath();x.arc(cx,cy,7,0,6.283);x.fill();x.restore();
  }
- // outer carpet border: double braid
- for(const [off,w,col] of [[4,5,'#e8b867'],[13,2,'#ff7ab6'],[18,2,'#5fe0d4']]){brush(x,x0+off,y0+off,x1-off,y0+off,w,col,.9,rand);brush(x,x0+off,y1-off,x1-off,y1-off,w,col,.9,rand);brush(x,x0+off,y0+off,x0+off,y1-off,w,col,.9,rand);brush(x,x1-off,y0+off,x1-off,y1-off,w,col,.9,rand);}
+ // outer carpet border: one fat gold coil and a thin pink one inside it
+ for(const [off,w,col] of [[6,10,'#c99a52'],[19,5,'#c4688f']]){coil(x0+off,y0+off,x1-off,y0+off,w,col);coil(x0+off,y1-off,x1-off,y1-off,w,col);coil(x0+off,y0+off,x0+off,y1-off,w,col);coil(x1-off,y0+off,x1-off,y1-off,w,col);}
  // baked neon light spill beneath every cabinet
  x.globalCompositeOperation='lighter';
  for(const cab of cabinets){const gx=X(cab.x-Math.sign(cab.x)*1.5),gy=Z(cab.z),gr=ppu*3.2;const g=x.createRadialGradient(gx,gy,0,gx,gy,gr);const col=hex(cab.color);g.addColorStop(0,col+'88');g.addColorStop(.5,col+'33');g.addColorStop(1,col+'00');x.fillStyle=g;x.fillRect(gx-gr,gy-gr,gr*2,gr*2);}
  x.globalCompositeOperation='source-over';
  // foot-traffic wear down the aisle
- for(let i=0;i<60;i++){const wy=y0+rand()*(y1-y0);x.fillStyle=`rgba(255,235,210,${.01+rand()*.025})`;x.beginPath();x.ellipse(X(0)+(rand()-.5)*60,wy,60+rand()*80,6+rand()*12,0,0,6.283);x.fill();}
+ for(let i=0;i<18;i++){const wy=y0+rand()*(y1-y0),wx=X(0)+(rand()-.5)*60,wr=70+rand()*60,g=x.createRadialGradient(wx,wy,0,wx,wy,wr);g.addColorStop(0,'rgba(255,235,210,.05)');g.addColorStop(1,'rgba(255,235,210,0)');x.fillStyle=g;x.fillRect(wx-wr,wy-wr,wr*2,wr*2);}
  x.restore();
  // soft drop-shadow ring where carpet meets timber
  return c;
