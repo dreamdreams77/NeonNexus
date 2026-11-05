@@ -19,7 +19,7 @@ test('arcade opens as one walkable RPG district with all nineteen mini-game cabi
  assert.match(html,/id="arcade-world"/);
  assert.doesNotMatch(html,/class="game-grid"/);
  assert.doesNotMatch(html,/class="game-list-heading"/);
- assert.match(html,/href="\.\/index\.html"/);
+ assert.doesNotMatch(html,/href="\.\/index\.html"/,'the arcade should not link to the redirect page');
  assert.match(world,/new THREE\.OrthographicCamera/);
 });
 
@@ -799,4 +799,10 @@ test('voice is wired into the regulars, shop messages, result quips, host, staff
 test('runtime-toggled objects are protected from pruning',async()=>{
  const crowd=await readFile(new URL('../lobby-crowd.js',import.meta.url),'utf8');
  assert.match(world,/o\.userData\.keep/);assert.match(crowd,/sp\.userData\.keep=true/);assert.match(crowd,/m\.userData\.keep=true/);assert.match(crowd,/plush\.userData\.keep=true/);
+});
+
+test('the site root redirects to the arcade instead of serving a stale copy',async()=>{
+ const idx=await readFile(new URL('../index.html',import.meta.url),'utf8');
+ assert.match(idx,/location\.replace\('\.\/arcade\.html'/);assert.match(idx,/http-equiv="refresh" content="0; url=\.\/arcade\.html"/);
+ assert.doesNotMatch(idx,/arcade\.js/,'no second copy of the game');
 });
