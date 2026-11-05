@@ -160,7 +160,7 @@ export function createCrowd(ctx){
     else if(v.state==='chat'&&v.lead&&V()){const pair=V().pick('pair',V().chatPairs),o=v.buddy;if(o&&Math.hypot(p.x-(player?player.x:0),p.z-(player?player.z:0))<11){say(g,pair[0],3200);o.replyAt=t+3.4;o.replyText=pair[1];}}}
    if(v.state==='queue'&&v.queueBarkAt&&t>v.queueBarkAt){v.queueBarkAt=0;tryBark(v,'queue',.7,player);}
    if(v.replyAt&&t>v.replyAt){v.replyAt=0;if(v.state==='chat')say(g,v.replyText,3200);}v.zone=zoneOf(p.x,p.z);let moving=0,heading=null,bob=0,armLift=[0,0],torsoLean=0,headYaw=0,smile=1,hop=0;
-   if(v.prop&&v.state!=='drink'&&t>v.propUntil){v.prop=null;m.prop.visible=false;}
+   if(v.prop&&v.state!=='drink'&&t>v.propUntil){v.prop=null;m.prop.visible=false;m.plush.visible=false;}
    switch(v.state){
     case'idle':v.timer-=dt;heading=v.face?Math.atan2(v.face[0]-p.x,v.face[1]-p.z):null;headYaw=Math.sin(t*.7+v.i)*.5;if(v.timer<=0)chooseActivity(v);break;
     case'walk':{

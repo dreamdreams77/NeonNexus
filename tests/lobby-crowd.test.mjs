@@ -28,6 +28,17 @@ test('a visitor who gets stuck on the way to a cabinet hands it to the next one 
  assert.equal(b.state,'play','the promoted visitor reaches the cabinet and plays');
 });
 
+test('a prize plush is put away when the visitor\'s prop time runs out',()=>{
+ const crowd=makeCrowd([cabinet(-5.2,0)],1),v=crowd.crowd[0];
+ crowd.update(1,null);
+ // What the browse routine does when a visitor walks off with a prize, followed by leave() starting the 7 s countdown.
+ v.prop='plush';v.m.plush.visible=true;v.propUntil=1.5;
+ crowd.update(1.05,null);assert.equal(v.m.plush.visible,true,'still carried before the deadline');
+ for(let t=1.1;t<2;t+=.05)crowd.update(t,null);
+ assert.equal(v.prop,null);
+ assert.equal(v.m.plush.visible,false,'the plush mesh is hidden, not just the bookkeeping');
+});
+
 test('the crowd keeps moving for a long simulated session without NaN positions',()=>{
  let seed=7;const rand=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
  const crowd=makeCrowd([cabinet(-5.2,-6),cabinet(5.2,-6),cabinet(-5.2,2),cabinet(5.2,2)],8,rand);
