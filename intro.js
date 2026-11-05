@@ -34,7 +34,9 @@
  };
  playBtn.addEventListener('click',enter);
  $('#intro-retry')?.addEventListener('click',()=>location.reload());
- window.addEventListener('keydown',e=>{if(!intro.hidden&&!panel.hidden&&e.key==='Escape'){closeSettings();return;}if(!intro.hidden&&panel.hidden&&(e.key==='Enter'||e.key===' ')&&document.activeElement!==$('#intro-settings')){e.preventDefault();enter();}},true);
+ window.addEventListener('keydown',e=>{if(!intro.hidden&&!panel.hidden&&e.key==='Escape'){closeSettings();return;}if(!intro.hidden&&panel.hidden&&(e.key==='Enter'||e.key===' ')&&!onOtherControl()){e.preventDefault();enter();}},true);
+ // Enter/Space anywhere on the title screen means Play, except on another button (Settings, Retry), which keeps its own action.
+ function onOtherControl(){const f=document.activeElement;return !!f&&f!==playBtn&&f.matches('button,a,input,select');}
  // settings
  const sound=$('#set-sound'),motion=$('#set-motion'),quality=$('#set-quality');
  const sync=()=>{sound.checked=!!settings.sound;motion.checked=!!settings.reduceMotion;quality.value=settings.quality;};

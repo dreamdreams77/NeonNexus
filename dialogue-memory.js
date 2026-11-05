@@ -324,6 +324,4 @@
  V.memoryBark=()=>{const c=ctx(),ok=eligible(CROWD_RX,c);return ok.length?fillCtx(V.pick('cx',ok),c):'';};
  V.memory={feudInfo,feudTell,FEUD,FEUD_GATES,FEUD_TITLES,FEUD_WAIT,MOMENTS,CROWD_RX,moment,ctx,rapport,storyInfo,storyTell,STORY,CHAPTERS,GATES,REACT,STAFF_RX,REPORT,WAIT,AFTER,bump,
   reset(){const b=blank();for(const k of Object.keys(b))mem[k]=b[k];mem.visits=1;mem.lastVisit=Date.now();save();}};
- // Keep the "pick" keys of every extra pool in the lines that the regular approach barks can use too.
- window.NEXUS_VOICE=V;
 })();
