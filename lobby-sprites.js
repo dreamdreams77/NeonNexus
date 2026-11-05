@@ -13,6 +13,10 @@ export const mix=(a,b,t)=>{const A=hexRgb(a),B=hexRgb(b);return rgbHex(A[0]+(B[0
 const light=(c,t=.28)=>mix(c,'#fff4dc',t),dark=(c,t=.3)=>mix(c,'#2a1630',t);
 
 export const CELL_W=104,CELL_H=160;
+// Stop-motion puppet proportions: a big head on a short body and stubby legs. The cell layout and the feet baseline are
+// fixed (artist templates depend on them), so the figure is rebuilt inside the same box: the head drops and grows, the
+// hips drop so the legs get shorter, and the arms shorten with them.
+const PUP={headY:52,headS:1.18,shoulderY:79,hipY:122,footY:151,armUp:15.5,armLow:14.5};
 export const POSES={
  front:['idle','walk0','walk1','walk2','walk3','wave','cheer','slump','mash0','mash1','sip','talk'],
  side:['idle','walk0','walk1','walk2','walk3','mash0','mash1'],
@@ -43,7 +47,24 @@ function clayPattern(ctx,ox=0,oy=0){
 // Clay pass for big flat surfaces (carpet, floors, walls, posters): softens crisp vector edges, mutes colour toward a
 // matte clay finish and presses the same thumbprint texture in. Keeps the original alpha, and for tiling textures skips
 // the blur and only uses texture scales that tile, so seams stay invisible.
-export function clayify(canvas,{blur=.8,texture=.42,mute=.14,scale=2,tile=false}={}){
+// Low, uneven relief for set pieces (floors, carpet, walls): big soft bumps lit from the upper left like the rest of the
+// set (the key light and every sprite share that direction), so a flat print reads as a slab of pressed clay. The tile
+// wraps, so tiling textures stay seamless horizontally.
+let reliefTile=null;
+function reliefPattern(ctx){
+ if(!reliefTile){
+  const S=256,c=document.createElement('canvas');c.width=c.height=S;const x=c.getContext('2d');let seed=29;const r=()=>(seed=(seed*16807)%2147483647)/2147483647;
+  for(let i=0;i<16;i++){const bx=r()*S,by=r()*S,br=26+r()*54,d=r()<.35?-1:1,o=br*.28;
+   for(const [ox,oy] of [[0,0],[S,0],[-S,0],[0,S],[0,-S],[S,S],[-S,-S],[S,-S],[-S,S]]){
+    const hx=bx+ox-o*d,hy=by+oy-o*d,sx=bx+ox+o*d,sy=by+oy+o*d;
+    let g=x.createRadialGradient(hx,hy,0,hx,hy,br);g.addColorStop(0,'rgba(255,246,228,.5)');g.addColorStop(1,'rgba(255,246,228,0)');x.fillStyle=g;x.fillRect(hx-br,hy-br,br*2,br*2);
+    g=x.createRadialGradient(sx,sy,0,sx,sy,br);g.addColorStop(0,'rgba(26,10,24,.6)');g.addColorStop(1,'rgba(26,10,24,0)');x.fillStyle=g;x.fillRect(sx-br,sy-br,br*2,br*2);
+   }}
+  reliefTile=c;
+ }
+ return ctx.createPattern(reliefTile,'repeat');
+}
+export function clayify(canvas,{blur=.8,texture=.42,mute=.14,scale=2,tile=false,relief=0,reliefScale=1}={}){
  const w=canvas.width,h=canvas.height,x=canvas.getContext('2d');if(!w||!h)return canvas;
  const orig=document.createElement('canvas');orig.width=w;orig.height=h;orig.getContext('2d').drawImage(canvas,0,0);
  x.save();
@@ -51,6 +72,7 @@ export function clayify(canvas,{blur=.8,texture=.42,mute=.14,scale=2,tile=false}
  if(mute>0){x.globalCompositeOperation='saturation';x.globalAlpha=mute;x.fillStyle='#808080';x.fillRect(0,0,w,h);}
  const size=128*scale;
  if(texture>0&&(!tile||(w%size===0&&h%size===0))){x.globalCompositeOperation='soft-light';x.globalAlpha=texture;const pat=clayPattern(x);try{pat.setTransform(new DOMMatrix().scale(scale));}catch(e){}x.fillStyle=pat;x.fillRect(0,0,w,h);}
+ if(relief>0&&(!tile||w%(256*reliefScale)===0)){x.globalCompositeOperation='source-over';x.globalAlpha=relief;const pat=reliefPattern(x);try{pat.setTransform(new DOMMatrix().scale(reliefScale));}catch(e){}x.fillStyle=pat;x.fillRect(0,0,w,h);}
  x.globalAlpha=1;x.globalCompositeOperation='destination-in';x.drawImage(orig,0,0);
  x.restore();return canvas;
 }
@@ -127,19 +149,19 @@ function skeleton(view,pose){
 // ───────── pieces ─────────
 const SKIN_SHADE=(c)=>dark(c,.22);
 function drawLegs(ctx,d,view,sk){
- const hipY=sk.hipY+sk.bob,pants=d.pants,shoe=d.shoes;
+ const hipY=sk.hipY+sk.bob,pants=d.pants,shoe=d.shoes,L=PUP.footY-sk.hipY;
  const legPts=(dx,leg,flip)=>{
   if(view==='side'){
-   const [a,knee]=[leg[0],leg[1]],hx=52+dx*2,thigh=[hx+Math.sin(a)*21,hipY+Math.cos(a)*21],ang2=a-knee,shin=[thigh[0]+Math.sin(ang2)*21,thigh[1]+Math.cos(ang2)*21];
+   const [a,knee]=[leg[0],leg[1]],hx=52+dx*2,seg=L*.54,thigh=[hx+Math.sin(a)*seg,hipY+Math.cos(a)*seg],ang2=a-knee,shin=[thigh[0]+Math.sin(ang2)*seg,thigh[1]+Math.cos(ang2)*seg];
    return{pts:[[hx,hipY],thigh,shin],foot:[shin[0]+3,shin[1]]};
   }
-  const hx=52+dx,lift=leg[2];return{pts:[[hx,hipY],[hx+dx*.1,hipY+20-lift*.2],[hx+dx*.15,hipY+39-lift]],foot:[hx+dx*.15,hipY+39-lift]};
+  const hx=52+dx,lift=leg[2]*.8;return{pts:[[hx,hipY],[hx+dx*.1,hipY+L*.51-lift*.2],[hx+dx*.15,hipY+L-lift]],foot:[hx+dx*.15,hipY+L-lift]};
  };
  const order=view==='side'?[[-1,sk.legL],[1,sk.legR]]:[[-8,sk.legL],[8,sk.legR]];
  // far leg first
  for(const [dx,leg] of order){
   const {pts,foot}=legPts(dx,leg);
-  limb(ctx,pts,view==='side'?11:12,pants);
+  limb(ctx,pts,view==='side'?12:13.5,pants);
   // cuff + shoe
   const fx=foot[0],fy=foot[1];
   const sp=view==='side'?P(p=>{p.moveTo(fx-7,fy-2);p.quadraticCurveTo(fx-8,fy+8,fx-2,fy+9);p.lineTo(fx+12,fy+9);p.quadraticCurveTo(fx+16,fy+8,fx+12,fy+2);p.quadraticCurveTo(fx+4,fy-1,fx+3,fy-5);p.lineTo(fx-7,fy-2);p.closePath();})
@@ -151,7 +173,8 @@ function drawLegs(ctx,d,view,sk){
 function torsoPath(d,view,sk){
  const y0=sk.shoulderY+sk.bob,y1=sk.hipY+sk.bob+6,cx=52+sk.lean*40;
  const w=view==='side'?15:d.build==='stocky'?25:d.build==='slim'?19:22,wst=view==='side'?13:w-3;
- if(d.outfit==='dress'&&view!=='side')return P(p=>{p.moveTo(cx-w,y0+2);p.quadraticCurveTo(cx,y0-6,cx+w,y0+2);p.lineTo(cx+wst,y0+40);p.quadraticCurveTo(cx+w+16,y0+60,cx+w+12,y0+72);p.quadraticCurveTo(cx,y0+78,cx-w-12,y0+72);p.quadraticCurveTo(cx-w-16,y0+60,cx-wst,y0+40);p.closePath();});
+ const k=(y1+12-y0)/72;
+ if(d.outfit==='dress'&&view!=='side')return P(p=>{p.moveTo(cx-w,y0+2);p.quadraticCurveTo(cx,y0-6,cx+w,y0+2);p.lineTo(cx+wst,y0+40*k);p.quadraticCurveTo(cx+w+16,y0+60*k,cx+w+12,y0+72*k);p.quadraticCurveTo(cx,y0+78*k,cx-w-12,y0+72*k);p.quadraticCurveTo(cx-w-16,y0+60*k,cx-wst,y0+40*k);p.closePath();});
  return P(p=>{p.moveTo(cx-w,y0+3);p.quadraticCurveTo(cx,y0-7,cx+w,y0+3);p.quadraticCurveTo(cx+w+2,y0+22,cx+wst,y1-4);p.quadraticCurveTo(cx,y1+5,cx-wst,y1-4);p.quadraticCurveTo(cx-w-2,y0+22,cx-w,y0+3);p.closePath();});
 }
 function drawTorso(ctx,d,view,sk){
@@ -184,7 +207,7 @@ function drawTorso(ctx,d,view,sk){
    if(view==='front'){paint(ctx,P(p=>{p.moveTo(cx-12,y0+3);p.lineTo(cx-12,y1);p.lineTo(cx-1,y1);p.lineTo(cx-1,y0+14);p.closePath();p.moveTo(cx+12,y0+3);p.lineTo(cx+12,y1);p.lineTo(cx+1,y1);p.lineTo(cx+1,y0+14);p.closePath();}),d.accent||'#4b3a63',{box:[cx-12,y0,24,y1-y0],ow:2});}
    break;
   case'dress':
-   for(let i=0;i<5;i++)quad(ctx,[cx-30,y0+48+i*5],[cx,y0+54+i*5],[cx+30,y0+48+i*5],2,d.accent||light(d.top,.4),.7);
+   {const k=(y1+12-y0)/72;for(let i=0;i<5;i++)quad(ctx,[cx-30,y0+(48+i*5)*k],[cx,y0+(54+i*5)*k],[cx+30,y0+(48+i*5)*k],2,d.accent||light(d.top,.4),.7);}
    break;
  }
  // fabric folds and belt
@@ -200,7 +223,7 @@ function drawTorso(ctx,d,view,sk){
 }
 function drawArm(ctx,d,view,sk,side){
  // side: -1 = screen-left arm, +1 = screen-right arm (front/back views); side view: -1 far arm, +1 near arm.
- const arm=side<0?sk.armL:sk.armR,y0=sk.shoulderY+sk.bob+4,up=18,low=17;
+ const arm=side<0?sk.armL:sk.armR,y0=sk.shoulderY+sk.bob+4,up=PUP.armUp,low=PUP.armLow;
  const hw=view==='side'?0:(d.build==='stocky'?24:d.build==='slim'?19:22),sx=52+(view==='side'?0:side*hw)+sk.lean*40;
  let ex,ey,wx,wy;
  if(arm.t){ // two-bone IK toward a target hand position (hands in front of the body)
@@ -216,10 +239,10 @@ function drawArm(ctx,d,view,sk,side){
   const out=arm[0],o2=out-arm[1]*(out>2?-.35:1);
   ex=sx+side*Math.sin(out)*up;ey=y0+Math.cos(out)*up;wx=ex+side*Math.sin(o2)*low;wy=ey+Math.cos(o2)*low;
  }
- limb(ctx,[[sx,y0],[ex,ey],[wx,wy]],9.5,d.sleeve||d.top);
+ limb(ctx,[[sx,y0],[ex,ey],[wx,wy]],10.5,d.sleeve||d.top);
  // cuff, hand, and anything held
  line(ctx,[[ex+(wx-ex)*.72-2.5,ey+(wy-ey)*.72],[ex+(wx-ex)*.72+2.5,ey+(wy-ey)*.72]],2,dark(d.sleeve||d.top,.35),.0);
- paint(ctx,ell(wx,wy+1,5,5.2),d.skin,{box:[wx-5,wy-4,10,10],ow:2});
+ paint(ctx,ell(wx,wy+1,5.8,6),d.skin,{box:[wx-6,wy-5,12,12],ow:2});
  if(sk.cup&&side>0){const cp=P(p=>{p.moveTo(wx-4.5,wy-15);p.lineTo(wx+5.5,wy-15);p.lineTo(wx+4,wy-1);p.lineTo(wx-3,wy-1);p.closePath();});paint(ctx,cp,'#f6eedd',{box:[wx-5,wy-15,11,14],ow:1.8});ctx.fillStyle=d.drink||'#ff7ab6';ctx.beginPath();ctx.ellipse(wx+.5,wy-14.5,4.8,2,0,0,6.3);ctx.fill();ctx.strokeStyle=INK;ctx.lineWidth=1.3;ctx.stroke();line(ctx,[[wx+2,wy-16],[wx+5.5,wy-25]],1.9,'#fff');}
  return[wx,wy];
 }
@@ -232,10 +255,11 @@ function drawHairBack(ctx,d,view,hx,hy){
  if(s==='bun'){paint(ctx,ell(hx,hy-26,8.5,8.5),h,{box:[hx-9,hy-35,18,18],ow:2.2});}
 }
 function drawHead(ctx,d,view,sk){
- const hx=52+sk.lean*40+sk.head[0],hy=36+sk.bob+sk.head[1]+(view==='side'?0:0);
+ const hx=52+sk.lean*40+sk.head[0],hy=PUP.headY+sk.bob+sk.head[1];
+ ctx.save();ctx.translate(hx,hy);ctx.scale(PUP.headS,PUP.headS);ctx.translate(-hx,-hy);
  drawHairBack(ctx,d,view,hx,hy);
- // neck
- paint(ctx,rrect(hx-6,hy+14,12,14,3),SKIN_SHADE(d.skin),{box:[hx-6,hy+14,12,14],ow:2,sh:.15});
+ // a short stub of neck: clay puppets barely have one
+ paint(ctx,rrect(hx-6,hy+14,12,10,3),SKIN_SHADE(d.skin),{box:[hx-6,hy+14,12,14],ow:2,sh:.15});
  // ears
  if(view!=='side'){for(const s of [-1,1])paint(ctx,ell(hx+s*19,hy+2,4.2,5.5),d.skin,{box:[hx+s*19-4,hy-3,8,11],ow:2});}
  const face=view==='side'?P(p=>{p.moveTo(hx-16,hy-8);p.quadraticCurveTo(hx-20,hy+20,hx-4,hy+24);p.quadraticCurveTo(hx+12,hy+26,hx+17,hy+12);p.quadraticCurveTo(hx+22,hy+9,hx+19,hy+4);p.quadraticCurveTo(hx+17,hy+1,hx+18,hy-3);p.quadraticCurveTo(hx+16,hy-20,hx,hy-21);p.quadraticCurveTo(hx-14,hy-21,hx-16,hy-8);p.closePath();})
@@ -249,6 +273,7 @@ function drawHead(ctx,d,view,sk){
  }
  if(d.hat)drawHat(ctx,d,view,hx,hy);
  if(d.headphones){const hp=d.headphones;if(view!=='side'){for(const s of [-1,1])paint(ctx,ell(hx+s*21,hy+2,6,8),hp,{box:[hx+s*21-6,hy-6,12,16],ow:2});line(ctx,[[hx-20,hy-6],[hx-12,hy-26],[hx+12,hy-26],[hx+20,hy-6]],3,hp);quad(ctx,[hx-20,hy-6],[hx,hy-34],[hx+20,hy-6],3,INK,.0);}else paint(ctx,ell(hx-2,hy+2,6,8),hp,{ow:2});}
+ ctx.restore();
  return[hx,hy];
 }
 function drawFace(ctx,d,view,sk,hx,hy){
@@ -308,7 +333,7 @@ function drawHat(ctx,d,view,hx,hy){
 
 // ───────── public: draw a full character cell ─────────
 export function drawCharacter(ctx,d,view,pose,ox=0,oy=0){
- const sk=skeleton(view,pose);sk.hipY=112;sk.shoulderY=64;
+ const sk=skeleton(view,pose);sk.hipY=PUP.hipY;sk.shoulderY=PUP.shoulderY;
  ctx.save();ctx.translate(ox,oy-6); // lift the figure so shoe soles sit inside the cell
  if(d.backpack&&view!=='front'){paint(ctx,rrect(view==='side'?30:34,sk.shoulderY+6+sk.bob,view==='side'?14:36,38,8),d.backpack,{box:[30,sk.shoulderY,36,44],ow:2.4});}
  // far arm behind body (side view) / legs, torso, arms, head
@@ -353,6 +378,13 @@ export function buildSheet(design,res=1){
 
 // ───────── actors: sprite stand-ins placed in the 3D lobby ─────────
 const sheetCache=new Map();
+// Stop-motion boil: puppets are re-posed by hand every frame, so they never sit perfectly still. Each actor nudges a
+// fraction of a pixel and leans a hair at 12 fps (shot on twos) and its breathing bob steps at the same rate. It costs a
+// hash per actor per tick inside onBeforeRender, and switches off entirely for prefers-reduced-motion.
+const BOIL_MS=1000/12;
+const reduceMotionQuery=typeof matchMedia==='function'?matchMedia('(prefers-reduced-motion: reduce)'):null;
+const boilHash=n=>{n=Math.imul(n^(n>>>15),0x2c1b3c6d);n=Math.imul(n^(n>>>12),0x297a2d39);return((n^(n>>>15))>>>0)/4294967296;};
+let actorSeed=0;
 export function createActor(THREE,design,{anisotropy=4,height=2.05,res=1}={}){
  const ckey=design.name+'@'+res;let tex=sheetCache.get(ckey);
  const {w,h}=atlasSize();
@@ -361,6 +393,13 @@ export function createActor(THREE,design,{anisotropy=4,height=2.05,res=1}={}){
  const mat=new THREE.MeshBasicMaterial({map,transparent:true,alphaTest:.04,toneMapped:false,depthWrite:true});
  const width=height*CELL_W/CELL_H,mesh=new THREE.Mesh(new THREE.PlaneGeometry(width,height),mat);
  mesh.position.y=height/2-height*(14/CELL_H);
+ const baseY=mesh.position.y,seed=(++actorSeed)*977;let bobWant=0,tick=-1;
+ mesh.onBeforeRender=()=>{
+  if(reduceMotionQuery&&reduceMotionQuery.matches){mesh.position.x=0;mesh.position.y=baseY;mesh.rotation.z=0;mesh.scale.y=1+bobWant;return;}
+  const f=Math.floor(performance.now()/BOIL_MS);if(f===tick)return;tick=f;
+  const a=boilHash(seed+f*3),b=boilHash(seed+f*3+1),c=boilHash(seed+f*3+2);
+  mesh.position.x=(a-.5)*height*.006;mesh.position.y=baseY+(b-.5)*height*.004;mesh.rotation.z=(c-.5)*.014;mesh.scale.y=1+bobWant;
+ };
  const tilt=new THREE.Group();tilt.rotation.x=-.5;tilt.add(mesh);
  const root=new THREE.Group();root.add(tilt);
  let cur='';
@@ -373,7 +412,7 @@ export function createActor(THREE,design,{anisotropy=4,height=2.05,res=1}={}){
    const flip=view==='side'&&fx<0;
    const key=view+':'+p;
    if(key!==cur){cur=key;const r=cellRect(view,p);map.offset.set(r.x/w,1-(r.y+CELL_H)/h);}
-   mesh.scale.x=flip?-1:1;mesh.scale.y=1+bob;
+   mesh.scale.x=flip?-1:1;bobWant=bob;if(tick<0)mesh.scale.y=1+bob;
    return view;
   }};
  actor.set(0,'idle');

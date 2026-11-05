@@ -32,7 +32,7 @@ if(mount){
   const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(1.4,1.4);t.generateMipmaps=true;t.minFilter=THREE.LinearMipmapLinearFilter;return t;
  }
  const grain=clayMaps();
- const artTex=(canvas,{srgb=true,repeat=null,aniso=4,slot=null,clay=true}={})=>{if(clay&&srgb&&canvas&&canvas.getContext)clayify(canvas,{tile:!!repeat});const t=new THREE.CanvasTexture(canvas);if(slot&&slotHook.fn)slotHook.fn(slot,t);if(srgb)t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=Math.min(aniso,renderer.capabilities.getMaxAnisotropy());if(repeat){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(repeat[0],repeat[1]);}return t;};
+ const artTex=(canvas,{srgb=true,repeat=null,aniso=4,slot=null,clay=true,relief=0,reliefScale=1}={})=>{if(clay&&srgb&&canvas&&canvas.getContext)clayify(canvas,{tile:!!repeat,relief,reliefScale});const t=new THREE.CanvasTexture(canvas);if(slot&&slotHook.fn)slotHook.fn(slot,t);if(srgb)t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=Math.min(aniso,renderer.capabilities.getMaxAnisotropy());if(repeat){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(repeat[0],repeat[1]);}return t;};
  function clayMat(color,rough=.9){return new THREE.MeshPhysicalMaterial({color,roughness:rough,metalness:0,bumpMap:grain,bumpScale:.072,roughnessMap:grain,clearcoat:.08,clearcoatRoughness:.82});}
  function feltTexture(base){const c=document.createElement('canvas');c.width=512;c.height=256;const x=c.getContext('2d');x.fillStyle=base;x.fillRect(0,0,512,256);for(let i=0;i<2100;i++){x.fillStyle=i%2?'rgba(255,244,218,.055)':'rgba(25,45,38,.065)';x.fillRect((i*97)%512,(i*53)%256,1+(i%3),1);}for(let i=0;i<48;i++){x.strokeStyle='rgba(240,224,190,.055)';x.lineWidth=1;x.beginPath();x.moveTo((i*83)%512,(i*37)%256);x.quadraticCurveTo((i*83)%512+18,(i*37)%256-4,(i*83)%512+34,(i*37)%256+2);x.stroke();}const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;}
  const airFelt=feltTexture('#b8d9ce'),poolFelt=feltTexture('#356e59');
@@ -323,10 +323,10 @@ if(mount){
   const parquet=new THREE.Mesh(new THREE.PlaneGeometry(24,48),new THREE.MeshStandardMaterial({color:0xe2d2c6,map:parquetMap,roughnessMap:parquetRough,roughness:.78,metalness:.04,bumpMap:parquetMap,bumpScale:.6}));
   parquet.rotation.x=-Math.PI/2;parquet.position.set(0,-.06,-1);parquet.receiveShadow=true;scene.add(parquet);
   const cabList=definitions.map((d,i)=>({x:(i<9?-1:1)*5.2,z:cabinetZ(i),color:d[4]}));
-  const carpet=new THREE.Mesh(new THREE.PlaneGeometry(24,48),new THREE.MeshStandardMaterial({color:0xe6dcf0,map:artTex(ART.paintCarpet(cabList),{aniso:8,slot:'carpet'}),transparent:true,roughness:.95,metalness:0,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1,bumpMap:grain,bumpScale:.18}));
+  const carpet=new THREE.Mesh(new THREE.PlaneGeometry(24,48),new THREE.MeshStandardMaterial({color:0xe6dcf0,map:artTex(ART.paintCarpet(cabList),{aniso:8,slot:'carpet',relief:.55,reliefScale:2}),transparent:true,roughness:.95,metalness:0,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1,bumpMap:grain,bumpScale:.18}));
   carpet.rotation.x=-Math.PI/2;carpet.position.set(0,-.045,-1);carpet.receiveShadow=true;scene.add(carpet);
   // Walls: painted wallpaper over wainscot on both sides and the back.
-  const wallTex=artTex(ART.paintWall(),{repeat:[10,1],aniso:4,slot:'wall-side'}),wallMat=new THREE.MeshStandardMaterial({map:wallTex,roughness:.85,bumpMap:wallTex,bumpScale:.4});
+  const wallTex=artTex(ART.paintWall(),{repeat:[10,1],aniso:4,slot:'wall-side',relief:.4}),wallMat=new THREE.MeshStandardMaterial({map:wallTex,roughness:.85,bumpMap:wallTex,bumpScale:.4});
   const wallW=new THREE.Mesh(new THREE.PlaneGeometry(50,5.7),wallMat);wallW.rotation.y=Math.PI/2;wallW.position.set(-11.88,2.85-.1,-1);scene.add(wallW);
   const wallE=new THREE.Mesh(new THREE.PlaneGeometry(50,5.7),wallMat);wallE.rotation.y=-Math.PI/2;wallE.position.set(11.88,2.85-.1,-1);wallE.receiveShadow=true;scene.add(wallE);
   const backTex=wallTex.clone();backTex.repeat.set(4.8,1);backTex.needsUpdate=true;
@@ -861,7 +861,7 @@ visitorProfiles.forEach((profile,i)=>{const g=new THREE.Group();const [x,z]=visi
   const findPlane=(pw,ph)=>scene.children.find(o=>o.isMesh&&o.geometry.type==='PlaneGeometry'&&Math.abs(o.geometry.parameters.width-pw)<.01&&Math.abs(o.geometry.parameters.height-ph)<.01&&o.position.z<-25);
   const wallN=findPlane(24,5.7),brand=findPlane(7.6,1.32);
   scene.children.forEach(o=>{if(o===wallN||o===brand)return;if(o.position&&o.position.z<-25.25&&o.position.z>-25.8&&o.position.y>1&&o.position.y<5.2&&(o.isMesh||o.isGroup))o.visible=false;});
-  wallN.material=new THREE.MeshBasicMaterial({map:artTex(paintBackWall(2400,570,mobileDevice?.5:1),{aniso:4,slot:'back-wall'}),toneMapped:false});
+  wallN.material=new THREE.MeshBasicMaterial({map:artTex(paintBackWall(2400,570,mobileDevice?.5:1),{aniso:4,slot:'back-wall',relief:.3,reliefScale:2}),toneMapped:false});
   // carved wall caps along both side walls
   const capCanvas=paintWallCap(2000,120,mobileDevice?.5:1);
   for(const x of [-12.2,12.2]){const tex=artTex(capCanvas,{aniso:4,repeat:[2,1],slot:'wall-cap'});const cap=new THREE.Mesh(new THREE.PlaneGeometry(50,.72),new THREE.MeshBasicMaterial({map:tex,toneMapped:false}));cap.rotation.x=-Math.PI/2;cap.rotation.z=Math.PI/2;cap.position.set(x,5.72,-1);scene.add(cap);}
