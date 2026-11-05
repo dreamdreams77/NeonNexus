@@ -68,7 +68,7 @@ for(const x of [-.105,.105]){const eye=new THREE.Mesh(new THREE.SphereGeometry(.
 const cheekMat=mat(0xc98270);
 for(const x of [-.17,.17]){const cheek=clayBlob(.055,cheekMat,[1,.55,.5],x*100+4);cheek.position.set(x,1.82,.26);player.add(cheek);}
 const smile=new THREE.Mesh(new THREE.TorusGeometry(.075,.012,5,12,Math.PI),eyeMat);smile.position.set(0,1.79,.292);smile.rotation.z=Math.PI;player.add(smile);
-const armMat=mat(0xa96f55),shortMat=mat(0x397b80),shoeMat=mat(0x4a3241);
+const armMat=mat(0xa96f55),shoeMat=mat(0x4a3241);
 const limbs=[];
 for(const side of [-1,1]){
  const arm=clayBlob(.16,armMat,[.72,1.7,.78],40+side);arm.position.set(side*.43,1.17,.03);arm.rotation.z=-side*.22;player.add(arm);limbs.push(arm);
