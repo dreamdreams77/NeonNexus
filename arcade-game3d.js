@@ -12,7 +12,7 @@ if(!stage||!canvas)throw new Error('Kitchen Rush game surface is missing');
 
 // Renderer/scene are created lazily on first open and fully disposed on close.
 let renderer=null,scene=null,camera=null,hudScene=null,hudCam=null,hudPlane=null,hudTex=null,hudCtx=null,hudKey='',hudSize={w:0,h:0,pr:1},resizeObs=null,chef,armL,armR,plateRoot,flash,raf=0,active=false,visible=false,mobile=false,lowQ=false;
-let ingredients=[],plateFood=[],leaving=[],leaveT=0,platePop=0,steam=[],decor=[],blobTex=null,glowTex=null,grainTex=null;
+let ingredients=[],plateFood=[],leaving=[],leaveT=0,platePop=0,steam=[],decor=[],blobTex=null,glowTex=null;
 let score=0,timeLeft=55,ticketTime=11,ticket=0,step=0,misses=0,combo=0,sequence=[0,1,2],lastTime=0,masteryLevel=0,missLimit=3;
 const names=['TOMATO','LETTUCE','CHEESE','BREAD'];
 const colors=[0xd96d59,0x83a978,0xf1c96f,0xc88e61];
@@ -23,12 +23,13 @@ const geo=(key,make)=>{let g=geoCache.get(key);if(!g){g=own(make());geoCache.set
 const canvasTex=(c,srgb=true)=>{const t=own(new THREE.CanvasTexture(c));if(srgb)t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=mobile?1:4;return t;};
 const newCanvas=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c;};
 
+const clayGrain=(()=>makeGrain())();
 function makeGrain(){const c=newCanvas(256,256),g=c.getContext('2d');g.fillStyle='#aaa';g.fillRect(0,0,256,256);let seed=73;const r=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};for(let i=0;i<2600;i++){const x=r()*256,y=r()*256,s=.35+r()*2.4,a=.025+r()*.1;g.fillStyle=r()>.5?'rgba(255,255,255,'+a+')':'rgba(28,18,24,'+a+')';g.beginPath();g.ellipse(x,y,s*1.8,s*.55,r()*Math.PI,0,Math.PI*2);g.fill();}for(let i=0;i<22;i++){const x=r()*256,y=r()*256;g.strokeStyle='rgba(45,31,35,.13)';g.lineWidth=1+r()*1.5;g.beginPath();g.arc(x,y,4+r()*17,r()*5,r()*5+1);g.stroke();}const t=canvasTex(c,false);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(1.5,1.5);t.colorSpace=THREE.NoColorSpace;return t;}
 function radialTex(stops){const c=newCanvas(128,128),g=c.getContext('2d'),r=g.createRadialGradient(64,64,0,64,64,64);stops.forEach(s=>r.addColorStop(s[0],s[1]));g.fillStyle=r;g.fillRect(0,0,128,128);return canvasTex(c);}
 
 // Clay material with brighter baked rim light (fresnel emissive) instead of extra scene lights.
 function patchRim(m){m.onBeforeCompile=s=>{s.fragmentShader=s.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n float rimF=pow(1.0-saturate(abs(dot(normalize(normal),normalize(vViewPosition)))),2.4);totalEmissiveRadiance+=vec3(1.0,.8,.66)*rimF*.5;');};m.customProgramCacheKey=()=>'clayrim';}
-function clayMaterial(color,roughness=.94,glow=0){const key=color+'|'+roughness+'|'+glow;let m=matCache.get(key);if(m)return m;m=own(new THREE.MeshStandardMaterial({color,roughness,metalness:0,bumpMap:grainTex,bumpScale:.065}));if(glow)m.emissive=new THREE.Color(color).multiplyScalar(glow);patchRim(m);matCache.set(key,m);return m;}
+function clayMaterial(color,roughness=.94,glow=0){const key=color+'|'+roughness+'|'+glow;let m=matCache.get(key);if(m)return m;m=own(new THREE.MeshStandardMaterial({color,roughness,metalness:0,bumpMap:clayGrain,bumpScale:.065}));if(glow)m.emissive=new THREE.Color(color).multiplyScalar(glow);patchRim(m);matCache.set(key,m);return m;}
 function roundedBox(w,h,d,r,material){const geometry=geo('rb'+[w,h,d,r],()=>{const shape=new THREE.Shape();const x=-w/2,y=-h/2;shape.moveTo(x+r,y);shape.lineTo(x+w-r,y);shape.quadraticCurveTo(x+w,y,x+w,y+r);shape.lineTo(x+w,y+h-r);shape.quadraticCurveTo(x+w,y+h,x+w-r,y+h);shape.lineTo(x+r,y+h);shape.quadraticCurveTo(x,y+h,x,y+h-r);shape.lineTo(x,y+r);shape.quadraticCurveTo(x,y,x+r,y);const g=new THREE.ExtrudeGeometry(shape,{depth:d,bevelEnabled:true,bevelSegments:mobile?2:3,steps:1,bevelSize:.045,bevelThickness:.045});g.center();return g;});return new THREE.Mesh(geometry,material);}
 function box(parent,w,h,d,x,y,z,color,r=.08,glow=0){const m=roundedBox(w,h,d,r,clayMaterial(color,.94,glow));m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;}
 function sphere(parent,x,y,z,sx,sy,sz,color,glow=0,material){const g=geo('sph',()=>{const g=new THREE.SphereGeometry(1,mobile?14:18,mobile?10:14);const a=g.attributes.position;for(let i=0;i<a.count;i++){const v=1+Math.sin(i*12.989)*.018+Math.cos(i*4.13)*.012;a.setXYZ(i,a.getX(i)*v,a.getY(i)*v,a.getZ(i)*v);}g.computeVertexNormals();return g;});const m=new THREE.Mesh(g,material||clayMaterial(color,.94,glow));m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;}
@@ -74,11 +75,11 @@ function createRoom(){
  camera=new THREE.PerspectiveCamera(42,1,.1,70);camera.position.set(0,7.5,13.5);camera.lookAt(0,1.55,-.4);
  scene.add(new THREE.HemisphereLight(0xffe2c4,0x5d4a66,2.5));
  const key=new THREE.DirectionalLight(0xffd29b,3.1);key.position.set(-4,8,6);key.castShadow=renderer.shadowMap.enabled;const sm=mobile?512:1024;key.shadow.mapSize.set(sm,sm);key.shadow.camera.left=-9;key.shadow.camera.right=9;key.shadow.camera.top=9;key.shadow.camera.bottom=-9;key.shadow.bias=-.0006;scene.add(key);
- const fg=grainTex.clone();fg.repeat.set(7,7);fg.needsUpdate=true;own(fg);
+ const fg=clayGrain.clone();fg.repeat.set(7,7);fg.needsUpdate=true;own(fg);
  const floor=box(scene,15,.34,18.75,0,-.28,1.875,0x72545a,.15);floor.receiveShadow=true;
  const fl=new THREE.Mesh(geo('plane',()=>new THREE.PlaneGeometry(1,1)),own(new THREE.MeshStandardMaterial({map:floorTexture(),roughness:.95,metalness:0,bumpMap:fg,bumpScale:.05})));fl.rotation.x=-Math.PI/2;fl.scale.set(15,18.75,1);fl.position.set(0,-.055,1.875);fl.receiveShadow=true;scene.add(fl);
  box(scene,15,5,.45,0,2.2,-5.6,0x624957,.12);
- const wg=grainTex.clone();wg.repeat.set(6,2);wg.needsUpdate=true;own(wg);
+ const wg=clayGrain.clone();wg.repeat.set(6,2);wg.needsUpdate=true;own(wg);
  const wl=new THREE.Mesh(geo('plane',()=>new THREE.PlaneGeometry(1,1)),own(new THREE.MeshStandardMaterial({map:wallTexture(),roughness:.95,metalness:0,bumpMap:wg,bumpScale:.06})));wl.scale.set(15,5,1);wl.position.set(0,2.2,-5.318);wl.receiveShadow=true;scene.add(wl);
  box(scene,15,.18,18.75,0,-.51,1.875,0x4b3a4c,.12);
  // Back wall tiles, shelf and emissive hanging lamps (glow is baked into the wall texture).
@@ -160,8 +161,8 @@ function ensureRenderer(){if(renderer)return true;
  renderer.setPixelRatio(mobile?Math.min(window.devicePixelRatio||1,1.25):Math.min(window.devicePixelRatio||1,1.65));
  renderer.autoClear=false;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;
  renderer.shadowMap.enabled=!lowQ;renderer.shadowMap.type=mobile?THREE.BasicShadowMap:THREE.PCFSoftShadowMap;
- stage.appendChild(renderer.domElement);
- grainTex=makeGrain();blobTex=radialTex([[0,'rgba(24,10,26,.85)'],[.45,'rgba(24,10,26,.4)'],[1,'rgba(24,10,26,0)']]);glowTex=radialTex([[0,'rgba(255,255,255,1)'],[.4,'rgba(255,255,255,.45)'],[1,'rgba(255,255,255,0)']]);
+ stage.appendChild(renderer.domElement);stage.setAttribute('aria-label','Kitchen Rush: THE NEXUS KITCHEN, follow the KITCHEN TICKET order');
+ blobTex=radialTex([[0,'rgba(24,10,26,.85)'],[.45,'rgba(24,10,26,.4)'],[1,'rgba(24,10,26,0)']]);glowTex=radialTex([[0,'rgba(255,255,255,1)'],[.4,'rgba(255,255,255,.45)'],[1,'rgba(255,255,255,0)']]);
  createRoom();
  hudScene=new THREE.Scene();hudCam=new THREE.OrthographicCamera(-1,1,1,-1,0,10);hudCam.position.z=5;const hc=newCanvas(8,8);hudCtx=hc.getContext('2d');hudTex=own(new THREE.CanvasTexture(hc));hudTex.colorSpace=THREE.SRGBColorSpace;hudPlane=new THREE.Mesh(geo('plane',()=>new THREE.PlaneGeometry(1,1)),own(new THREE.MeshBasicMaterial({map:hudTex,transparent:true,depthTest:false,depthWrite:false,toneMapped:false})));hudScene.add(hudPlane);
  resizeObs=new ResizeObserver(resize);resizeObs.observe(stage);window.addEventListener('resize',resize);
@@ -169,9 +170,9 @@ function ensureRenderer(){if(renderer)return true;
  resize();return true;}
 function teardown(){stopLoop();if(resizeObs){resizeObs.disconnect();resizeObs=null;}window.removeEventListener('resize',resize);
  if(scene)scene.traverse(o=>{if(o.geometry)o.geometry.dispose();});
- owned.forEach(o=>o.dispose&&o.dispose());owned.clear();matCache.clear();geoCache.clear();
+ owned.forEach(o=>o.dispose&&o.dispose());clayGrain.dispose();owned.clear();matCache.clear();geoCache.clear();
  if(renderer){renderer.dispose();try{renderer.forceContextLoss();}catch{}renderer.domElement.remove();}
- renderer=scene=camera=hudScene=hudCam=hudPlane=hudTex=hudCtx=chef=armL=armR=plateRoot=flash=blobTex=glowTex=grainTex=null;
+ renderer=scene=camera=hudScene=hudCam=hudPlane=hudTex=hudCtx=chef=armL=armR=plateRoot=flash=blobTex=glowTex=null;
  ingredients=[];plateFood=[];leaving=[];steam=[];decor=[];leaveT=0;platePop=0;hudKey='';hudSize={w:0,h:0,pr:1};}
 function pointerDown(e){if(!active||!renderer)return;const r=renderer.domElement.getBoundingClientRect(),p=new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1),ray=new THREE.Raycaster();ray.setFromCamera(p,camera);const hits=ray.intersectObjects(ingredients,true);if(!hits.length)return;let root=hits[0].object;while(root.parent&&root.userData.ingredient===undefined)root=root.parent;if(root.userData.ingredient!==undefined)choose(root.userData.ingredient);}
 function openGame(id){const was=visible;visible=id==='chef';if(visible){stage.style.display='block';canvas.style.display='none';if(!ensureRenderer()){return;}resize();resultNode.textContent='';startButton.textContent='START SERVICE';startLoop();}else{if(was){active=false;teardown();}stage.style.display='none';canvas.style.display='block';}}
