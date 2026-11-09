@@ -225,13 +225,13 @@ function noteSprite(lane,lit){const k=lane+(lit?'l':'n');if(NSPR[k])return NSPR[
  N.blob(g,72,38,30,col,lane+3,{sx:2.05,sy:1,shadow:false});
  g.fillStyle='rgba(255,250,230,.8)';g.beginPath();g.ellipse(36,22,16,5.5,-.12,0,TAU);g.fill();
  g.fillStyle='rgba(30,16,36,.55)';g.beginPath();g.arc(72,38,9,0,TAU);g.fill();g.fillStyle='rgba(255,240,210,.9)';g.beginPath();g.arc(70,36,3.2,0,TAU);g.fill();
- NSPR[k]=cv;return cv;}
+ cspeck(g,144,80,lane+31,60);NSPR[k]=cv;return cv;}
 function padSprite(lane,on){const k='p'+lane+(on?'1':'0');if(NSPR[k])return NSPR[k];const cv=document.createElement('canvas');cv.width=140;cv.height=70;const g=cv.getContext('2d');const col=on?N.shade(LCOL[lane],.3):N.mix(LCOL[lane],'#2a1830',.45);
  g.fillStyle='rgba(18,8,28,.45)';g.beginPath();g.ellipse(70,56,58,10,0,0,TAU);g.fill();
  N.blob(g,70,32,28,col,lane+9,{sx:2.1,sy:.95,shadow:false});
  g.strokeStyle=LCOL[lane];g.lineWidth=4;g.beginPath();g.ellipse(70,32,42,15,0,0,TAU);g.stroke();
  g.fillStyle='rgba(255,250,230,.7)';g.beginPath();g.ellipse(38,19,14,4.5,-.12,0,TAU);g.fill();
- NSPR[k]=cv;return cv;}
+ cspeck(g,140,70,lane+41,60);NSPR[k]=cv;return cv;}
 function drawHead(c,api,x,y,lane,g,glow){
  const pr=proj(g,y),w=g.lw*.94*pr,h=w*80/144;
  c.save();c.translate(x,y);
