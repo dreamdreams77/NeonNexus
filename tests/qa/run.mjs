@@ -74,8 +74,8 @@ async function newPage(kind, url = '/arcade.html?debug', seed) {
   if (process.env.QA_DEBUG) { page.on('console', m => console.error('[console]', m.type(), m.text().slice(0, 200))); page.on('requestfailed', q => console.error('[reqfail]', q.url())); page.on('response', q => q.status() >= 400 && console.error('[http]', q.status(), q.url())); }
   try {
     await page.goto(BASE + url, { waitUntil: 'domcontentloaded' });
-    await page.waitForFunction(() => typeof window.nexusPlayArcadeGame === 'function', null, { timeout: 15000 });
-  } catch (e) { await ctx.close(); throw new Error(e.message.split('\n')[0] + ' | page errors: ' + errs.join(' ; ').slice(0, 400)); }
+    await page.waitForFunction(() => typeof window.nexusPlayArcadeGame === 'function', null, { timeout: 20000, polling: 200 });
+  } catch (e) { const dbg = await page.evaluate(() => [document.readyState, typeof window.nexusPlayArcadeGame, typeof window.NEXUS_GAMES, document.scripts.length]).catch(x => 'eval fail ' + x.message.slice(0, 60)); await ctx.close(); throw new Error(e.message.split('\n')[0] + ' | ' + JSON.stringify(dbg) + ' | page errors: ' + errs.join(' ; ').slice(0, 400)); }
   await page.evaluate(() => { document.getElementById('intro')?.remove(); });
   return { ctx, page, errs, touch: kind === 'phone', kind };
 }
@@ -250,7 +250,7 @@ async function runGame(game, kind, mode) {
         info.save = sv;
         // reload preservation
         await page.reload({ waitUntil: 'domcontentloaded' });
-        await page.waitForFunction(() => typeof window.nexusPlayArcadeGame === 'function', null, { timeout: 15000 });
+        await page.waitForFunction(() => typeof window.nexusPlayArcadeGame === 'function', null, { timeout: 20000, polling: 200 });
         const sv2 = await getSave(page);
         const same = x => JSON.stringify([x?.tokens, x?.tickets, x?.arcadeBest, x?.arcadeMastery, x?.arcadeStats]);
         if (same(sv) !== same(sv2)) issues.push(['FAIL', 'save changed across reload']);

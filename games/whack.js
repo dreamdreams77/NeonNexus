@@ -85,9 +85,9 @@ function hitHole(api,h){
  }
  if(h.hp>0){api.popText('CLANG',h.x,h.y-h.s*2,'#cfe6ff');sfx(api,'ping');api.burst(h.x,h.y-h.s*1.6,'#cfe6ff',8);api.shake(4,.12);return;}
  S.streak++;api.combo=S.streak;S.best=Math.max(S.best,S.streak);const mu=mult();
- const base=type===3?15:type===1?8:3;
+ const base=type===3?(S.rush?6:12):type===1?8:3;
  api.addScore(base*mu,h.x,h.y-h.s*2.2,type===3?'#ffe08a':'#fff0d4');
- if(type===3){S.gold++;S.time=0;api.time=Math.min(api.time+2,95);api.popText('+2s',h.x+34,h.y-h.s*2.9,'#9de3d1');api.burst(h.x,h.y-h.s,'#ffe08a',26);sfx(api,'coin');if(S.gold>=3)api.achieve('gold','Golden Touch',5);}
+ if(type===3){S.gold++;S.time=0;api.time=Math.min(api.time+1.5,95);api.popText('+1.5s',h.x+34,h.y-h.s*2.9,'#9de3d1');api.burst(h.x,h.y-h.s,'#ffe08a',26);sfx(api,'coin');if(S.gold>=3)api.achieve('gold','Golden Touch',5);}
  else{api.burst(h.x,h.y-h.s,'#c9a56a',10);sfx(api,'hit');}
  if(S.streak===25)api.achieve('streak','Whack Streak',5);
  h.st=3;h.t=0;h.dizzy=1;
@@ -259,6 +259,7 @@ function drawHUD(c,api,t){
 }
 /* ---------- module ---------- */
 NEXUS_GAMES.register('whack',{
+ dbg:()=>S,
  meta:{title:'Moon Moles',help:'Whack the moles, dodge the bombs, then topple the King Mole.',controls:'CLICK / TAP holes · 1-9 or ARROWS + SPACE',type:'REFLEX · COMBO'},
  size:[900,520],portraitSize:[540,860],duration:80,tier:1.05,
  init(api){newState(api);S.t=0;},
@@ -271,7 +272,7 @@ NEXUS_GAMES.register('whack',{
   // waves
   if(!S.done&&S.endT<0){
    const w=S.t>=BOSS_AT?5:Math.min(4,Math.floor(S.t/WAVE_LEN));if(w!==S.wave)setWave(api,w);
-   if(S.t>=33&&S.t<39&&!S.rush&&!S.rushShown){S.rush=true;S.rushShown=true;S.banner='GOLD RUSH!';S.bannerSub='Golden moles everywhere — +2s each';S.bannerT=1.5;sfx(api,'power');}
+   if(S.t>=33&&S.t<39&&!S.rush&&!S.rushShown){S.rush=true;S.rushShown=true;S.banner='GOLD RUSH!';S.bannerSub='Golden moles everywhere — +1.5s each';S.bannerT=1.5;sfx(api,'power');}
    if(S.rush&&S.t>=39)S.rush=false;
    // boss logic
    if(S.wave>=5&&!S.bossDead){
@@ -310,7 +311,7 @@ NEXUS_GAMES.register('whack',{
   if(!api.running){
    const best=api.store.get('top',[])[0]||0;
    readyScreen(c,api,'MOON MOLES','Whack the moles that pop out of the lunar holes. Survive six waves and topple the King Mole before time runs out.',[
-    'Normal mole = 1 hit. Helmet mole = 2 hits (+8).','Golden mole = +15 and +2 seconds.','BOMB mole = lose a heart. Never hit it! Decoy cutouts break your combo.','Chain hits for up to x4 combo. Whiffs and swinging wildly reset it.','Controls: click/tap, or keys 1-9 / arrows + Space.'],PAL.gold,
+    'Normal mole = 1 hit. Helmet mole = 2 hits (+8).','Golden mole = +12 and +1.5 seconds.','BOMB mole = lose a heart. Never hit it! Decoy cutouts break your combo.','Chain hits for up to x4 combo. Whiffs and swinging wildly reset it.','Controls: click/tap, or keys 1-9 / arrows + Space.'],PAL.gold,
     'BEST '+best+' · FURTHEST WAVE '+((api.store.get('stage',0))+1)+' · HAMMER SKINS '+(S.skin+1)+'/3');
   }
  },
