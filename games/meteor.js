@@ -241,7 +241,7 @@ function doDash(api){
 function ix(api){let x=0;if(S.keys.ArrowLeft||S.keys.a)x-=1;if(S.keys.ArrowRight||S.keys.d)x+=1;if(!x&&api.stick&&Math.abs(api.stick.x)>.12)x=api.stick.x;return x;}
 function iy(api){let y=0;if(S.keys.ArrowUp||S.keys.w)y-=1;if(S.keys.ArrowDown||S.keys.s)y+=1;if(!y&&api.stick&&Math.abs(api.stick.y)>.12)y=api.stick.y;return y;}
 NEXUS_GAMES.register('meteor',{
- dbg:()=>S,
+ dbg:()=>S,jump(w){setWave(NEXUS_ARCADE_API,w);},
  meta:{title:'Meteor Mayhem',help:'Pilot your ship through the meteor storm. The cannon auto-targets - you steer, dash and grab pickups.',controls:'WASD / ARROWS fly · SPACE dash · hold mouse to steer, click to dash',type:'DODGE · SURVIVE'},
  size:[900,520],portraitSize:[540,860],duration:170,tier:1.1,
  touch:[{kind:'stick',side:'left'},{kind:'btn',side:'right',label:'DASH',key:' ',big:true,cls:'alt'}],
