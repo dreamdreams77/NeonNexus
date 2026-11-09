@@ -23,7 +23,7 @@ const SECS = +(opt('secs') || process.env.QA_SECS || 12);
 const EXTRA = +(opt('extra') || process.env.QA_EXTRA || 30);
 const JOBS = +(opt('jobs') || 3);
 const ONLY = (opt('only') || 'desktop,phone,idle,spam,lobby').split(',');
-const OUT = opt('out') || process.env.QA_OUT || '/tmp/claude-0/-home-user-NeonNexus/84deefe9-041a-566c-9540-4e68da16154e/scratchpad';
+const OUT = opt('out') || process.env.QA_OUT || path.join(os.tmpdir(), 'nexus-qa');
 const SHOTS = path.join(OUT, 'shots');
 fs.mkdirSync(SHOTS, { recursive: true });
 const sleep = ms => new Promise(r => setTimeout(r, ms));

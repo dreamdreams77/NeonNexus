@@ -13,3 +13,15 @@ jobs:
         with:
           node-version: 22
       - run: npm test
+  qa-smoke:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm i --no-save playwright@1.49.1
+      - run: npx playwright install --with-deps chromium
+      - name: Browser smoke (desktop + phone, a representative subset)
+        run: node tests/qa/run.mjs skeeball whack stack memory pinball ringtoss --only=desktop,phone --secs=6 --jobs=2

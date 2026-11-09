@@ -87,15 +87,40 @@ The arcade opens on a title screen with an honest load bar (it completes when th
 
 ## The twenty games
 
-All twenty cabinets were playtested with scripted bots driving the real input handlers. Notable work from the audit:
+Each cabinet is a self-contained module in `games/<id>.js` (see **Architecture**). All have keyboard/mouse and touch controls, three difficulty levels, mastery perks, achievements and per-cabinet saved progress. Kitchen Rush is the one existing three.js cabinet (`arcade-game3d.js`). Lucky Claw renders a three.js plush pile into the canvas.
 
-- **Moonlight Billiards** – the whole physics/CPU/rules block had been stranded inside `start()` and only ran once; it now runs every frame (turns alternate, groups are assigned, pockets register).
-- **Comet Air Hockey** – rebuilt: free 2D mallets that carry velocity, circle–circle collisions with momentum transfer, goal posts, a CPU that defends and attacks with level-dependent aim error, Easy / Normal / Hard.
-- **Beat Foundry** – a charted 116 BPM rhythm game with a backing track on the same clock, Perfect / Good / OK / Miss windows, stray-tap penalty and S–D grades.
-- **Turbo Tunnels** – a real circuit race: spline track, steering/throttle/brake, barriers, three AI rivals, three laps, lap timing and place-based rewards.
-- **Comet Ring Toss** – was physically unwinnable (rings could not reach the pegs); now a lead-the-target throw with an aim reticle.
-- **Pulse Runner** – walking speed was ~42 px/s because of a friction bug; fixed.
-- **Lucky Claw** – every grab threw; fixed. Skeeball, Bubble Blaster and Clay Stack no longer award a "clear" for a zero score.
+| Cabinet | What it is |
+|---|---|
+| Cosmic Skee-Ball | Lane, ramp jump and a sloped board with real hole physics; moving 100-point hole on hard |
+| Comet Air Hockey | Three-bot tournament (Rookie, Pro, Champion) with real puck physics and CPU personalities |
+| Moonlight Billiards | Full 8-ball vs CPU: ball-in-hand, fouls, English, group rules |
+| Moon Moles | Waves of mole types, boss mole, Gold Rush bonus round |
+| Bubble Blaster | Ammo and reload shooting gallery with civilians, cover and a boss |
+| Prism Sequence | Memory modes (classic, reverse, echo, double-tile) with growing grids |
+| Beat Foundry | Four-lane rhythm with hold notes, fever mode and three unlockable songs |
+| Meteor Mayhem | Inertia ship, upgrades between waves, colossus boss |
+| Turbo Tunnels | Top-down drift racer, three AI rivals, three tracks, boost pads and oil |
+| Clay Stack | Isometric tower builder with perfect streaks and golden floors |
+| Starlight Pinball | Flippers, slings, drop targets, multiball, nudge/tilt |
+| Lucky Claw | Three.js claw with swaying cable, grip strength and slip, bombs and golden stars |
+| Kitchen Rush | Three.js order-assembly cabinet |
+| Sushi Catch | Conveyor stations, momentum tray, recipe orders, three rounds |
+| Mixology Master | Multi-step cocktails: pick, pour, shake, garnish, ratings |
+| Pulse Runner | Three-level platformer with a reactor boss |
+| Barrelstorm Moto | Trials-style physics bike with flips, barrels, three courses |
+| Moonshard Legend | Top-down adventure with rooms, enemy types, shard puzzles and bosses |
+| Comet Ring Toss | Three stages, lead the moving pegs, wind and a golden peg |
+| Moon Gem Dig | Clue-number deduction dig with tools and caves |
+
+The lobby also has video poker (three machines with a paytable and double-or-nothing) and a prize wheel with published odds (see `games/poker-logic.js`, `games/wheel-logic.js`).
+
+## Architecture
+
+- `arcade.js` owns the economy, saves, mastery, difficulty select, particles, touch UI and the canvas loop. The "game-module framework" block near the end of the file drives modules.
+- `games/registry.js` defines `NEXUS_GAMES.register(id, def)`. `games/<id>.js` supplies `init/start/update/draw`, pointer and key handlers and an optional `touch` control layout. If no module is registered for an id the legacy code path in `arcade.js` runs.
+- `games/lib.js` (`window.NXG`) holds the shared clay art toolkit (blob, slab, ball, coil, cached backdrops, grain, HUD chips/bars/banners), physics helpers and sound effects.
+- `games/README.md` is the full module contract. `games/poker-*.js` and `games/wheel-*.js` are the lobby service UIs.
+- The lobby (`arcade-world.js`, `lobby-*.js`) is unchanged by the cabinet work.
 
 ## Economy
 
@@ -107,7 +132,9 @@ The 3D world pauses while a cabinet is open or the tab is hidden; dynamic point 
 
 ## Debugging and tests
 
-Append `?debug` to `arcade.html` to expose `window.__nx` (camera/player), `window.__arc` (cabinet state) and `window.__crowd` for bot-driven playtests. `npm test` runs syntax checks plus ~100 tests, including the movement model and structural regression checks for each fix above.
+- `?debug` on `arcade.html` exposes `window.__nx` (camera/player), `window.__arc` (cabinet state), `window.__crowd`, `window.NEXUS_ARCADE_API` and per-game `dbg()` helpers. None of these exist without the flag.
+- `npm test` runs syntax checks on every script and the unit tests (physics, economy, poker/wheel odds and edge cases, lobby, assets).
+- `node tests/qa/run.mjs [gameId ...] [--only=desktop,phone,idle,spam,lobby] [--secs=12] [--jobs=3]` is the browser QA harness (Playwright + Chromium). It plays every cabinet on desktop and a 390x844 touch phone, then checks console errors, overflow and overlap, page scroll, NaN scores, hangs, save integrity and idle/spam payouts. It maps the three.js CDN to a local copy, so it also runs offline. See `TESTING.md` for a tester guide.
 
 ## Controls
 

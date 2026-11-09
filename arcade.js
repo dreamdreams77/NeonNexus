@@ -697,7 +697,7 @@ const API={
  toast(msg){let t=$('#arcade-toast');if(!t){t=document.createElement('div');t.id='arcade-toast';t.className='arcade-toast';t.setAttribute('role','status');document.querySelector('.cabinet')?.append(t);}t.textContent=msg;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),2600);},
  hud(text){const el=$('#game-hud-line');if(el)el.textContent=text;}
 };
-window.NEXUS_ARCADE_API=API;
+if(/debug/.test(location.search))window.NEXUS_ARCADE_API=API;
 function modKeyBlock(e){return[' ','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key);}
 function setupModule(id){
  const M=window.NEXUS_GAMES?window.NEXUS_GAMES.get(id):null;
