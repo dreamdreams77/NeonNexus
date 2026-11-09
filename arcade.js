@@ -747,6 +747,7 @@ function setupModule(id){
  mouse.x=w/2;mouse.y=h*.75;
  if(M&&M.meta){const m=M.meta;if(m.title)$('#game-title').textContent=m.title;if(m.help)$('#game-help').textContent=m.help;if(m.controls)$('#control-hint').textContent=m.controls;if(m.type)$('#game-type').textContent=m.type;}
  if(M&&M.tier)DIFFICULTY_TIER[id]=M.tier;
+ {const h=$('#game-hud-line');if(h)h.textContent='';}
  buildTouchUI(M);
 }
 function modInit(){const M=mod();if(!M)return;curStick={x:0,y:0};Object.keys(keys).forEach(k=>delete keys[k]);try{M.init?.(API);}catch(e){console.error(e);}}
