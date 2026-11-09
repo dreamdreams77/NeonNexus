@@ -285,3 +285,4 @@ body.arcade-playing{overflow:hidden;overscroll-behavior:none}
 @media(max-width:640px){.wh-root{grid-template-columns:1fr}}
 @media(max-width:520px){.pk-root,.wh-root{padding:10px;border-radius:20px}.pk-hand{gap:5px}.pk-felt{padding:20px 6px 8px}.pk-paytable{font-size:10px}.pk-row{padding:1px 3px}.pk-title b{font-size:15px}.pk-title small{display:none}.pk-bet{grid-template-columns:42px minmax(0,1fr) 42px auto}.pk-max{padding:8px 10px}.pk-foot{font-size:9px}}
 @media(prefers-reduced-motion:reduce){.pk-flip,.pk-card,.pk-row.hit,.pk-dbl,.pk-msg.win,.pk-card.win .pk-front{transition:none;animation:none}}
+@media(pointer:coarse){.overlay:not([hidden]) .close{position:fixed;top:max(8px,env(safe-area-inset-top));right:10px;z-index:30}}

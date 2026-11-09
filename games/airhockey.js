@@ -32,7 +32,7 @@ function aiTarget(a,p,dt){const o=OPP[p.level],c=p.cpu,pk=p.puck,sk=p.skill;
  else if(ownHalf&&pk.y<TH*.42){c.mode='atk';ty=Math.max(60,pk.y-30);}
  else{c.mode='def';ty=90+(o.smash>.5?50:0);}
  c.tx=N.clamp(tx,MR+8,TW-MR-8);c.ty=N.clamp(ty,MR+8,TH/2-MR-4);}
-function stepPhys(a,dt){const p=a.p,pk=p.puck,m=p.me,c=p.cpu,o=OPP[p.level];
+function stepPhys(a,dt){const p=a.p;if(p.over||!a.running)return;const pk=p.puck,m=p.me,c=p.cpu,o=OPP[p.level];
  const k=a.keys;let kx=(k.ArrowRight||k.d||k.D?1:0)-(k.ArrowLeft||k.a||k.A?1:0),ky=(k.ArrowDown||k.s||k.S?1:0)-(k.ArrowUp||k.w||k.W?1:0);
  if(kx||ky){const l=a.W>a.H,du=l?ky:kx,dv=l?-kx:ky;m.tx=N.clamp(m.tx+du*820*dt,m.r,TW-m.r);m.ty=N.clamp(m.ty+dv*820*dt,TH/2+m.r,TH-m.r);}
  // mallets chase targets with speed cap (velocity feeds the hit)
