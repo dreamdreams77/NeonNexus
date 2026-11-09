@@ -215,10 +215,14 @@ async function runGame(game, kind, mode) {
     info.naturalEnd = ended;
     if (!ended) {
       await page.evaluate(() => { window.__arc.time = 0.3; });
-      const f0 = Date.now(); let s;
-      while (Date.now() - f0 < 10000) { s = await getState(page); if (!s.running) { ended = true; break; } await sleep(250); }
+      const f0 = Date.now(); let s, ticking = null;
+      while (Date.now() - f0 < 10000) { s = await getState(page); if (!s.running) { ended = true; break; } if (Date.now() - f0 > 1500 && ticking === null) ticking = s.time !== 0.3; await sleep(250); }
       info.forcedEnd = true;
-      if (!ended) issues.push(['FAIL', 'HANG: still running 10s after time forced to 0 (score ' + s.score + ')']);
+      if (!ended && ticking === false) { // time hook not driving this game (3D/own timer): wait for its natural end instead
+        info.timerNotHooked = true; issues.push(['WARN', 'debug __arc.time hook does not drive this game; waited for natural end']);
+        const n0 = Date.now(); while (Date.now() - n0 < 75000) { s = await getState(page); if (!s.running) { ended = true; break; } await sleep(500); }
+        if (!ended) issues.push(['FAIL', 'HANG: no natural finish within ' + (((Date.now() - f0) / 1000) | 0) + 's after start (score ' + s.score + ')']);
+      } else if (!ended) issues.push(['FAIL', 'HANG: still running 10s after time forced to 0 though time ticks (score ' + s.score + ')']);
     }
     lap('ended'); await sleep(300);
     const sEnd = await getState(page);
