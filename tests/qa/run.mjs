@@ -20,7 +20,7 @@ const opt = k => (args.find(a => a.startsWith('--' + k + '=')) || '').split('=')
 const games = args.filter(a => !a.startsWith('--'));
 const GAMES = games.length ? games : ALL;
 const SECS = +(opt('secs') || process.env.QA_SECS || 12);
-const JOBS = +(opt('jobs') || 2);
+const JOBS = +(opt('jobs') || 3);
 const ONLY = (opt('only') || 'desktop,phone,idle,spam,lobby').split(',');
 const OUT = opt('out') || process.env.QA_OUT || '/tmp/claude-0/-home-user-NeonNexus/84deefe9-041a-566c-9540-4e68da16154e/scratchpad';
 const SHOTS = path.join(OUT, 'shots');
@@ -55,7 +55,7 @@ const server = http.createServer((req, res) => {
 await new Promise(r => server.listen(0, '127.0.0.1', r));
 const BASE = 'http://127.0.0.1:' + server.address().port;
 
-const browser = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-webgl'] });
+const browser = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required'] });
 
 const VP = {
   desktop: { viewport: { width: 1280, height: 800 }, hasTouch: false },
