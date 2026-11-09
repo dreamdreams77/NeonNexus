@@ -3,7 +3,7 @@
 // into a small pose sheet (front / side / back views, walk cycle and acting poses), then stood up in the 3D lobby as a
 // camera-facing sprite. This is deliberately illustration, not geometry: the shapes below are authored per feature.
 
-const INK='#2a1a2d';
+const INK='#4a2c3c'; // dark clay for sculpted details (eyes, mouths, seams), not an outline
 // Art-slot hook (see art-slots.js): lets a hand-painted PNG replace any code-drawn texture by name.
 export const slotHook={fn:null};
 const reg=(name,tex)=>{try{if(slotHook.fn)slotHook.fn(name,tex);}catch(e){}return tex;};
@@ -13,6 +13,10 @@ export const mix=(a,b,t)=>{const A=hexRgb(a),B=hexRgb(b);return rgbHex(A[0]+(B[0
 const light=(c,t=.28)=>mix(c,'#fff4dc',t),dark=(c,t=.3)=>mix(c,'#2a1630',t);
 
 export const CELL_W=104,CELL_H=160;
+// Stop-motion puppet proportions: a big head on a short body and stubby legs. The cell layout and the feet baseline are
+// fixed (artist templates depend on them), so the figure is rebuilt inside the same box: the head drops and grows, the
+// hips drop so the legs get shorter, and the arms shorten with them.
+const PUP={headY:52,headS:1.18,shoulderY:79,hipY:122,footY:151,armUp:15.5,armLow:14.5};
 export const POSES={
  front:['idle','walk0','walk1','walk2','walk3','wave','cheer','slump','mash0','mash1','sip','talk'],
  side:['idle','walk0','walk1','walk2','walk3','mash0','mash1'],
@@ -25,33 +29,94 @@ export const atlasSize=()=>({w:COLS*CELL_W,h:Math.ceil(TOTAL/COLS)*CELL_H});
 export const cellRect=(view,pose)=>{const i=Math.max(0,cellIndex(view,pose));return{x:(i%COLS)*CELL_W,y:Math.floor(i/COLS)*CELL_H};};
 
 // ───────── drawing helpers ─────────
+// Claymation surface: every piece reads as soft modelling clay. No ink outlines. Instead each blob casts a soft contact
+// shadow onto what is under it, rolls into a darker edge, carries a waxy sheen where the light hits, and has a faint
+// thumbprint and speckle texture pressed into it.
+let clayTile=null;
+function clayPattern(ctx,ox=0,oy=0){
+ if(!clayTile){
+  const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');let seed=11;const r=()=>(seed=(seed*16807)%2147483647)/2147483647;
+  for(let i=0;i<14;i++){const bx=r()*128,by=r()*128,br=10+r()*22,bg=x.createRadialGradient(bx,by,0,bx,by,br),c0=r()<.5?'255,248,236':'30,14,24';bg.addColorStop(0,`rgba(${c0},.22)`);bg.addColorStop(1,`rgba(${c0},0)`);for(const [ox2,oy2] of [[0,0],[128,0],[-128,0],[0,128],[0,-128]]){x.save();x.translate(ox2,oy2);x.fillStyle=bg;x.fillRect(bx-br,by-br,br*2,br*2);x.restore();}}
+  for(let i=0;i<420;i++){x.fillStyle=r()<.5?'rgba(255,250,240,.55)':'rgba(30,14,24,.5)';x.beginPath();x.arc(r()*128,r()*128,r()*.8+.25,0,6.283);x.fill();}
+  for(let g=0;g<5;g++){const cx=r()*128,cy=r()*128,a=r()*6.28,st=r()*6;x.strokeStyle='rgba(30,14,24,.28)';x.lineWidth=.8;for(let k=1;k<7;k++){x.beginPath();x.ellipse(cx,cy,k*2.3,k*1.5,a,st,st+2.4);x.stroke();}}
+  for(let i=0;i<9;i++){const sx=r()*128,sy=r()*128,len=10+r()*18;x.strokeStyle='rgba(255,250,240,.35)';x.lineWidth=1.1;x.beginPath();x.moveTo(sx,sy);x.quadraticCurveTo(sx+len/2,sy+(r()-.5)*6,sx+len,sy+(r()-.5)*4);x.stroke();x.strokeStyle='rgba(30,14,24,.22)';x.beginPath();x.moveTo(sx,sy+1.4);x.quadraticCurveTo(sx+len/2,sy+1.4+(r()-.5)*6,sx+len,sy+1.4);x.stroke();}
+  clayTile=c;
+ }
+ const pat=ctx.createPattern(clayTile,'repeat');try{pat.setTransform(new DOMMatrix().translate(ox,oy));}catch(e){}return pat;
+}
+// Clay pass for big flat surfaces (carpet, floors, walls, posters): softens crisp vector edges, mutes colour toward a
+// matte clay finish and presses the same thumbprint texture in. Keeps the original alpha, and for tiling textures skips
+// the blur and only uses texture scales that tile, so seams stay invisible.
+// Low, uneven relief for set pieces (floors, carpet, walls): big soft bumps lit from the upper left like the rest of the
+// set (the key light and every sprite share that direction), so a flat print reads as a slab of pressed clay. The tile
+// wraps, so tiling textures stay seamless horizontally.
+let reliefTile=null;
+function reliefPattern(ctx){
+ if(!reliefTile){
+  const S=256,c=document.createElement('canvas');c.width=c.height=S;const x=c.getContext('2d');let seed=29;const r=()=>(seed=(seed*16807)%2147483647)/2147483647;
+  for(let i=0;i<16;i++){const bx=r()*S,by=r()*S,br=26+r()*54,d=r()<.35?-1:1,o=br*.28;
+   for(const [ox,oy] of [[0,0],[S,0],[-S,0],[0,S],[0,-S],[S,S],[-S,-S],[S,-S],[-S,S]]){
+    const hx=bx+ox-o*d,hy=by+oy-o*d,sx=bx+ox+o*d,sy=by+oy+o*d;
+    let g=x.createRadialGradient(hx,hy,0,hx,hy,br);g.addColorStop(0,'rgba(255,246,228,.5)');g.addColorStop(1,'rgba(255,246,228,0)');x.fillStyle=g;x.fillRect(hx-br,hy-br,br*2,br*2);
+    g=x.createRadialGradient(sx,sy,0,sx,sy,br);g.addColorStop(0,'rgba(26,10,24,.6)');g.addColorStop(1,'rgba(26,10,24,0)');x.fillStyle=g;x.fillRect(sx-br,sy-br,br*2,br*2);
+   }}
+  reliefTile=c;
+ }
+ return ctx.createPattern(reliefTile,'repeat');
+}
+export function clayify(canvas,{blur=.8,texture=.42,mute=.14,scale=2,tile=false,relief=0,reliefScale=1}={}){
+ const w=canvas.width,h=canvas.height,x=canvas.getContext('2d');if(!w||!h)return canvas;
+ const orig=document.createElement('canvas');orig.width=w;orig.height=h;orig.getContext('2d').drawImage(canvas,0,0);
+ x.save();
+ if(blur>0&&!tile&&'filter' in x){x.filter=`blur(${blur}px)`;x.drawImage(orig,0,0);x.filter='none';}
+ if(mute>0){x.globalCompositeOperation='saturation';x.globalAlpha=mute;x.fillStyle='#808080';x.fillRect(0,0,w,h);}
+ const size=128*scale;
+ if(texture>0&&(!tile||(w%size===0&&h%size===0))){x.globalCompositeOperation='soft-light';x.globalAlpha=texture;const pat=clayPattern(x);try{pat.setTransform(new DOMMatrix().scale(scale));}catch(e){}x.fillStyle=pat;x.fillRect(0,0,w,h);}
+ if(relief>0&&(!tile||w%(256*reliefScale)===0)){x.globalCompositeOperation='source-over';x.globalAlpha=relief;const pat=reliefPattern(x);try{pat.setTransform(new DOMMatrix().scale(reliefScale));}catch(e){}x.fillStyle=pat;x.fillRect(0,0,w,h);}
+ x.globalAlpha=1;x.globalCompositeOperation='destination-in';x.drawImage(orig,0,0);
+ x.restore();return canvas;
+}
 function paint(ctx,path,color,{ow=2.6,hi=.34,sh=.3,box=null,lightDir=-1}={}){
- ctx.save();
- const b=box||[0,0,CELL_W,CELL_H];
- const g=ctx.createLinearGradient(b[0]+(lightDir<0?0:b[2]),b[1],b[0]+(lightDir<0?b[2]:0),b[1]+b[3]*.6);
- g.addColorStop(0,light(color,.16));g.addColorStop(.5,color);g.addColorStop(1,dark(color,.2));
- ctx.fillStyle=g;ctx.fill(path);
- ctx.clip(path);
- // painted light on the upper-left and a cool shade pooled low and right
- const cx=b[0]+b[2]*.3,cy=b[1]+b[3]*.22,hl=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.max(b[2],b[3])*.55);
- hl.addColorStop(0,`rgba(255,246,222,${hi})`);hl.addColorStop(1,'rgba(255,246,222,0)');ctx.fillStyle=hl;ctx.fillRect(b[0]-4,b[1]-4,b[2]+8,b[3]+8);
- const sx=b[0]+b[2]*.95,sy=b[1]+b[3]*1.0,sg=ctx.createRadialGradient(sx,sy,0,sx,sy,Math.max(b[2],b[3])*.8);
- sg.addColorStop(0,`rgba(40,18,52,${sh})`);sg.addColorStop(1,'rgba(40,18,52,0)');ctx.fillStyle=sg;ctx.fillRect(b[0]-4,b[1]-4,b[2]+8,b[3]+8);
+ const b=box||[0,0,CELL_W,CELL_H],R=Math.max(b[2],b[3]),soft=Math.max(1.6,ow);
+ // 1. contact shadow: the piece is pressed onto whatever sits under it
+ ctx.save();ctx.shadowColor='rgba(46,20,40,.42)';ctx.shadowBlur=soft*2;ctx.shadowOffsetX=soft*.45;ctx.shadowOffsetY=soft*.85;ctx.fillStyle=dark(color,.3);ctx.fill(path);ctx.restore();
+ ctx.save();ctx.clip(path);
+ // 2. puffy volume, lit from the upper left and rolling into a warm core shadow
+ const lx=b[0]+b[2]*(lightDir<0?.3:.7),ly=b[1]+b[3]*.24,g=ctx.createRadialGradient(lx,ly,0,lx,ly,R*.95);
+ g.addColorStop(0,light(color,.2));g.addColorStop(.42,color);g.addColorStop(1,dark(color,.34));
+ ctx.fillStyle=g;ctx.fillRect(b[0]-6,b[1]-6,b[2]+12,b[3]+12);
+ const sx=b[0]+b[2]*.95,sy=b[1]+b[3],sg=ctx.createRadialGradient(sx,sy,0,sx,sy,R*.8);
+ sg.addColorStop(0,`rgba(46,20,40,${sh})`);sg.addColorStop(1,'rgba(46,20,40,0)');ctx.fillStyle=sg;ctx.fillRect(b[0]-6,b[1]-6,b[2]+12,b[3]+12);
+ // 3. rounded edges: graded darker bands hugging the silhouette from inside
+ ctx.lineJoin='round';ctx.strokeStyle=dark(color,.42);
+ ctx.globalAlpha=.16;ctx.lineWidth=soft*4.2;ctx.stroke(path);ctx.globalAlpha=.22;ctx.lineWidth=soft*2.2;ctx.stroke(path);
+ // 4. pressed-in texture: thumbprints, tool drags and speckle
+ ctx.globalAlpha=.52;ctx.globalCompositeOperation='soft-light';ctx.fillStyle=clayPattern(ctx,b[0]*.61+b[1]*.37,b[1]*.53);ctx.fillRect(b[0]-6,b[1]-6,b[2]+12,b[3]+12);
+ // 5. waxy sheen where the light lands
+ ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;
+ const hx=b[0]+b[2]*(lightDir<0?.3:.7),hy=b[1]+b[3]*.2,hr=Math.max(3,Math.min(b[2],b[3])*.28),hg=ctx.createRadialGradient(hx,hy,0,hx,hy,hr);
+ hg.addColorStop(0,`rgba(255,250,236,${Math.min(.6,hi*1.4)})`);hg.addColorStop(.5,`rgba(255,250,236,${hi*.45})`);hg.addColorStop(1,'rgba(255,250,236,0)');
+ ctx.fillStyle=hg;ctx.fillRect(hx-hr,hy-hr,hr*2,hr*2);
  ctx.restore();
- ctx.lineWidth=ow;ctx.lineJoin='round';ctx.lineCap='round';ctx.strokeStyle=INK;ctx.stroke(path);
+ // 6. a soft same-colour rim instead of an ink line
+ ctx.save();ctx.lineWidth=Math.max(.8,ow*.5);ctx.lineJoin='round';ctx.strokeStyle=dark(color,.5);ctx.globalAlpha=.6;ctx.stroke(path);ctx.restore();
 }
 const P=(f)=>{const p=new Path2D();f(p);return p;};
 const ell=(cx,cy,rx,ry,rot=0)=>P(p=>p.ellipse(cx,cy,rx,ry,rot,0,Math.PI*2));
 const rrect=(x,y,w,h,r)=>P(p=>p.roundRect(x,y,w,h,r));
-// A limb is two strokes: a fat ink stroke under a coloured one, giving a clean consistent outline.
+// A limb is a rolled clay sausage: a soft shadow under it, a darker underside, the body colour nudged toward the light,
+// and a waxy highlight along the top. Limbs are drawn a little chunkier than the skeleton asks, the way clay figures are.
 function limb(ctx,pts,w,color,ow=2.4){
+ const W=w*1.18,trace=(dx=0,dy=0)=>{ctx.beginPath();pts.forEach((q,i)=>i?ctx.lineTo(q[0]+dx,q[1]+dy):ctx.moveTo(q[0]+dx,q[1]+dy));};
  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
- ctx.strokeStyle=INK;ctx.lineWidth=w+ow*2;ctx.beginPath();pts.forEach((q,i)=>i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.stroke();
- ctx.strokeStyle=color;ctx.lineWidth=w;ctx.stroke();
- ctx.strokeStyle='rgba(255,244,220,.26)';ctx.lineWidth=Math.max(1.2,w*.22);ctx.beginPath();pts.forEach((q,i)=>i?ctx.lineTo(q[0]-w*.18,q[1]-.5):ctx.moveTo(q[0]-w*.18,q[1]));ctx.stroke();
+ ctx.save();ctx.shadowColor='rgba(46,20,40,.4)';ctx.shadowBlur=3.5;ctx.shadowOffsetX=.8;ctx.shadowOffsetY=1.8;trace();ctx.strokeStyle=dark(color,.4);ctx.lineWidth=W+ow*.6;ctx.stroke();ctx.restore();
+ trace();ctx.strokeStyle=dark(color,.2);ctx.lineWidth=W;ctx.stroke();
+ trace(-W*.07,-W*.07);ctx.strokeStyle=color;ctx.lineWidth=W*.74;ctx.stroke();
+ trace(-W*.2,-W*.16);ctx.strokeStyle=light(color,.32);ctx.globalAlpha=.55;ctx.lineWidth=Math.max(1,W*.22);ctx.stroke();
  ctx.restore();
 }
 const line=(ctx,pts,w,color,alpha=1)=>{ctx.save();ctx.globalAlpha=alpha;ctx.strokeStyle=color;ctx.lineWidth=w;ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();pts.forEach((q,i)=>i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.stroke();ctx.restore();};
+const groove=(ctx,a,c,b,w,skin)=>{quad(ctx,[a[0],a[1]+1],[c[0],c[1]+1],[b[0],b[1]+1],w*.9,light(skin,.3),.55);quad(ctx,a,c,b,w,'#5a2a3a');};
 const quad=(ctx,a,c,b,w,color,alpha=1)=>{ctx.save();ctx.globalAlpha=alpha;ctx.strokeStyle=color;ctx.lineWidth=w;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.quadraticCurveTo(c[0],c[1],b[0],b[1]);ctx.stroke();ctx.restore();};
 
 // ───────── skeleton ─────────
@@ -84,19 +149,19 @@ function skeleton(view,pose){
 // ───────── pieces ─────────
 const SKIN_SHADE=(c)=>dark(c,.22);
 function drawLegs(ctx,d,view,sk){
- const hipY=sk.hipY+sk.bob,pants=d.pants,shoe=d.shoes;
+ const hipY=sk.hipY+sk.bob,pants=d.pants,shoe=d.shoes,L=PUP.footY-sk.hipY;
  const legPts=(dx,leg,flip)=>{
   if(view==='side'){
-   const [a,knee]=[leg[0],leg[1]],hx=52+dx*2,thigh=[hx+Math.sin(a)*21,hipY+Math.cos(a)*21],ang2=a-knee,shin=[thigh[0]+Math.sin(ang2)*21,thigh[1]+Math.cos(ang2)*21];
+   const [a,knee]=[leg[0],leg[1]],hx=52+dx*2,seg=L*.54,thigh=[hx+Math.sin(a)*seg,hipY+Math.cos(a)*seg],ang2=a-knee,shin=[thigh[0]+Math.sin(ang2)*seg,thigh[1]+Math.cos(ang2)*seg];
    return{pts:[[hx,hipY],thigh,shin],foot:[shin[0]+3,shin[1]]};
   }
-  const hx=52+dx,lift=leg[2];return{pts:[[hx,hipY],[hx+dx*.1,hipY+20-lift*.2],[hx+dx*.15,hipY+39-lift]],foot:[hx+dx*.15,hipY+39-lift]};
+  const hx=52+dx,lift=leg[2]*.8;return{pts:[[hx,hipY],[hx+dx*.1,hipY+L*.51-lift*.2],[hx+dx*.15,hipY+L-lift]],foot:[hx+dx*.15,hipY+L-lift]};
  };
  const order=view==='side'?[[-1,sk.legL],[1,sk.legR]]:[[-8,sk.legL],[8,sk.legR]];
  // far leg first
  for(const [dx,leg] of order){
   const {pts,foot}=legPts(dx,leg);
-  limb(ctx,pts,view==='side'?11:12,pants);
+  limb(ctx,pts,view==='side'?12:13.5,pants);
   // cuff + shoe
   const fx=foot[0],fy=foot[1];
   const sp=view==='side'?P(p=>{p.moveTo(fx-7,fy-2);p.quadraticCurveTo(fx-8,fy+8,fx-2,fy+9);p.lineTo(fx+12,fy+9);p.quadraticCurveTo(fx+16,fy+8,fx+12,fy+2);p.quadraticCurveTo(fx+4,fy-1,fx+3,fy-5);p.lineTo(fx-7,fy-2);p.closePath();})
@@ -108,7 +173,8 @@ function drawLegs(ctx,d,view,sk){
 function torsoPath(d,view,sk){
  const y0=sk.shoulderY+sk.bob,y1=sk.hipY+sk.bob+6,cx=52+sk.lean*40;
  const w=view==='side'?15:d.build==='stocky'?25:d.build==='slim'?19:22,wst=view==='side'?13:w-3;
- if(d.outfit==='dress'&&view!=='side')return P(p=>{p.moveTo(cx-w,y0+2);p.quadraticCurveTo(cx,y0-6,cx+w,y0+2);p.lineTo(cx+wst,y0+40);p.quadraticCurveTo(cx+w+16,y0+60,cx+w+12,y0+72);p.quadraticCurveTo(cx,y0+78,cx-w-12,y0+72);p.quadraticCurveTo(cx-w-16,y0+60,cx-wst,y0+40);p.closePath();});
+ const k=(y1+12-y0)/72;
+ if(d.outfit==='dress'&&view!=='side')return P(p=>{p.moveTo(cx-w,y0+2);p.quadraticCurveTo(cx,y0-6,cx+w,y0+2);p.lineTo(cx+wst,y0+40*k);p.quadraticCurveTo(cx+w+16,y0+60*k,cx+w+12,y0+72*k);p.quadraticCurveTo(cx,y0+78*k,cx-w-12,y0+72*k);p.quadraticCurveTo(cx-w-16,y0+60*k,cx-wst,y0+40*k);p.closePath();});
  return P(p=>{p.moveTo(cx-w,y0+3);p.quadraticCurveTo(cx,y0-7,cx+w,y0+3);p.quadraticCurveTo(cx+w+2,y0+22,cx+wst,y1-4);p.quadraticCurveTo(cx,y1+5,cx-wst,y1-4);p.quadraticCurveTo(cx-w-2,y0+22,cx-w,y0+3);p.closePath();});
 }
 function drawTorso(ctx,d,view,sk){
@@ -141,7 +207,7 @@ function drawTorso(ctx,d,view,sk){
    if(view==='front'){paint(ctx,P(p=>{p.moveTo(cx-12,y0+3);p.lineTo(cx-12,y1);p.lineTo(cx-1,y1);p.lineTo(cx-1,y0+14);p.closePath();p.moveTo(cx+12,y0+3);p.lineTo(cx+12,y1);p.lineTo(cx+1,y1);p.lineTo(cx+1,y0+14);p.closePath();}),d.accent||'#4b3a63',{box:[cx-12,y0,24,y1-y0],ow:2});}
    break;
   case'dress':
-   for(let i=0;i<5;i++)quad(ctx,[cx-30,y0+48+i*5],[cx,y0+54+i*5],[cx+30,y0+48+i*5],2,d.accent||light(d.top,.4),.7);
+   {const k=(y1+12-y0)/72;for(let i=0;i<5;i++)quad(ctx,[cx-30,y0+(48+i*5)*k],[cx,y0+(54+i*5)*k],[cx+30,y0+(48+i*5)*k],2,d.accent||light(d.top,.4),.7);}
    break;
  }
  // fabric folds and belt
@@ -157,7 +223,7 @@ function drawTorso(ctx,d,view,sk){
 }
 function drawArm(ctx,d,view,sk,side){
  // side: -1 = screen-left arm, +1 = screen-right arm (front/back views); side view: -1 far arm, +1 near arm.
- const arm=side<0?sk.armL:sk.armR,y0=sk.shoulderY+sk.bob+4,up=18,low=17;
+ const arm=side<0?sk.armL:sk.armR,y0=sk.shoulderY+sk.bob+4,up=PUP.armUp,low=PUP.armLow;
  const hw=view==='side'?0:(d.build==='stocky'?24:d.build==='slim'?19:22),sx=52+(view==='side'?0:side*hw)+sk.lean*40;
  let ex,ey,wx,wy;
  if(arm.t){ // two-bone IK toward a target hand position (hands in front of the body)
@@ -173,10 +239,10 @@ function drawArm(ctx,d,view,sk,side){
   const out=arm[0],o2=out-arm[1]*(out>2?-.35:1);
   ex=sx+side*Math.sin(out)*up;ey=y0+Math.cos(out)*up;wx=ex+side*Math.sin(o2)*low;wy=ey+Math.cos(o2)*low;
  }
- limb(ctx,[[sx,y0],[ex,ey],[wx,wy]],9.5,d.sleeve||d.top);
+ limb(ctx,[[sx,y0],[ex,ey],[wx,wy]],10.5,d.sleeve||d.top);
  // cuff, hand, and anything held
  line(ctx,[[ex+(wx-ex)*.72-2.5,ey+(wy-ey)*.72],[ex+(wx-ex)*.72+2.5,ey+(wy-ey)*.72]],2,dark(d.sleeve||d.top,.35),.0);
- paint(ctx,ell(wx,wy+1,5,5.2),d.skin,{box:[wx-5,wy-4,10,10],ow:2});
+ paint(ctx,ell(wx,wy+1,5.8,6),d.skin,{box:[wx-6,wy-5,12,12],ow:2});
  if(sk.cup&&side>0){const cp=P(p=>{p.moveTo(wx-4.5,wy-15);p.lineTo(wx+5.5,wy-15);p.lineTo(wx+4,wy-1);p.lineTo(wx-3,wy-1);p.closePath();});paint(ctx,cp,'#f6eedd',{box:[wx-5,wy-15,11,14],ow:1.8});ctx.fillStyle=d.drink||'#ff7ab6';ctx.beginPath();ctx.ellipse(wx+.5,wy-14.5,4.8,2,0,0,6.3);ctx.fill();ctx.strokeStyle=INK;ctx.lineWidth=1.3;ctx.stroke();line(ctx,[[wx+2,wy-16],[wx+5.5,wy-25]],1.9,'#fff');}
  return[wx,wy];
 }
@@ -189,10 +255,11 @@ function drawHairBack(ctx,d,view,hx,hy){
  if(s==='bun'){paint(ctx,ell(hx,hy-26,8.5,8.5),h,{box:[hx-9,hy-35,18,18],ow:2.2});}
 }
 function drawHead(ctx,d,view,sk){
- const hx=52+sk.lean*40+sk.head[0],hy=36+sk.bob+sk.head[1]+(view==='side'?0:0);
+ const hx=52+sk.lean*40+sk.head[0],hy=PUP.headY+sk.bob+sk.head[1];
+ ctx.save();ctx.translate(hx,hy);ctx.scale(PUP.headS,PUP.headS);ctx.translate(-hx,-hy);
  drawHairBack(ctx,d,view,hx,hy);
- // neck
- paint(ctx,rrect(hx-6,hy+14,12,14,3),SKIN_SHADE(d.skin),{box:[hx-6,hy+14,12,14],ow:2,sh:.15});
+ // a short stub of neck: clay puppets barely have one
+ paint(ctx,rrect(hx-6,hy+14,12,10,3),SKIN_SHADE(d.skin),{box:[hx-6,hy+14,12,14],ow:2,sh:.15});
  // ears
  if(view!=='side'){for(const s of [-1,1])paint(ctx,ell(hx+s*19,hy+2,4.2,5.5),d.skin,{box:[hx+s*19-4,hy-3,8,11],ow:2});}
  const face=view==='side'?P(p=>{p.moveTo(hx-16,hy-8);p.quadraticCurveTo(hx-20,hy+20,hx-4,hy+24);p.quadraticCurveTo(hx+12,hy+26,hx+17,hy+12);p.quadraticCurveTo(hx+22,hy+9,hx+19,hy+4);p.quadraticCurveTo(hx+17,hy+1,hx+18,hy-3);p.quadraticCurveTo(hx+16,hy-20,hx,hy-21);p.quadraticCurveTo(hx-14,hy-21,hx-16,hy-8);p.closePath();})
@@ -206,6 +273,7 @@ function drawHead(ctx,d,view,sk){
  }
  if(d.hat)drawHat(ctx,d,view,hx,hy);
  if(d.headphones){const hp=d.headphones;if(view!=='side'){for(const s of [-1,1])paint(ctx,ell(hx+s*21,hy+2,6,8),hp,{box:[hx+s*21-6,hy-6,12,16],ow:2});line(ctx,[[hx-20,hy-6],[hx-12,hy-26],[hx+12,hy-26],[hx+20,hy-6]],3,hp);quad(ctx,[hx-20,hy-6],[hx,hy-34],[hx+20,hy-6],3,INK,.0);}else paint(ctx,ell(hx-2,hy+2,6,8),hp,{ow:2});}
+ ctx.restore();
  return[hx,hy];
 }
 function drawFace(ctx,d,view,sk,hx,hy){
@@ -214,26 +282,28 @@ function drawFace(ctx,d,view,sk,hx,hy){
  ctx.save();ctx.fillStyle='rgba(235,110,120,.34)';for(const [x] of (view==='side'?[[hx+5]]:[[hx-13],[hx+13]])){ctx.beginPath();ctx.ellipse(x,hy+11,4.8,3.1,0,0,6.3);ctx.fill();}ctx.restore();
  for(const [x,y] of ex){
   if(sk.eyes==='closed'){quad(ctx,[x-3.6,y],[x,y+3],[x+3.6,y],1.9,INK);continue;}
-  // eye: soft white, dark iris, two glints
-  const sad=sk.eyes==='sad';
-  ctx.fillStyle='#fffaf0';ctx.beginPath();ctx.ellipse(x,y,3.8,4.6,0,0,6.3);ctx.fill();
-  ctx.fillStyle=d.eye||'#3b2a44';ctx.beginPath();ctx.ellipse(x+(view==='side'?.8:0),y+.5,2.7,3.6,0,0,6.3);ctx.fill();
-  ctx.fillStyle='#120a18';ctx.beginPath();ctx.ellipse(x+(view==='side'?.8:0),y+.8,1.5,2.2,0,0,6.3);ctx.fill();
-  ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(x+1.3,y-1.4,1.1,0,6.3);ctx.fill();ctx.beginPath();ctx.arc(x-1,y+1.8,.55,0,6.3);ctx.fill();
-  ctx.strokeStyle=INK;ctx.lineWidth=1.4;ctx.beginPath();ctx.ellipse(x,y,3.8,4.6,0,Math.PI*1.05,Math.PI*1.95);ctx.stroke();
+  // clay eye: a pressed-in white ball with a big glossy bead pupil, one glint, and a soft lid shadow above it
+  const sad=sk.eyes==='sad',px=x+(view==='side'?.9:0);
+  ctx.save();ctx.shadowColor='rgba(60,25,40,.35)';ctx.shadowBlur=1.6;ctx.shadowOffsetY=.8;
+  const ew=ctx.createRadialGradient(x-1.2,y-1.6,.5,x,y,5);ew.addColorStop(0,'#fffdf6');ew.addColorStop(.7,'#f3e9da');ew.addColorStop(1,'#d9c8b6');
+  ctx.fillStyle=ew;ctx.beginPath();ctx.ellipse(x,y,3.9,4.5,0,0,6.3);ctx.fill();ctx.restore();
+  const pg=ctx.createRadialGradient(px-.6,y-.2,.2,px,y+.7,2.8);pg.addColorStop(0,'#3a2a34');pg.addColorStop(1,'#0e080c');
+  ctx.fillStyle=pg;ctx.beginPath();ctx.arc(px,y+.7,2.5,0,6.3);ctx.fill();
+  ctx.fillStyle='rgba(255,255,250,.95)';ctx.beginPath();ctx.ellipse(px+.9,y-.6,.95,.75,-.5,0,6.3);ctx.fill();
+  ctx.strokeStyle=dark(d.skin,.32);ctx.globalAlpha=.7;ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(x,y+.4,4.4,4.9,0,Math.PI*1.08,Math.PI*1.92);ctx.stroke();ctx.globalAlpha=1;
   // brows
   const bx=x,by=y-8.2,dir=(view==='side'?1:(x<hx?-1:1));
   quad(ctx,[bx-4.2,by+(sad?-1.2*dir*-1:.8)],[bx,by-1.4+(sad?1:0)],[bx+4.2,by+(sad?1.5*(dir<0?1:-1)+.4:.6)],1.9,dark(d.hair==='#none'?'#3a2a2a':d.hair,.35));
  }
  // nose and mouth
- if(view==='side'){line(ctx,[[hx+17,hy+3],[hx+21,hy+8],[hx+17,hy+10]],1.8,SKIN_SHADE(d.skin));quad(ctx,[hx+9,hy+16],[hx+13,hy+19],[hx+16,hy+16],2,INK);}
+ if(view==='side'){line(ctx,[[hx+17,hy+3],[hx+21,hy+8],[hx+17,hy+10]],1.8,SKIN_SHADE(d.skin));groove(ctx,[hx+9,hy+16],[hx+13,hy+19],[hx+16,hy+16],2,d.skin);}
  else{
-  quad(ctx,[hx-1.8,hy+9],[hx+1.5,hy+11.5],[hx+2,hy+9.4],1.5,SKIN_SHADE(d.skin));
+  {const ng=ctx.createRadialGradient(hx-1,hy+8.6,.3,hx,hy+10,4);ng.addColorStop(0,light(d.skin,.28));ng.addColorStop(.6,d.skin);ng.addColorStop(1,dark(d.skin,.2));ctx.save();ctx.shadowColor='rgba(60,25,40,.35)';ctx.shadowBlur=1.8;ctx.shadowOffsetY=1.2;ctx.fillStyle=ng;ctx.beginPath();ctx.ellipse(hx,hy+10,3.3,2.7,0,0,6.3);ctx.fill();ctx.restore();}
   const my=hy+17;
   if(sk.mouth==='open'){ctx.fillStyle='#5a1f33';ctx.beginPath();ctx.ellipse(hx,my,5,4.2,0,0,Math.PI);ctx.quadraticCurveTo(hx,my-2,hx-5,my);ctx.fill();ctx.strokeStyle=INK;ctx.lineWidth=1.7;ctx.stroke();ctx.fillStyle='#ef7a88';ctx.beginPath();ctx.ellipse(hx,my+2.4,2.4,1.5,0,0,6.3);ctx.fill();}
-  else if(sk.mouth==='frown')quad(ctx,[hx-4.5,my+2],[hx,my-2.4],[hx+4.5,my+2],1.9,INK);
+  else if(sk.mouth==='frown')groove(ctx,[hx-4.5,my+2],[hx,my-2.4],[hx+4.5,my+2],1.9,d.skin);
   else if(sk.mouth==='focus'){line(ctx,[[hx-3,my],[hx+3,my]],1.9,INK);}
-  else quad(ctx,[hx-4.8,my-1],[hx,my+3.6],[hx+4.8,my-1],1.9,INK);
+  else groove(ctx,[hx-4.8,my-1],[hx,my+3.6],[hx+4.8,my-1],1.9,d.skin);
  }
  if(d.glasses){ctx.strokeStyle=d.glasses;ctx.lineWidth=2;for(const [x,y] of ex){ctx.beginPath();ctx.ellipse(x,y,6.2,6,0,0,6.3);ctx.stroke();ctx.fillStyle='rgba(190,230,255,.18)';ctx.fill();}if(view!=='side')line(ctx,[[hx-2,hy+3],[hx+2,hy+3]],1.8,d.glasses);}
  if(d.freckles){ctx.fillStyle='rgba(150,80,60,.5)';for(const [dx,dy] of [[-12,9],[-9,11],[-15,11],[12,9],[9,11],[15,11]]){ctx.beginPath();ctx.arc(hx+dx*(view==='side'?.3:1)+(view==='side'?6:0),hy+dy,.9,0,6.3);ctx.fill();}}
@@ -263,7 +333,7 @@ function drawHat(ctx,d,view,hx,hy){
 
 // ───────── public: draw a full character cell ─────────
 export function drawCharacter(ctx,d,view,pose,ox=0,oy=0){
- const sk=skeleton(view,pose);sk.hipY=112;sk.shoulderY=64;
+ const sk=skeleton(view,pose);sk.hipY=PUP.hipY;sk.shoulderY=PUP.shoulderY;
  ctx.save();ctx.translate(ox,oy-6); // lift the figure so shoe soles sit inside the cell
  if(d.backpack&&view!=='front'){paint(ctx,rrect(view==='side'?30:34,sk.shoulderY+6+sk.bob,view==='side'?14:36,38,8),d.backpack,{box:[30,sk.shoulderY,36,44],ow:2.4});}
  // far arm behind body (side view) / legs, torso, arms, head
@@ -308,6 +378,13 @@ export function buildSheet(design,res=1){
 
 // ───────── actors: sprite stand-ins placed in the 3D lobby ─────────
 const sheetCache=new Map();
+// Stop-motion boil: puppets are re-posed by hand every frame, so they never sit perfectly still. Each actor nudges a
+// fraction of a pixel and leans a hair at 12 fps (shot on twos) and its breathing bob steps at the same rate. It costs a
+// hash per actor per tick inside onBeforeRender, and switches off entirely for prefers-reduced-motion.
+const BOIL_MS=1000/12;
+const reduceMotionQuery=typeof matchMedia==='function'?matchMedia('(prefers-reduced-motion: reduce)'):null;
+const boilHash=n=>{n=Math.imul(n^(n>>>15),0x2c1b3c6d);n=Math.imul(n^(n>>>12),0x297a2d39);return((n^(n>>>15))>>>0)/4294967296;};
+let actorSeed=0;
 export function createActor(THREE,design,{anisotropy=4,height=2.05,res=1}={}){
  const ckey=design.name+'@'+res;let tex=sheetCache.get(ckey);
  const {w,h}=atlasSize();
@@ -316,6 +393,13 @@ export function createActor(THREE,design,{anisotropy=4,height=2.05,res=1}={}){
  const mat=new THREE.MeshBasicMaterial({map,transparent:true,alphaTest:.04,toneMapped:false,depthWrite:true});
  const width=height*CELL_W/CELL_H,mesh=new THREE.Mesh(new THREE.PlaneGeometry(width,height),mat);
  mesh.position.y=height/2-height*(14/CELL_H);
+ const baseY=mesh.position.y,seed=(++actorSeed)*977;let bobWant=0,tick=-1;
+ mesh.onBeforeRender=()=>{
+  if(reduceMotionQuery&&reduceMotionQuery.matches){mesh.position.x=0;mesh.position.y=baseY;mesh.rotation.z=0;mesh.scale.y=1+bobWant;return;}
+  const f=Math.floor(performance.now()/BOIL_MS);if(f===tick)return;tick=f;
+  const a=boilHash(seed+f*3),b=boilHash(seed+f*3+1),c=boilHash(seed+f*3+2);
+  mesh.position.x=(a-.5)*height*.006;mesh.position.y=baseY+(b-.5)*height*.004;mesh.rotation.z=(c-.5)*.014;mesh.scale.y=1+bobWant;
+ };
  const tilt=new THREE.Group();tilt.rotation.x=-.5;tilt.add(mesh);
  const root=new THREE.Group();root.add(tilt);
  let cur='';
@@ -328,7 +412,7 @@ export function createActor(THREE,design,{anisotropy=4,height=2.05,res=1}={}){
    const flip=view==='side'&&fx<0;
    const key=view+':'+p;
    if(key!==cur){cur=key;const r=cellRect(view,p);map.offset.set(r.x/w,1-(r.y+CELL_H)/h);}
-   mesh.scale.x=flip?-1:1;mesh.scale.y=1+bob;
+   mesh.scale.x=flip?-1:1;bobWant=bob;if(tick<0)mesh.scale.y=1+bob;
    return view;
   }};
  actor.set(0,'idle');

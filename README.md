@@ -53,6 +53,34 @@ Everything the lobby says lives in `dialogue.js`: dry, deadpan and quietly fond 
 
 `daily.js` adds a daily goal. Every local day one cabinet is **featured** (all twenty take a turn before any repeats) and a second is its **double feature** partner. Playing the featured cabinet pays +30 tickets, winning on it +30 more, playing the partner +25, and playing on consecutive days adds a streak bonus (+3 per day, capped at seven days). Bonuses pay once a day, only ever as tickets, and are stored under `daily` in the player save. The header chip and the discovery card show what is still on offer.
 
+
+## Cabinet depth
+
+`arcade-depth.js` gives every cabinet two shared systems:
+
+- **Fever.** Scoring fills a meter on the left of the screen that cools when you stop. Fill it and the cabinet goes into
+  Fever for seven seconds, doubling every point. Air hockey, billiards, racing and table duels skip it, because their
+  scores mean something else.
+- **Stars.** Each cabinet has three named challenges, judged at the end of a round from what you actually did (a
+  perfect drop, a mirror round, a corner cup). Each new star pays 15 tickets once and is saved under `arcadeStars`.
+  The cabinet panel lists them.
+
+Cabinet-specific mechanics added on top:
+
+| Cabinet | What's new |
+| --- | --- |
+| Clay Stack | Perfect drops regrow the block; the swing speeds up as the tower rises. |
+| Moon Moles | Golden moles add two seconds, helmet moles take two bonks, bombs cost points and your streak. Winnable at 250. |
+| Bubble Blaster | Same-colour pops in a row build a chain; dark bomb bubbles clear a cluster. |
+| Prism Sequence | Speeds up each round; every third round is a mirror round entered backwards for double points. Winnable at 200. |
+| Mixology Master | Layered drinks with a moving target band and a dead-centre bonus. |
+| Moon Gem Dig | Fair boards (eight gems, three cracks), a safe first dig and neighbour counts to deduce from. |
+| Cosmic Skee-Ball | A hot ring doubles each roll, corner cups pay 150, scoring rolls build a streak. |
+| Starlight Pinball | Light the N-E-X-U-S lanes to double the bumpers for the rest of the ball. |
+| Lucky Claw | Heavy prizes slip unless the grab is centred; one golden prize per machine. |
+| Sushi Catch | Order tickets: catch the requested fish in sequence for a bonus. |
+| Comet Ring Toss | A breeze that changes every throw; the aim guide ignores it. |
+
 ## Title screen and settings
 
 The arcade opens on a title screen with an honest load bar (it completes when the 3D world has rendered), a friendly fallback if loading stalls, and **Settings** for sound, reduced motion and graphics quality (saved on your device).

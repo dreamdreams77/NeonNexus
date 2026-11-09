@@ -34,7 +34,7 @@ const FOOD=[{id:'salmon',n:'Salmon',c:'#f08a6a'},{id:'tuna',n:'Tuna',c:'#c4465a'
 const ANIMALS=[{n:'cat',c:'#e8b080',ear:'tri'},{n:'bear',c:'#a8785a',ear:'round'},{n:'frog',c:'#8ac878',ear:'bump'},{n:'bunny',c:'#f0e0e8',ear:'long'},{n:'owl',c:'#b8a0d0',ear:'tri'}];
 const TOTAL=[5,5,6];
 let S=null;
-function geo(api){const W=api.W,H=api.H,por=api.portrait;return{custY:por?150:104,beltY:por?390:210,trayY:H-86,sw:(W-30)/3,sx:i=>15+(W-30)/3*(i+.5)};}
+function geo(api){const W=api.W,H=api.H,por=api.portrait;return{custY:por?150:94,beltY:por?390:268,trayY:H-86,sw:(W-30)/3,sx:i=>15+(W-30)/3*(i+.5)};}
 function newState(api){
  const m=api.mastery,g=geo(api);
  S={t:0,wave:0,served:0,cust:[null,null,null],arrive:[1,3,5],plates:[],tray:[],cap:m>=4?5:4,tx:api.W/2,tv:0,tw:m>=2?124:110,hearts:3+(m>=2?1:0),maxHearts:3+(m>=2?1:0),streak:0,best:0,mult:1,spawn:[.5,1.3,2.1],
@@ -173,9 +173,9 @@ function drawTray(c,api,g){
 }
 function drawHUD(c,api){
  const W=api.W,H=api.H,por=api.portrait,g=geo(api);
- for(let i=0;i<S.maxHearts;i++)heart(c,24+i*32,70,14,'#ef6a6a',i<S.hearts);
- N.chip(c,W-258,58,118,'SERVED',S.served+' / '+(TOTAL[0]+TOTAL[1]+TOTAL[2]));N.chip(c,W-134,58,122,'MULT ×'+S.mult.toFixed(1),S.streak,{color:S.mult>=2?'#ffe08a':'#fff0d4'});
- N.chip(c,W/2-60,58,120,'ROUND',(S.wave+1)+' / 3');
+ for(let i=0;i<S.maxHearts;i++)heart(c,24+i*32,26,14,'#ef6a6a',i<S.hearts);
+ N.chip(c,W-258,5,118,'SERVED',S.served+' / '+(TOTAL[0]+TOTAL[1]+TOTAL[2]));N.chip(c,W-134,5,122,'MULT ×'+S.mult.toFixed(1),S.streak,{color:S.mult>=2?'#ffe08a':'#fff0d4'});
+ N.chip(c,W/2-60,5,120,'ROUND',(S.wave+1)+' / 3');
  T(c,'tray '+S.tray.length+'/'+S.cap,S.tx,g.trayY+54,12,'#fff0d4','center',{stroke:null});
  if(S.bannerT>0){c.save();c.globalAlpha=Math.min(1,S.bannerT*2);c.fillStyle='rgba(18,12,30,.6)';c.fillRect(0,H*.4,W,H*.17);T(c,S.banner,W/2,H*.49,Math.min(W,540)/11,PAL.gold,'center',{glow:PAL.gold});T(c,S.sub,W/2,H*.54,16,'#fff0d4','center',{stroke:null});c.restore();}
  T(c,api.touch?'DRAG to move · TAP guest to serve · TAP tray to dump':'A/D move · SPACE serve · 1-3 pick guest · X dump',W/2,H-12,12,'rgba(255,240,208,.75)','center',{stroke:null});
