@@ -3,7 +3,7 @@
 const N=window.NXG;
 const TW=400,TH=720,GW=150,PR=17,MR=29;
 const OPP=[
- {name:'ROOKIE BOT',col:'#8bb7dc',speed:520,react:.28,err:46,smash:.15,predict:0,goals:5},
+ {name:'ROOKIE BOT',col:'#8bb7dc',speed:700,react:.2,err:30,smash:.15,predict:0,goals:5},
  {name:'PRO-BOT 9',col:'#91c9a7',speed:760,react:.16,err:24,smash:.4,predict:1,goals:5},
  {name:'CHAMPION CRUSH',col:'#ef896d',speed:1050,react:.07,err:10,smash:.7,predict:2,goals:7}];
 function lay(a){const W=a.W,H=a.H,land=W>H;const s=land?Math.min((W-60)/TH,(H-90)/TW):Math.min((W-30)/TW,(H-150)/TH);return{land,s,ox:(W-(land?TH:TW)*s)/2,oy:land?(H-TW*s)/2+18:(H-TH*s)/2+30,W,H};}
