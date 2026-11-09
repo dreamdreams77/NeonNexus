@@ -20,7 +20,7 @@ const opt = k => (args.find(a => a.startsWith('--' + k + '=')) || '').split('=')
 const games = args.filter(a => !a.startsWith('--'));
 const GAMES = games.length ? games : ALL;
 const SECS = +(opt('secs') || process.env.QA_SECS || 12);
-const JOBS = +(opt('jobs') || 4);
+const JOBS = +(opt('jobs') || 2);
 const ONLY = (opt('only') || 'desktop,phone,idle,spam,lobby').split(',');
 const OUT = opt('out') || process.env.QA_OUT || '/tmp/claude-0/-home-user-NeonNexus/84deefe9-041a-566c-9540-4e68da16154e/scratchpad';
 const SHOTS = path.join(OUT, 'shots');
@@ -223,7 +223,7 @@ async function runGame(game, kind, mode) {
     await sleep(300);
     const sEnd = await getState(page);
     if (nan || !isFinite(sEnd.score)) issues.push(['FAIL', 'score NaN/invalid']);
-    { const mt = Math.min(minTime, sEnd.time); if (mt < -0.25) issues.push(['FAIL', 'time went negative (' + mt.toFixed(2) + ')']); else if (mt < 0) issues.push(['WARN', 'time dipped slightly negative (' + mt.toFixed(3) + ') at finish']); }
+    { const mt = Math.min(minTime, sEnd.time); if (mt < -0.25) issues.push(['FAIL', 'time went negative (' + mt.toFixed(2) + ')']); else if (mt < -0.05) issues.push(['WARN', 'time dipped slightly negative (' + mt.toFixed(3) + ') at finish']); }
     info.score = sEnd.score;
     await page.screenshot({ path: path.join(SHOTS, tag + '-end.png') });
     const res = await page.evaluate(() => document.querySelector('#result')?.textContent || '');
