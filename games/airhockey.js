@@ -13,12 +13,12 @@ function newPuck(p,towardPlayer){p.puck={x:TW/2,y:TH/2+(towardPlayer?60:-60),vx:
 function init(a){const p=a.p;p.level=0;p.me={x:TW/2,y:TH-110,vx:0,vy:0,tx:TW/2,ty:TH-110,r:MR,m:5};p.cpu={x:TW/2,y:110,vx:0,vy:0,r:MR,m:5,tx:TW/2,ty:110,wait:0,mode:'def'};p.pg=0;p.cg=0;newPuck(p,true);p.t=0;p.flash=0;p.msg='';p.msgT=0;p.mt=90;p.sparks=[];p.sudden=false;p.maxSpeed=0;p.kb={x:0,y:0};p.won=0;p.shutouts=0;p.over=false;}
 function start(a){const p=a.p;init(a);p.single=!!p.tableDuel;p.level=p.single?(a.diff.id==='easy'?0:a.diff.id==='hard'?2:1):0;p.skill=a.diff.id==='easy'?.8:a.diff.id==='hard'?1.18:1;p.maxLvl=a.store.get('hockeyBest',0);p.mtotal=0;a.hud(p.single?'ENTRY MATCH · FIRST TO '+OPP[p.level].goals:'TOURNAMENT · BEAT 3 BOTS · FIRST TO '+OPP[0].goals);p.mt=90;p.msg=(p.single?'MATCH · ':'ROUND 1 · ')+OPP[p.level].name;p.msgT=2;p.wide=a.mastery>=2?1.1:1;p.me.r=MR*(a.mastery>=4?1.1:1);}
 function startMatch(a,i){const p=a.p;p.level=i;p.pg=0;p.cg=0;p.mt=90;p.sudden=false;p.cpu.x=TW/2;p.cpu.y=110;p.me.x=TW/2;p.me.y=TH-110;newPuck(p,i%2===0);p.msg='ROUND '+(i+1)+' · '+OPP[i].name;p.msgT=2.2;}
-function goal(a,who){const p=a.p,o=OPP[p.level];if(who==='me'){p.pg++;a.addScore(20+Math.round(p.rally*2),TW/2,60,'#ffe08a');a.combo=a.combo+1;N.sfx(a,'win');p.msg='GOAL!';}else{p.cg++;a.combo=0;N.sfx(a,'lose');p.msg='CPU SCORES';}
+function goal(a,who){const p=a.p,o=OPP[p.level];if(who==='me'){p.pg++;if((p.hits||0)>=3)a.addScore(20+Math.round(p.rally*2),TW/2,60,'#ffe08a');a.combo=a.combo+1;N.sfx(a,'win');p.msg='GOAL!';}else{p.cg++;a.combo=0;N.sfx(a,'lose');p.msg='CPU SCORES';}
  p.msgT=1.4;a.shake(9,.35);p.flash=1;for(let i=0;i<24;i++)p.sparks.push({x:p.puck.x,y:who==='me'?30:TH-30,vx:N.rand(-300,300),vy:N.rand(-300,300),t:N.rand(.4,.9),col:who==='me'?'#ffe08a':'#ef896d'});
  const target=o.goals;
  if(p.pg>=target||p.cg>=target||(p.sudden&&p.pg!==p.cg)){endMatch(a,p.pg>p.cg);return;}
  newPuck(p,who==='cpu');p.puck.y=who==='me'?TH/2-80:TH/2+80;}
-function endMatch(a,won){const p=a.p;if(p.single){a.addScore(won?100+p.pg*10:p.pg*5);a.finish(won,{grade:won?'MATCH WON':'MATCH LOST'});p.over=true;return;}if(won){p.won++;if(p.cg===0){p.shutouts++;a.achieve('shutout','Win a match without conceding',8);}a.addScore(100+p.level*50+(p.cg===0?60:0),TW/2,TH/2,'#ffe08a');N.sfx(a,'win');
+function endMatch(a,won){const p=a.p;if(p.single){if((p.hits||0)>=3)a.addScore(won?100+p.pg*10:p.pg*5);a.finish(won,{grade:won?'MATCH WON':'MATCH LOST'});p.over=true;return;}if(won){p.won++;if(p.cg===0){p.shutouts++;a.achieve('shutout','Win a match without conceding',8);}if((p.hits||0)>=3)a.addScore(100+p.level*50+(p.cg===0?60:0),TW/2,TH/2,'#ffe08a');N.sfx(a,'win');
   if(p.level>=2){a.achieve('champ','Beat the Champion',20);a.store.set('hockeyBest',3);a.finish(true,{grade:'TOURNAMENT CHAMPION'});p.over=true;return;}
   a.store.set('hockeyBest',Math.max(a.store.get('hockeyBest',0),p.level+1));startMatch(a,p.level+1);}
  else{a.addScore(p.pg*5);a.finish(false,{grade:'ELIMINATED IN ROUND '+(p.level+1)});p.over=true;}}
@@ -46,7 +46,7 @@ function stepPhys(a,dt){const p=a.p;if(p.over||!a.running)return;const pk=p.puck
  if(pk.y>TH-pk.r){if(pk.x>gl&&pk.x<gr){if(pk.y>TH+pk.r*1.2){goal(a,'cpu');return;}}else{pk.y=TH-pk.r;pk.vy=-Math.abs(pk.vy)*.93;N.sfx(a,'ping');}}
  // goal posts
  for(const gx of[gl,gr])for(const gy of[0,TH]){const dx=pk.x-gx,dy=pk.y-gy,d=Math.hypot(dx,dy);if(d<pk.r+4&&d>0){const nx=dx/d,ny=dy/d;pk.x=gx+nx*(pk.r+4);pk.y=gy+ny*(pk.r+4);const vn=pk.vx*nx+pk.vy*ny;if(vn<0){pk.vx-=1.9*vn*nx;pk.vy-=1.9*vn*ny;}}}
- const v1=hit(pk,m,1);if(v1>60){p.rally++;N.sfx(a,'hit');a.shake(Math.min(5,v1/260),.12);for(let i=0;i<Math.min(10,v1/80);i++)p.sparks.push({x:pk.x,y:pk.y,vx:N.rand(-200,200),vy:N.rand(-200,200),t:N.rand(.2,.5),col:'#fff0b0'});const sp=Math.hypot(pk.vx,pk.vy);if(sp>1000)a.achieve('smash','Hit a 1000+ speed smash',6);p.maxSpeed=Math.max(p.maxSpeed,sp);}
+ const v1=hit(pk,m,1);if(v1>60){p.rally++;p.hits=(p.hits||0)+1;N.sfx(a,'hit');a.shake(Math.min(5,v1/260),.12);for(let i=0;i<Math.min(10,v1/80);i++)p.sparks.push({x:pk.x,y:pk.y,vx:N.rand(-200,200),vy:N.rand(-200,200),t:N.rand(.2,.5),col:'#fff0b0'});const sp=Math.hypot(pk.vx,pk.vy);if(sp>1000)a.achieve('smash','Hit a 1000+ speed smash',6);p.maxSpeed=Math.max(p.maxSpeed,sp);}
  const v2=hit(pk,c,1);if(v2>60){N.sfx(a,'hit');}
  // keep puck out of the defender's own mallet overlap + nudge stuck puck
  const sp=Math.hypot(pk.vx,pk.vy);if(sp<12&&p.serve<=0){p.still=(p.still||0)+dt;if(p.still>2.2){p.still=0;pk.vy+=pk.y<TH/2?-220:220;}}else p.still=0;
