@@ -193,3 +193,19 @@ body.arcade-playing{overflow:hidden;overscroll-behavior:none}
 @media(pointer:coarse) and (orientation:portrait){.overlay.portrait-game #stage{width:min(100%,calc((100dvh - 330px)*var(--cw,540)/var(--ch,860)))}}
 .game-hud-line{color:#684b62}
 .level-pick{color:#684b62;font-weight:700}
+
+/* ===== Clay cabinet chrome for module games: dark plum body, gold coil rim, cream type (matches the lobby) ===== */
+.overlay.is-module .cabinet{background:radial-gradient(120% 90% at 50% 0%,#5a3d62,#3a2646 55%,#2a1c36);border:4px solid #e4b672;color:#f8e9ca;box-shadow:0 0 0 3px #8a5b1a,0 0 0 6px #e4b67255,0 24px 90px #000b,inset 0 2px 0 #ffffff22}
+.overlay.is-module .cabinet-head .eyebrow{color:#ef896d}
+.overlay.is-module .cabinet-head h2{color:#ffe9b8;text-shadow:0 2px 0 #1a1226,0 0 18px #ef896d55}
+.overlay.is-module .cabinet-head p:last-child{color:#d8c6c6}
+.overlay.is-module .stats span{color:#c9b0b8}.overlay.is-module .stats b{color:#ffd17c}
+.overlay.is-module .game-controls span{color:#cdbac6}
+.overlay.is-module .game-controls button{background:radial-gradient(circle at 35% 25%,#f7b79a,#d1735a 70%);box-shadow:0 5px #7a3a3a,inset 0 2px 0 #fff5;border:2px solid #2a1a2c}
+.overlay.is-module .close{background:#2a1a2c;border:2px solid #e4b672;color:#ffe9b8}
+.overlay.is-module .result{color:#ffd9a8}.overlay.is-module .result-quip{color:#cdbac6}
+.overlay.is-module #stage{border:3px solid #2a1a2c;border-radius:20px;box-shadow:0 0 0 3px #e4b672,0 0 0 5px #8a5b1a,0 14px 40px #000a,inset 0 0 0 2px #fff3}
+.overlay.is-module .game-hud-line,.overlay.is-module .level-pick{color:#ffd9a8}
+.overlay.is-module .game-progression{background:linear-gradient(180deg,#46304f,#33223e);border:1px solid #e4b67266;color:#f0e0d0}
+.overlay.is-module .game-progression p,.overlay.is-module .mastery-meta{color:#cdbac6}
+.overlay.is-module .arcade-toast{background:#1a1226f2}
