@@ -27,7 +27,7 @@
   function cardFront(c) {
     const red = c.s === 1 || c.s === 2;
     const f = h('div', 'pk-face pk-front' + (red ? ' red' : ''));
-    f.append(h('span', 'pk-r1', c.rank), h('span', 'pk-s1', c.suit), h('strong', 'pk-big', c.suit), h('span', 'pk-r2', c.rank));
+    f.append(h('span', 'pk-r1', c.rank), h('span', 'pk-s1', c.suit), h('strong', 'pk-big', c.suit));
     return f;
   }
   function setCard(i, c) { const flip = st.cards[i].querySelector('.pk-flip'); flip.querySelector('.pk-front')?.remove(); flip.append(cardFront(c)); }
@@ -161,7 +161,7 @@
   }
 
   function buildPaytable(v) {
-    const t = h('div', 'pk-paytable'); const head = h('div', 'pk-row pk-head'); head.append(h('span', 'pk-n', v.game.toUpperCase()));
+    const t = h('div', 'pk-paytable'); const head = h('div', 'pk-row pk-head'); head.append(h('span', 'pk-n', 'COINS BET'));
     for (let c = 1; c <= 5; c++) head.append(h('span', 'pk-c', String(c))); t.append(head);
     P.paytableKeys(v).forEach(k => {
       const r = h('div', 'pk-row'); r.dataset.k = k; r.append(h('span', 'pk-n', P.HAND_NAMES[k] + (k === 'pair' ? (v.minPair === 10 ? ' (10s+)' : ' (J+)') : '')));

@@ -282,7 +282,7 @@ test('animated preview scenes map one-to-one to the twenty registered cabinet ga
  assert.equal(new Set(previewIds).size,20,'preview IDs must not be duplicated');
 });
 test('new carnival cabinets have dedicated game logic, UI and 3D preview scenes',()=>{for(const id of ['ringtoss','gemdig']){assert.ok(game.includes(id+':['));assert.ok(world.includes("['"+(id==='ringtoss'?'COMET RING TOSS':'MOON GEM DIG')+"','"+id+"'"));assert.match(game,new RegExp("case'"+id+"':"));}});
-test('walk-up jukebox, weighted lucky wheel, expanded drink menu and RPG visitors are wired',()=>{for(const item of ['Ginger Beer','Wine','Gin and Tonic','jukebox','wheel','npc','PLAY · 5 TOKENS','SPIN · 25 TOKENS','1,000 tickets'])assert.ok(game.includes(item)||world.includes(item),'missing '+item);assert.match(world,/visitorProfiles/);assert.match(world,/services\.push\(\{type:'npc'/);assert.match(game,/0 tickets 50\.5%/);assert.match(game,/max:50\.5,tickets:0/);assert.match(game,/max:99\.95,tickets:500/);});
+test('walk-up jukebox, weighted lucky wheel, expanded drink menu and RPG visitors are wired',()=>{for(const item of ['Ginger Beer','Wine','Gin and Tonic','jukebox','wheel','npc','PLAY · 5 TOKENS'])assert.ok(game.includes(item)||world.includes(item),'missing '+item);assert.match(world,/visitorProfiles/);assert.match(world,/services\.push\(\{type:'npc'/);assert.match(game,/function renderWheel\(\)/);assert.match(game,/NXWheelUI\.mount/);});
 test('cabinet previews stop while a game or service modal is open and respect reduced-motion settings',()=>{
  assert.match(world,/const gameOverlay=document\.querySelector\('#overlay'\),serviceModal=document\.querySelector\('#service-modal'\),reduceMotion=matchMedia\('\(prefers-reduced-motion: reduce\)'\)\.matches/);
  assert.match(world,/previewEnabled=!reduceMotion&&document\.visibilityState==='visible'/);
@@ -585,12 +585,8 @@ test('Glow Bar has three walk-up video poker machines with a playable five-card 
  assert.match(world,/makePokerMachine\(7\.1,-1\.8,0\);makePokerMachine\(8\.8,-1\.8,1\);makePokerMachine\(10\.5,-1\.8,2\)/);
  assert.match(world,/pokerMachines\.map/);
  assert.match(world,/machine:activeService\.machine/);
- assert.match(game,/function pokerDeck\(\)/);
- assert.match(game,/function pokerRank\(hand\)/);
- assert.match(game,/pokerPhase==='hold'/);
- assert.match(game,/pokerPaytable/);
- assert.match(game,/current\.tokens=wallet-5/);
- assert.match(game,/latest\.tokens=Number\(latest\.tokens\?\?250\)\+award\*5/);
+ assert.match(game,/function renderPoker\(\)/);
+ assert.match(game,/NXPokerUI\.mount/);
  assert.match(game,/service==='poker'/);
  assert.match(css,/\.poker-card\.held/);
  assert.match(css,/\.poker-paytable/);

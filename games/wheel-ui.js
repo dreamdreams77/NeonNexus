@@ -112,7 +112,7 @@
     persist((p, s) => { const b = W.begin(s, Number(p.tokens ?? 250), seg.key, now); if (b.ok) { p.tokens = Number(p.tokens ?? 250) - b.cost; ok = true; } return { stats: b.stats }; });
     if (!ok) return;
     st.ctx.status(''); st.result.hidden = true; st.result.className = 'wh-result'; st.ctx.sound(330, .12, 'triangle', .03); setTimeout(() => st && st.ctx.sound(494, .12, 'triangle', .03), 90);
-    refresh(); animate(plan(seg.key), (aborted) => { if (!aborted) resolve(false); else resolve(true); });
+    animate(plan(seg.key), (aborted) => { resolve(!!aborted); }); refresh();
   }
   function resolve(recovered) {
     let out = null; const now = Date.now();
