@@ -276,7 +276,7 @@ function drawHUD(c,api){
  T(c,'MOONSHARDS',24,76,10,'rgba(255,240,208,.6)','left',{stroke:null});
  N.bar(c,W/2-40,por?12:8,80,6,1-p.rcd/.95>0&&p.rcd>0?1-p.rcd/.95:1,'#7fb8e8');T(c,'ROLL',W/2,por?30:26,10,'#9ad0f8','center',{stroke:null});
  if(por)drawMinimap(c,api,W-76,10,20);else drawMinimap(c,api,W-70,6,20);
- if(S.boss&&!S.boss.dead){const bw=Math.min(380,W-60);N.bar(c,(W-bw)/2,por?64:30,bw,12,S.boss.hp/S.boss.max,'#ef6a6a');T(c,S.boss.type==='golem'?'STONE GUARDIAN':'MOON WARDEN',W/2,por?74:40,10,'#fff0d4','center',{stroke:null});}
+ if(S.boss&&!S.boss.dead){const bw=Math.min(380,W-60);N.bar(c,(W-bw)/2,por?104:30,bw,14,S.boss.hp/S.boss.max,'#ef6a6a');T(c,S.boss.type==='golem'?'STONE GUARDIAN':'MOON WARDEN',W/2,por?118:40,10,'#fff0d4','center',{stroke:null});}
  if(S.bannerT>0){c.save();c.globalAlpha=Math.min(1,S.bannerT*2);c.fillStyle='rgba(18,12,30,.6)';c.fillRect(0,api.H*.42,W,api.H*.14);T(c,S.banner,W/2,api.H*.5,Math.min(W,540)/13,PAL.gold,'center',{glow:PAL.gold});if(S.sub)T(c,S.sub,W/2,api.H*.54,15,'#fff0d4','center',{stroke:null});c.restore();}
 }
 function drawCards(c,api){
