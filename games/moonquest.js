@@ -74,7 +74,7 @@ function mk(type,x,y,api){
  const o={type,x,y,vx:0,vy:0,r:12,hp:2,max:2,t:Math.random()*6,fl:0,kb:{x:0,y:0},dead:0,cd:1+Math.random(),st:0,sa:Math.PI/2};
  if(type==='archer'){o.hp=o.max=2;o.r=11;}if(type==='knight'){o.hp=o.max=4;o.r=14;}
  if(type==='slime'){o.hp=o.max=Math.round(2*(mul>1?1.2:1));}
- if(type==='golem'){o.hp=o.max=Math.round(12*Math.pow(mul,.8));o.r=40;o.cd=2;o.stun=0;}
+ if(type==='golem'){o.hp=o.max=Math.round(9*Math.pow(mul,.8));o.r=40;o.cd=2;o.stun=0;}
  if(type==='warden'){o.hp=o.max=Math.round(14*Math.pow(mul,.8));o.r=30;o.cd=2.4;o.phase=1;}
  return o;
 }
@@ -141,7 +141,7 @@ function attack(api,ax,ay){
  if(S.cur.plates===undefined){}
 }
 function killEnt(api,e){
- e.dead=1;S.kills++;const pts={slime:3,archer:4,knight:7,golem:50,warden:80}[e.type];api.addScore(pts,e.x,e.y-14,'#fff0d4');api.burst(e.x,e.y,e.type==='slime'?'#8ad8a0':'#c8a888',16);sfx(api,'pop');
+ e.dead=1;S.kills++;const pts={slime:3,archer:4,knight:7,golem:60,warden:100}[e.type];api.addScore(pts,e.x,e.y-14,'#fff0d4');api.burst(e.x,e.y,e.type==='slime'?'#8ad8a0':'#c8a888',16);sfx(api,'pop');
  if(e.type==='golem'){S.cur.cleared=true;S.cur.shardPos={x:RW/2,y:RH/2};S.items.push({k:'shard',i:2,x:RW/2,y:RH/2});api.shake(14,.6);sfx(api,'win');S.boss=null;}
  else if(e.type==='warden'){S.cur.cleared=true;S.win=true;S.endT=1.8;api.shake(18,.9);sfx(api,'win');api.burst(e.x,e.y,'#ffe08a',60);S.boss=null;api.addScore(0);}
  else{const r=Math.random();if(r<.14)S.items.push({k:'heart',x:e.x,y:e.y});else if(r<.6)S.items.push({k:'coin',x:e.x,y:e.y});}
@@ -196,7 +196,7 @@ function updateEnts(api,dt){
   else if(e.type==='golem'){
    e.cd-=dt;if(e.stun>0){e.stun-=dt;}
    else if(e.st===0){moveEnt(e,ux*38*spd*dt,uy*38*spd*dt);if(e.cd<=0){e.st=1;e.tt=.95;e.sx=e.x;e.sy=e.y;}}
-   else if(e.st===1){e.tt-=dt;if(e.tt<=0){e.st=0;e.stun=2.2;e.cd=3.8/spd;api.shake(14,.4);sfx(api,'boom');S.fx.push({x:e.sx,y:e.sy,r:120,t:.4,max:.4,c:'#ffb060'});if(Math.hypot(p.x-e.sx,p.y-e.sy)<120)hurtPl(api,1,e.sx,e.sy);
+   else if(e.st===1){e.tt-=dt;if(e.tt<=0){e.st=0;e.stun=2.8;e.cd=3.4/spd;api.shake(14,.4);sfx(api,'boom');S.fx.push({x:e.sx,y:e.sy,r:120,t:.4,max:.4,c:'#ffb060'});if(Math.hypot(p.x-e.sx,p.y-e.sy)<120)hurtPl(api,1,e.sx,e.sy);
      if(e.hp<e.max*.6){for(let i=0;i<3;i++)S.proj.push({x:e.x,y:e.y,rock:1,tx:p.x+R(-120,120),ty:p.y+R(-90,90),t:0,life:1.1,r:26});}}}
    if(d<e.r+p.r&&e.stun<=0)hurtPl(api,1,e.x,e.y);}
   else if(e.type==='warden'){
@@ -315,7 +315,7 @@ NEXUS_GAMES.register('moonquest',{
   // items
   for(let i=S.items.length-1;i>=0;i--){const it=S.items[i];if(Math.hypot(it.x-p.x,it.y-p.y)<24){
    if(it.k==='coin'){api.addScore(1);S.coins++;api.sound(900,.05,'sine',.04);}else if(it.k==='heart'){if(p.hp<p.max){p.hp++;api.popText('+1 HEART',it.x,it.y-14,'#ef6a8a');}else api.addScore(2);sfx(api,'power');}
-   else if(it.k==='shard'){S.shards[it.i]=true;api.addScore(40,it.x,it.y-24,SH_COL[it.i]);api.burst(it.x,it.y,SH_COL[it.i],30);api.shake(8,.4);sfx(api,'win');S.banner='MOONSHARD '+S.shards.filter(Boolean).length+'/3';S.sub=S.shards.every(Boolean)?'The Moon Gate is open!':'';S.bannerT=1.6;if(S.shards.every(Boolean))api.achieve('shards','Shard Bearer',6);}
+   else if(it.k==='shard'){S.shards[it.i]=true;api.addScore(50,it.x,it.y-24,SH_COL[it.i]);api.burst(it.x,it.y,SH_COL[it.i],30);api.shake(8,.4);sfx(api,'win');S.banner='MOONSHARD '+S.shards.filter(Boolean).length+'/3';S.sub=S.shards.every(Boolean)?'The Moon Gate is open!':'';S.bannerT=1.6;if(S.shards.every(Boolean))api.achieve('shards','Shard Bearer',6);}
    S.items.splice(i,1);}}
  },
  draw(c,api){
