@@ -209,3 +209,7 @@ body.arcade-playing{overflow:hidden;overscroll-behavior:none}
 .overlay.is-module .game-progression{background:linear-gradient(180deg,#46304f,#33223e);border:1px solid #e4b67266;color:#f0e0d0}
 .overlay.is-module .game-progression p,.overlay.is-module .mastery-meta{color:#cdbac6}
 .overlay.is-module .arcade-toast{background:#1a1226f2}
+
+/* ===== Mobile compaction & compositing (graphics audit) ===== */
+@media(pointer:coarse){#stage{filter:none}.bar,.world-label,.cabinet-discovery,.service-modal{-webkit-backdrop-filter:none;backdrop-filter:none}.close{width:44px;height:44px}}
+@media(pointer:coarse) and (orientation:portrait){.overlay{padding:8px;align-items:start}.cabinet{padding:12px 12px 10px}.cabinet-head{padding-right:46px}.cabinet-head p:last-child,.overlay .game-progression,.overlay .result-quip{display:none}.cabinet-head h2{font-size:22px;margin:0}.game-controls{margin-top:8px}.game-controls span{display:none}.touch-ui{flex-wrap:wrap;justify-content:center;gap:8px;max-width:100%}.tu-group{gap:8px;flex-wrap:wrap;justify-content:center}.tu-btn{min-width:62px;min-height:62px}.tu-btn.big{min-width:84px;min-height:84px}.tu-stick{width:112px;height:112px}.tu-stick.axis-x{width:150px;height:76px}.overlay.is-module #stage{width:min(100%,calc((100dvh - 300px)*var(--cw,540)/var(--ch,860)))}}

@@ -449,7 +449,7 @@ if(time<=0){if(game==='racer'&&p.race&&!p.race.over){finishRace(true);return;}if
 function drawParticles(){for(const o of particles){ctx.globalAlpha=clamp(o.life*1.8,0,1);if(o.text){ctx.fillStyle=o.c;ctx.font='bold 18px Fredoka';ctx.fillText(o.text,o.x,o.y);}else circle(o.x,o.y,o.r,o.c);}ctx.globalAlpha=1;}
 function painterlyFinish(){ctx.save();ctx.globalAlpha=.62;ctx.fillStyle=paperPattern;ctx.fillRect(0,0,W,H);ctx.globalAlpha=.16;ctx.strokeStyle='#f6dfbd';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(16,18);ctx.quadraticCurveTo(420,13,884,19);ctx.quadraticCurveTo(890,260,883,502);ctx.quadraticCurveTo(450,510,17,501);ctx.quadraticCurveTo(10,260,16,18);ctx.stroke();ctx.globalAlpha=.1;for(let i=0;i<8;i++){const x=28+i*118,y=82+(i%3)*151;ctx.strokeStyle=i%2?'#f4c99c':'#2e253c';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x+7,y+10,x+13,y+21);ctx.stroke();}ctx.restore();}
 function drawKeyboardCursor(){if(!keyboardAim||!running)return;ctx.save();ctx.strokeStyle='#fff1c8';ctx.lineWidth=3;ctx.globalAlpha=.9;ctx.beginPath();ctx.arc(mouse.x,mouse.y,15,0,Math.PI*2);ctx.moveTo(mouse.x-22,mouse.y);ctx.lineTo(mouse.x-8,mouse.y);ctx.moveTo(mouse.x+8,mouse.y);ctx.lineTo(mouse.x+22,mouse.y);ctx.moveTo(mouse.x,mouse.y-22);ctx.lineTo(mouse.x,mouse.y-8);ctx.moveTo(mouse.x,mouse.y+8);ctx.lineTo(mouse.x,mouse.y+22);ctx.stroke();ctx.restore();}
-function loop(now){if(!running)return;const dt=Math.min(.04,(now-last)/1000);last=now;update(dt,now);ctx.save();if(shakeT>0){shakeT-=dt;const a=shakeM*Math.min(1,shakeT*4);ctx.translate(rand(-a,a),rand(-a,a));}draw();if(window.NEXUS_DEPTH&&!mod())NEXUS_DEPTH.draw(ctx);drawParticles();ctx.restore();painterlyFinish();drawKeyboardCursor();if(running)raf=requestAnimationFrame(loop);}
+function loop(now){if(!running)return;const dt=Math.min(.04,(now-last)/1000);last=now;update(dt,now);ctx.save();if(shakeT>0){shakeT-=dt;const a=shakeM*Math.min(1,shakeT*4);ctx.translate(rand(-a,a),rand(-a,a));}draw();if(window.NEXUS_DEPTH&&!mod())NEXUS_DEPTH.draw(ctx);drawParticles();ctx.restore();if(mod()){if(!lowTier())window.NXG&&NXG.grain(ctx,W,H,.55);}else painterlyFinish();drawKeyboardCursor();if(running)raf=requestAnimationFrame(loop);}
 function pointer(e){const r=canvas.getBoundingClientRect();mouse.x=(e.clientX-r.left)*W/r.width;mouse.y=(e.clientY-r.top)*H/r.height;if(game==='ringtoss')p.aim=mouse.x;if(!e.keyboardCursor)keyboardAim=false;}
 const RH_SPEED=252,RH_WINDOW={perfect:.06,good:.12,ok:.2};
 function initRhythm(){
@@ -712,6 +712,7 @@ window.addEventListener('nexus:service-open',e=>openService(e.detail.service,e.d
    games/<id>.js register {meta,size,portraitSize,touch,duration,init,start,update,draw,pointerdown/move/up,keydown/keyup,stop}
    via NEXUS_GAMES.register(id,def). arcade.js owns economy, saves, mastery, difficulty, particles, touch UI. */
 let shakeT=0,shakeM=0,curStick={x:0,y:0};
+const lowTier=()=>{try{return window.nexusSettings&&window.nexusSettings().quality==='low';}catch(e){return false;}};
 const mod=()=>window.NEXUS_GAMES?window.NEXUS_GAMES.get(game):null;
 const diffInfo=()=>{const v=cpuLevel();return{id:v>1?'hard':v<1?'easy':'normal',mul:v};};
 const extraStore=()=>{const s=readPlayer();return(s.arcadeExtra&&s.arcadeExtra[game])||{};};
