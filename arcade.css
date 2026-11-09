@@ -191,3 +191,5 @@ body.arcade-playing{overflow:hidden;overscroll-behavior:none}
 .game-hud-line{margin:6px 0 0;font:600 12px Fredoka,system-ui;letter-spacing:.8px;color:#ffe9b8;text-align:center;min-height:16px}
 @media(pointer:coarse) and (orientation:landscape) and (max-height:520px){.overlay .cabinet-head p,.overlay .game-progression,.overlay .result-quip{display:none}.cabinet-head{padding-block:4px}#stage{width:min(100%,calc((100dvh - 120px)*var(--cw,900)/var(--ch,520)))}}
 @media(pointer:coarse) and (orientation:portrait){.overlay.portrait-game #stage{width:min(100%,calc((100dvh - 330px)*var(--cw,540)/var(--ch,860)))}}
+.game-hud-line{color:#684b62}
+.level-pick{color:#684b62;font-weight:700}
