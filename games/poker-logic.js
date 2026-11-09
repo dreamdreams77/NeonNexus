@@ -24,8 +24,8 @@
       blurb: 'The house classic. A pair of Jacks or better pays.',
       pays: { royal: 250, straightFlush: 50, quads: 25, fullHouse: 9, flush: 6, straight: 4, trips: 3, twoPair: 2, pair: 1 } },
     { id: 'moon', name: 'Moon Deal · Five Card Draw', short: 'Moon Deal', game: 'Tens or Better', theme: 'moon', minPair: 10,
-      blurb: 'Pairs of Tens pay, with a richer full house and flush.',
-      pays: { royal: 250, straightFlush: 50, quads: 25, fullHouse: 7, flush: 5, straight: 4, trips: 3, twoPair: 2, pair: 1 } },
+      blurb: 'Pairs of Tens pay. Leaner big hands, more frequent wins.',
+      pays: { royal: 250, straightFlush: 50, quads: 20, fullHouse: 6, flush: 5, straight: 4, trips: 3, twoPair: 2, pair: 1 } },
     { id: 'lucky', name: 'Lucky Hand · Neon Poker', short: 'Lucky Hand', game: 'Aces Bonus', theme: 'lucky', minPair: 11, aceBonus: true,
       blurb: 'Jacks or Better with a bonus: four Aces pays 100.',
       pays: { royal: 250, straightFlush: 50, quadAces: 100, quads: 25, fullHouse: 8, flush: 5, straight: 4, trips: 3, twoPair: 2, pair: 1 } }
