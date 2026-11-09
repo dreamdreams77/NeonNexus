@@ -73,7 +73,7 @@ function spawnBoss(api){
 }
 function mult(){return Math.min(3,1+Math.floor(S.streak/4));}
 function damageTarget(api,o,bull){
- const d={n:6,arm:12,gold:30,ammo:0,bomb:8}[o.type]||0;
+ const d={n:3,arm:7,gold:14,ammo:0,bomb:5}[o.type]||0;
  const sm=o.r<26?1.4:o.r<32?1.15:1;
  if(o.type==='arm'&&--o.hp>0){o.flash=.15;api.popText('CLANK',o.x,o.y-o.r,'#cfe6ff');api.sound(500,.05,'square',.04);api.burst(o.x,o.y,'#cfe6ff',8);return false;}
  o.dead=1;S.hits++;S.waveAcc[0]++;S.streak++;S.best=Math.max(S.best,S.streak);api.combo=S.streak;
@@ -88,13 +88,13 @@ function damageTarget(api,o,bull){
 }
 function explode(api,b){
  api.shake(10,.3);sfx(api,'boom');api.burst(b.x,b.y,'#ffb060',30);
- for(const o of S.tg){if(o.dead||o===b)continue;if(Math.hypot(o.x-b.x,o.y-b.y)<110){if(o.type==='civ'){continue;}o.dead=1;S.hits++;S.streak++;api.addScore(5*mult(),o.x,o.y,'#ffb060');api.burst(o.x,o.y,'#ffb060',8);}}
+ for(const o of S.tg){if(o.dead||o===b)continue;if(Math.hypot(o.x-b.x,o.y-b.y)<110){if(o.type==='civ'){continue;}o.dead=1;S.hits++;S.streak++;api.addScore(2*mult(),o.x,o.y,'#ffb060');api.burst(o.x,o.y,'#ffb060',8);}}
  if(S.boss&&Math.hypot(S.boss.x-b.x,S.boss.y-b.y)<130&&S.boss.state==='open')bossHit(api,1);
 }
 function bossHit(api,dmg){
  const b=S.boss;if(!b||S.bossDead)return;b.hp-=dmg;b.flash=.2;S.hits++;S.waveAcc[0]++;S.streak++;S.best=Math.max(S.best,S.streak);api.combo=S.streak;
- api.addScore(8*mult(),b.x,b.y-b.r,'#ffd08a');api.burst(b.x,b.y,'#ffd08a',18);api.shake(8,.22);sfx(api,'hit');
- if(b.hp<=0){S.bossDead=true;api.addScore(80,b.x,b.y-b.r*1.5,'#ffe08a');api.burst(b.x,b.y,'#ffe08a',60);api.shake(18,.8);sfx(api,'win');S.endT=1.8;S.tg.forEach(o=>{if(o.type!=='civ')o.dead=1;});api.achieve('boss','Baron Popped',10);api.store.set('boss',(api.store.get('boss',0)||0)+1);if(api.store.get('boss',0)>=1)api.store.set('retUnlock',Math.max(api.store.get('retUnlock',0),2));}
+ api.addScore(5*mult(),b.x,b.y-b.r,'#ffd08a');api.burst(b.x,b.y,'#ffd08a',18);api.shake(8,.22);sfx(api,'hit');
+ if(b.hp<=0){S.bossDead=true;api.addScore(50,b.x,b.y-b.r*1.5,'#ffe08a');api.burst(b.x,b.y,'#ffe08a',60);api.shake(18,.8);sfx(api,'win');S.endT=1.8;S.tg.forEach(o=>{if(o.type!=='civ')o.dead=1;});api.achieve('boss','Baron Popped',10);api.store.set('boss',(api.store.get('boss',0)||0)+1);if(api.store.get('boss',0)>=1)api.store.set('retUnlock',Math.max(api.store.get('retUnlock',0),2));}
 }
 function shoot(api,x,y){
  if(S.done||S.endT>=0||S.cool>0)return;
@@ -276,7 +276,7 @@ NEXUS_GAMES.register('target',{
   // waves
   if(S.wave<5&&S.wave>=0){const d=WAVEDEF[S.wave];
    if(S.spawned<d.n){S.spawnT-=dt;if(S.spawnT<=0){S.spawnT=d.iv*R(.7,1.3)/Math.pow(mul,.5);if(S.alive<(5+S.wave)){spawnWaveTarget(api);}}}
-   else if(S.alive<=0||S.tg.every(o=>o.type==='civ'||o.type==='ammo'||o.dead)){if(S.clearT<0){S.clearT=1.1;const acc=S.waveAcc[1]?S.waveAcc[0]/S.waveAcc[1]:0;const bonus=20+Math.round(acc*25);api.addScore(bonus,W/2,H*.4,'#9de3d1');api.popText('WAVE CLEAR · ACC '+Math.round(acc*100)+'%',W/2,H*.35,'#fff0d4');sfx(api,'win');
+   else if(S.alive<=0||S.tg.every(o=>o.type==='civ'||o.type==='ammo'||o.dead)){if(S.clearT<0){S.clearT=1.1;const acc=S.waveAcc[1]?S.waveAcc[0]/S.waveAcc[1]:0;const bonus=10+Math.round(acc*15);api.addScore(bonus,W/2,H*.4,'#9de3d1');api.popText('WAVE CLEAR · ACC '+Math.round(acc*100)+'%',W/2,H*.35,'#fff0d4');sfx(api,'win');
      S.hearts=Math.min(3,S.hearts+(acc>=.8?1:0));S.ammo=S.maxAmmo;if(S.reload>=0)S.reload=-1;
      for(const o of S.tg){if(o.type==='civ'||o.type==='ammo')o.dead=2;}}
     else{S.clearT-=dt;if(S.clearT<=0){if(S.wave===4){setWave(api,5);}else setWave(api,S.wave+1);}}}

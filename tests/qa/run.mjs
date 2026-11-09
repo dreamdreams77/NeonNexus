@@ -64,7 +64,7 @@ const VP = {
 
 async function newPage(kind, url = '/arcade.html?debug', seed, world = false) {
   const ctx = await browser.newContext({ ...VP[kind], serviceWorkers: 'block' });
-  await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
+  await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.fulfill({ body: '', contentType: /css/.test(r.request().url()) ? 'text/css' : 'font/woff2' }));
   await ctx.route(/cdn\.jsdelivr\.net\/npm\/three@/, r => { const rel = new URL(r.request().url()).pathname.replace(/^\/npm\/three@[^/]+\//, ''); const f = THREE && path.join(path.dirname(path.dirname(THREE)), rel); return f && fs.existsSync(f) ? r.fulfill({ path: f, contentType: 'text/javascript', headers: { 'access-control-allow-origin': '*' } }) : r.abort(); });
   if (!world) await ctx.route(/\/arcade-world\.js/, r => r.fulfill({ body: '/* QA: 3D lobby stubbed for game tests */', contentType: 'text/javascript' }));
   if (seed) await ctx.addInitScript(([k, v]) => { if (!localStorage.getItem(k)) localStorage.setItem(k, v); }, [KEY, JSON.stringify(seed)]);
