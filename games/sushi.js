@@ -265,7 +265,7 @@ NEXUS_GAMES.register('sushi',{
  pointerup(x,y,e,api){S.tgt=null;},
  keydown(e,api){const k=e.key;
   if(k==='ArrowLeft'||k==='ArrowRight'||k==='a'||k==='d'||k==='A'||k==='D'){S.keys[k.length===1?k.toLowerCase():k]=true;S.tgt=null;}
-  else if(k===' '||k==='Enter'){let best=-1,bs=-1;S.cust.forEach((cu,i)=>{if(cu&&!cu.done&&cu.in>=1){const ok=cu.order.some(p=>!p.got&&(S.tray.some(t=>t.type===p.t&&t.kind!=='gold')||S.tray.some(t=>t.kind==='gold')));if(ok){const sc=1-cu.pat/cu.max;if(sc>bs){bs=sc;best=i;}}}});if(best>=0)serve(api,best);else{api.popText('NOTHING TO SERVE',S.tx,geo(api).trayY-60,'#ffb0a0');sfx(api,'miss');}}
+  else if(k===' '||k==='Enter'){let best=-1,bs=-1;S.cust.forEach((cu,i)=>{if(cu&&!cu.done&&cu.in>=1){const ok=cu.order.some(p=>!p.got&&(S.tray.some(t=>t.type===p.t&&t.kind!=='gold')||S.tray.some(t=>t.kind==='gold')));if(ok){const sc=1-cu.pat/cu.max;if(sc>bs){bs=sc;best=i;}}}});if(best>=0)serve(api,best);else if(!(S.nts>performance.now()-700)){S.nts=performance.now();api.popText('NOTHING TO SERVE',S.tx,geo(api).trayY-60,'#ffb0a0');sfx(api,'miss');}}
   else if(['1','2','3'].includes(k))serve(api,+k-1);
   else if(k==='x'||k==='X'){if(S.tray.length&&S.dump<=0){S.tray.pop();S.dump=.3;sfx(api,'miss');}}
  },
