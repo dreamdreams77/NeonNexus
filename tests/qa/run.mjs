@@ -322,6 +322,13 @@ async function runLobby(kind) {
       if (!P.touch) { await P.page.mouse.move(400, 400); for (const k of ['w', 'a', 's', 'd', 'ArrowUp', 'e']) { await P.page.keyboard.down(k); await sleep(500); await P.page.keyboard.up(k); } }
       await sleep(500);
     }
+    for (const id of ['whack', 'racer', 'gemdig']) {
+      await P.page.evaluate(g => window.dispatchEvent(new CustomEvent('nexus:arcade-play', { detail: { gameId: g } })), id);
+      await sleep(500);
+      const o = await P.page.evaluate(() => ({ open: !document.getElementById('overlay').hidden, title: document.getElementById('game-title')?.textContent }));
+      if (!o.open) issues.push(['FAIL', 'nexus:arcade-play ' + id + ' did not open cabinet from lobby']);
+      else { await P.page.locator('#start').click({ timeout: 5000 }).catch(() => {}); await sleep(1500); if (!(await getState(P.page)).running) issues.push(['FAIL', 'lobby-opened ' + id + ' not running after START']); await P.page.locator('#close').click({ timeout: 3000 }).catch(() => {}); await sleep(300); }
+    }
     await P.page.screenshot({ path: path.join(SHOTS, `lobby-${kind}.png`) });
     for (const e of [...new Set(P.errs)].slice(0, 6)) issues.push(['FAIL', e]);
   } catch (e) { issues.push(['FAIL', 'lobby exception: ' + e.message.split('\n')[0].slice(0, 160)]); }
