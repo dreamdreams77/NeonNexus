@@ -1,9 +1,10 @@
 /* games/moonquest.js — Neon Nexus cabinet module */
 (function(){'use strict';
 const N=window.NXG,TAU=Math.PI*2,cl=N.clamp,lerp=N.lerp,R=N.rand,E=N.ease;
+const DBG=/debug/.test(location.search);
 const RI=(a,b)=>Math.floor(a+Math.random()*(b-a+1));
 const PAL={cream:'#f8e9ca',coral:'#ef896d',mint:'#91c9a7',plum:'#684b62',gold:'#f2ce77',ink:'#1a1226'};
-function T(c,t,x,y,s,col,al,o){N.text(c,t,x,y,Object.assign({font:'700 '+s+'px Fredoka, system-ui, sans-serif',color:col||'#fff0d4',align:al||'left',stroke:PAL.ink,sw:Math.max(2,s/6)},o||null));}
+function T(c,t,x,y,s,col,al,o){if(c.canvas&&c.canvas.height>c.canvas.width)s=Math.max(s,s>=24?s:15);N.text(c,t,x,y,Object.assign({font:'700 '+s+'px Fredoka, system-ui, sans-serif',color:col||'#fff0d4',align:al||'left',stroke:PAL.ink,sw:Math.max(2,s/6)},o||null));}
 function wrap(c,txt,mw,font){c.font=font;const w=txt.split(' '),out=[];let l='';for(const x of w){const t=l?l+' '+x:x;if(c.measureText(t).width>mw&&l){out.push(l);l=x;}else l=t;}if(l)out.push(l);return out;}
 /* READY panel: objective + how-to + best */
 function readyScreen(c,api,title,obj,how,col,extra){
@@ -12,7 +13,7 @@ function readyScreen(c,api,title,obj,how,col,extra){
  const f='600 '+fs+'px Fredoka, system-ui, sans-serif';let lines=[];
  const ol=wrap(c,obj,pw-48,f);how.forEach(h=>lines.push(...wrap(c,'• '+h,pw-48,f)));
  const ph=Math.min(H-24,92+ol.length*(fs+5)+lines.length*(fs+5)+(extra?30:0)+56),px=(W-pw)/2,py=(H-ph)/2;
- N.slab(c,px,py,pw,ph,24,'#4a3552');
+ N.slab(c,px,py,pw,ph,24,'#4a3552');N.coil(c,px+3,py+3,pw-6,ph-6,22);
  T(c,title,W/2,py+46,Math.min(40,pw/11),col||PAL.gold,'center',{glow:col||PAL.gold});
  let y=py+78;ol.forEach(l=>{T(c,l,W/2,y,fs,'#fff0d4','center',{font:f,stroke:null});y+=fs+5;});y+=8;
  lines.forEach(l=>{T(c,l,px+26,y,fs,'#d8f0e0','left',{font:f,stroke:null});y+=fs+5;});
@@ -236,7 +237,7 @@ function drawHero(c,p,api){
 function drawEnt(c,e,api){
  if(e.dead)return;const t=S.t;c.save();c.translate(e.x,e.y);
  if(e.type==='slime'){const sq=1+Math.sin(e.t*8)*.08;N.shadow(c,0,10,14,5,.3);c.scale(1/sq,sq);const g=c.createRadialGradient(-4,-6,2,0,0,16);g.addColorStop(0,'#d0ffd8');g.addColorStop(.6,'#5ac880');g.addColorStop(1,'#2a7a50');c.fillStyle=g;c.beginPath();c.moveTo(-14,10);c.quadraticCurveTo(-16,-14,0,-14);c.quadraticCurveTo(16,-14,14,10);c.closePath();c.fill();c.strokeStyle='rgba(20,40,30,.7)';c.lineWidth=2.5;c.stroke();c.fillStyle='#fff';c.beginPath();c.arc(-5,-3,4,0,TAU);c.arc(5,-3,4,0,TAU);c.fill();c.fillStyle='#1a2a22';c.beginPath();c.arc(-4,-2,2,0,TAU);c.arc(6,-2,2,0,TAU);c.fill();c.fillStyle='rgba(255,255,255,.5)';c.beginPath();c.ellipse(-7,-9,4,2,-.4,0,TAU);c.fill();}
- else if(e.type==='archer'){N.shadow(c,0,10,12,4,.3);c.fillStyle='#6a4a3a';c.beginPath();c.moveTo(-11,11);c.lineTo(-8,-8);c.lineTo(8,-8);c.lineTo(11,11);c.fill();c.strokeStyle='rgba(30,16,20,.7)';c.lineWidth=2.5;c.stroke();N.ball(c,0,-10,9,'#c0d878',{shadow:false});c.fillStyle='#1a1226';c.beginPath();c.arc(-3,-11,1.8,0,TAU);c.arc(3,-11,1.8,0,TAU);c.fill();c.save();c.rotate(e.aim||0);c.strokeStyle='#d8a050';c.lineWidth=3;c.beginPath();c.arc(12,0,12,-1.2,1.2);c.stroke();if(e.st===1){c.strokeStyle='rgba(255,90,70,.7)';c.lineWidth=2;c.setLineDash([6,5]);c.beginPath();c.moveTo(14,0);c.lineTo(300,0);c.stroke();}c.restore();}
+ else if(e.type==='archer'){N.shadow(c,0,10,12,4,.3);c.fillStyle='#6a4a3a';c.beginPath();c.moveTo(-11,11);c.lineTo(-8,-8);c.lineTo(8,-8);c.lineTo(11,11);c.fill();c.strokeStyle='rgba(30,16,20,.7)';c.lineWidth=2.5;c.stroke();N.blob(c,0,-10,9,'#c0d878',4,{shadow:false});c.fillStyle='#1a1226';c.beginPath();c.arc(-3,-11,1.8,0,TAU);c.arc(3,-11,1.8,0,TAU);c.fill();c.save();c.rotate(e.aim||0);c.strokeStyle='#d8a050';c.lineWidth=3;c.beginPath();c.arc(12,0,12,-1.2,1.2);c.stroke();if(e.st===1){c.strokeStyle='rgba(255,90,70,.7)';c.lineWidth=2;c.setLineDash([6,5]);c.beginPath();c.moveTo(14,0);c.lineTo(300,0);c.stroke();}c.restore();}
  else if(e.type==='knight'){N.shadow(c,0,12,15,5,.3);const g=c.createRadialGradient(-5,-8,2,0,0,17);g.addColorStop(0,'#e8e8f8');g.addColorStop(.6,'#8a90b8');g.addColorStop(1,'#464a70');c.fillStyle=g;c.beginPath();c.arc(0,0,14,0,TAU);c.fill();c.strokeStyle='rgba(20,16,40,.7)';c.lineWidth=2.5;c.stroke();c.fillStyle='#1a1226';c.fillRect(-7,-5,14,5);c.fillStyle='#ff5a4a';c.fillRect(-4,-4,3,3);c.fillRect(2,-4,3,3);
   c.save();c.rotate(e.sa);c.fillStyle='#d8a050';c.beginPath();c.ellipse(15,0,6,14,0,0,TAU);c.fill();c.stroke();c.fillStyle='#ef896d';c.beginPath();c.ellipse(15,0,2.5,8,0,0,TAU);c.fill();c.restore();}
  else if(e.type==='golem'){N.shadow(c,0,36,50,12,.4);if(e.st===1){c.save();c.translate(e.sx-e.x,e.sy-e.y);c.fillStyle='rgba(255,90,70,'+(.18+.1*Math.sin(t*30))+')';c.beginPath();c.arc(0,0,120,0,TAU);c.fill();c.strokeStyle='rgba(255,120,90,.8)';c.lineWidth=4;c.stroke();c.restore();}
@@ -274,7 +275,7 @@ function drawCards(c,api){
  S.cards.forEach((u,i)=>{const x=por?sx:sx+i*(cw+gap),y=por?sy+i*(ch+gap):sy;S.cr.push({x,y,w:cw,h:ch});N.slab(c,x,y,cw,ch,18,N.mix(u.c,'#3a2540',.6),{depth:7});c.strokeStyle=u.c;c.lineWidth=3;N.rr(c,x,y,cw,ch,18);c.stroke();T(c,String(i+1),x+20,y+36,28,u.c,'left',{stroke:null});N.ball(c,x+cw/2,y+(por?50:76),24,u.c,{shadow:false});T(c,u.n,x+cw/2,y+(por?100:130),19,'#fff0d4','center',{stroke:null});T(c,u.d,x+cw/2,y+(por?126:158),14,'#d8c8e8','center',{stroke:null});});
 }
 NEXUS_GAMES.register('moonquest',{
- dbg:()=>S,jumpRoom(r){enterRoom(NEXUS_ARCADE_API,r,'s');},
+ ...(DBG?{dbg:()=>S,jumpRoom(r){enterRoom(NEXUS_ARCADE_API,r,'s');}}:{}),
  meta:{title:'Moonshard Legend',help:'Explore the moon ruins, claim three Moonshards from their guardians, then open the Moon Gate.',controls:'WASD / ARROWS move · SPACE/Z slash (3-hit combo) · SHIFT/X roll',type:'ADVENTURE · ACTION'},
  size:[900,520],portraitSize:[540,860],duration:320,tier:1.4,
  touch:[{kind:'stick',side:'left'},{kind:'btn',side:'right',label:'ROLL',key:'x',cls:'alt'},{kind:'btn',side:'right',label:'SLASH',key:' ',big:true}],

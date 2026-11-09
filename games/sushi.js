@@ -1,9 +1,10 @@
 /* games/sushi.js — Neon Nexus cabinet module */
 (function(){'use strict';
 const N=window.NXG,TAU=Math.PI*2,cl=N.clamp,lerp=N.lerp,R=N.rand,E=N.ease;
+const DBG=/debug/.test(location.search);
 const RI=(a,b)=>Math.floor(a+Math.random()*(b-a+1));
 const PAL={cream:'#f8e9ca',coral:'#ef896d',mint:'#91c9a7',plum:'#684b62',gold:'#f2ce77',ink:'#1a1226'};
-function T(c,t,x,y,s,col,al,o){N.text(c,t,x,y,Object.assign({font:'700 '+s+'px Fredoka, system-ui, sans-serif',color:col||'#fff0d4',align:al||'left',stroke:PAL.ink,sw:Math.max(2,s/6)},o||null));}
+function T(c,t,x,y,s,col,al,o){if(c.canvas&&c.canvas.height>c.canvas.width)s=Math.max(s,s>=24?s:15);N.text(c,t,x,y,Object.assign({font:'700 '+s+'px Fredoka, system-ui, sans-serif',color:col||'#fff0d4',align:al||'left',stroke:PAL.ink,sw:Math.max(2,s/6)},o||null));}
 function wrap(c,txt,mw,font){c.font=font;const w=txt.split(' '),out=[];let l='';for(const x of w){const t=l?l+' '+x:x;if(c.measureText(t).width>mw&&l){out.push(l);l=x;}else l=t;}if(l)out.push(l);return out;}
 /* READY panel: objective + how-to + best */
 function readyScreen(c,api,title,obj,how,col,extra){
@@ -12,7 +13,7 @@ function readyScreen(c,api,title,obj,how,col,extra){
  const f='600 '+fs+'px Fredoka, system-ui, sans-serif';let lines=[];
  const ol=wrap(c,obj,pw-48,f);how.forEach(h=>lines.push(...wrap(c,'• '+h,pw-48,f)));
  const ph=Math.min(H-24,92+ol.length*(fs+5)+lines.length*(fs+5)+(extra?30:0)+56),px=(W-pw)/2,py=(H-ph)/2;
- N.slab(c,px,py,pw,ph,24,'#4a3552');
+ N.slab(c,px,py,pw,ph,24,'#4a3552');N.coil(c,px+3,py+3,pw-6,ph-6,22);
  T(c,title,W/2,py+46,Math.min(40,pw/11),col||PAL.gold,'center',{glow:col||PAL.gold});
  let y=py+78;ol.forEach(l=>{T(c,l,W/2,y,fs,'#fff0d4','center',{font:f,stroke:null});y+=fs+5;});y+=8;
  lines.forEach(l=>{T(c,l,px+26,y,fs,'#d8f0e0','left',{font:f,stroke:null});y+=fs+5;});
@@ -142,7 +143,7 @@ function drawCust(c,api,ci,g){
  if(an.ear==='tri'||an.ear==='bump'){for(const s of[-1,1]){c.fillStyle=ec;c.beginPath();if(an.ear==='tri'){c.moveTo(s*r*.35,-r*.8);c.lineTo(s*r*.95,-r*1.3);c.lineTo(s*r*.9,-r*.4);}else c.arc(s*r*.6,-r*.9,r*.28,0,TAU);c.closePath();c.fill();c.strokeStyle='rgba(30,16,34,.5)';c.lineWidth=2;c.stroke();}}
  else if(an.ear==='round'){for(const s of[-1,1]){c.fillStyle=ec;c.beginPath();c.arc(s*r*.72,-r*.72,r*.3,0,TAU);c.fill();c.stroke();}}
  else{for(const s of[-1,1]){c.fillStyle=ec;c.beginPath();c.ellipse(s*r*.4,-r*1.3,r*.2,r*.55,s*.15,0,TAU);c.fill();c.strokeStyle='rgba(30,16,34,.5)';c.lineWidth=2;c.stroke();}}
- N.ball(c,0,0,r,an.c,{shadow:false});
+ N.blob(c,0,0,r,an.c,ci*3+1,{shadow:false});
  const mood=cu.mood,pr=cu.pat/cu.max,eyes=cu.done===2?'x':pr<.3?'w':'n';
  c.fillStyle='#fff';for(const s of[-1,1]){c.beginPath();c.arc(s*r*.36,-r*.1,r*.2,0,TAU);c.fill();c.fillStyle='#241830';c.beginPath();c.arc(s*r*.36,-r*.07,r*(eyes==='w'?.12:.1),0,TAU);c.fill();c.fillStyle='#fff';}
  c.strokeStyle='#4a2a30';c.lineWidth=2.5;c.beginPath();if(mood>0||pr>.6)c.arc(0,r*.2,r*.25,.2,Math.PI-.2);else if(mood<0||pr<.3)c.arc(0,r*.5,r*.22,Math.PI+.3,-.3);else{c.moveTo(-r*.2,r*.35);c.lineTo(r*.2,r*.35);}c.stroke();
@@ -193,7 +194,7 @@ function stationDraw(c,api,g){
   c.restore();}
 }
 NEXUS_GAMES.register('sushi',{
- dbg:()=>S,
+ ...(DBG?{dbg:()=>S}:{}),
  meta:{title:'Sushi Catch',help:'Catch plates from the conveyor stations on your tray and serve guests the exact combos they order.',controls:'A/D or ←→ move · SPACE serve · 1-2-3 pick guest · X dump · mouse/touch drag',type:'CATCH · ORDERS'},
  size:[900,520],portraitSize:[540,860],duration:140,tier:1.05,
  touch:[{kind:'stick',side:'left',axis:'x',keys:['ArrowLeft','ArrowRight']},{kind:'btn',side:'right',label:'SERVE',key:' ',big:true,cls:'alt'}],

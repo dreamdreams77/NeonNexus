@@ -1,9 +1,10 @@
 /* games/meteor.js — Neon Nexus cabinet module */
 (function(){'use strict';
 const N=window.NXG,TAU=Math.PI*2,cl=N.clamp,lerp=N.lerp,R=N.rand,E=N.ease;
+const DBG=/debug/.test(location.search);
 const RI=(a,b)=>Math.floor(a+Math.random()*(b-a+1));
 const PAL={cream:'#f8e9ca',coral:'#ef896d',mint:'#91c9a7',plum:'#684b62',gold:'#f2ce77',ink:'#1a1226'};
-function T(c,t,x,y,s,col,al,o){N.text(c,t,x,y,Object.assign({font:'700 '+s+'px Fredoka, system-ui, sans-serif',color:col||'#fff0d4',align:al||'left',stroke:PAL.ink,sw:Math.max(2,s/6)},o||null));}
+function T(c,t,x,y,s,col,al,o){if(c.canvas&&c.canvas.height>c.canvas.width)s=Math.max(s,s>=24?s:15);N.text(c,t,x,y,Object.assign({font:'700 '+s+'px Fredoka, system-ui, sans-serif',color:col||'#fff0d4',align:al||'left',stroke:PAL.ink,sw:Math.max(2,s/6)},o||null));}
 function wrap(c,txt,mw,font){c.font=font;const w=txt.split(' '),out=[];let l='';for(const x of w){const t=l?l+' '+x:x;if(c.measureText(t).width>mw&&l){out.push(l);l=x;}else l=t;}if(l)out.push(l);return out;}
 /* READY panel: objective + how-to + best */
 function readyScreen(c,api,title,obj,how,col,extra){
@@ -12,7 +13,7 @@ function readyScreen(c,api,title,obj,how,col,extra){
  const f='600 '+fs+'px Fredoka, system-ui, sans-serif';let lines=[];
  const ol=wrap(c,obj,pw-48,f);how.forEach(h=>lines.push(...wrap(c,'• '+h,pw-48,f)));
  const ph=Math.min(H-24,92+ol.length*(fs+5)+lines.length*(fs+5)+(extra?30:0)+56),px=(W-pw)/2,py=(H-ph)/2;
- N.slab(c,px,py,pw,ph,24,'#4a3552');
+ N.slab(c,px,py,pw,ph,24,'#4a3552');N.coil(c,px+3,py+3,pw-6,ph-6,22);
  T(c,title,W/2,py+46,Math.min(40,pw/11),col||PAL.gold,'center',{glow:col||PAL.gold});
  let y=py+78;ol.forEach(l=>{T(c,l,W/2,y,fs,'#fff0d4','center',{font:f,stroke:null});y+=fs+5;});y+=8;
  lines.forEach(l=>{T(c,l,px+26,y,fs,'#d8f0e0','left',{font:f,stroke:null});y+=fs+5;});
@@ -241,7 +242,7 @@ function doDash(api){
 function ix(api){let x=0;if(S.keys.ArrowLeft||S.keys.a)x-=1;if(S.keys.ArrowRight||S.keys.d)x+=1;if(!x&&api.stick&&Math.abs(api.stick.x)>.12)x=api.stick.x;return x;}
 function iy(api){let y=0;if(S.keys.ArrowUp||S.keys.w)y-=1;if(S.keys.ArrowDown||S.keys.s)y+=1;if(!y&&api.stick&&Math.abs(api.stick.y)>.12)y=api.stick.y;return y;}
 NEXUS_GAMES.register('meteor',{
- dbg:()=>S,jump(w){setWave(NEXUS_ARCADE_API,w);},
+ ...(DBG?{dbg:()=>S,jump(w){setWave(NEXUS_ARCADE_API,w);}}:{}),
  meta:{title:'Meteor Mayhem',help:'Pilot your ship through the meteor storm. The cannon auto-targets - you steer, dash and grab pickups.',controls:'WASD / ARROWS fly · SPACE dash · hold mouse to steer, click to dash',type:'DODGE · SURVIVE'},
  size:[900,520],portraitSize:[540,860],duration:170,tier:1.1,
  touch:[{kind:'stick',side:'left'},{kind:'btn',side:'right',label:'DASH',key:' ',big:true,cls:'alt'}],

@@ -61,16 +61,14 @@ function bakeStall(c,g){
  // planked back wall
  const wy=H*.095;const wg=c.createLinearGradient(0,wy,0,g.hz);wg.addColorStop(0,'#6a4162');wg.addColorStop(1,'#8a5670');c.fillStyle=wg;c.fillRect(0,wy,W,g.hz-wy+4);
  for(let x=0;x<W;x+=38){c.strokeStyle='rgba(30,12,40,.4)';c.lineWidth=2;c.beginPath();c.moveTo(x,wy);c.lineTo(x,g.hz);c.stroke();c.strokeStyle='rgba(255,224,190,.1)';c.beginPath();c.moveTo(x+2,wy);c.lineTo(x+2,g.hz);c.stroke();for(let k=0;k<2;k++){c.strokeStyle='rgba(30,12,40,.22)';c.beginPath();const yy=wy+R()*(g.hz-wy);c.moveTo(x+6,yy);c.lineTo(x+20+R()*8,yy+R()*4);c.stroke();}}
- // poster sign on wall
- {const sw=Math.min(W*.4,300),sh2=34,sx=W/2-sw/2,sy=wy+8;claySlab(c,sx,sy,sw,sh2,12,'#5a3d62',2.4);c.strokeStyle='#e4b672';c.lineWidth=1.8;N.rr(c,sx+4,sy+4,sw-8,sh2-8,8);c.stroke();N.text(c,'COMET RING TOSS',W/2,sy+23,{font:'700 16px Fredoka',align:'center',color:'#ffd2dc',stroke:'#1a1226',sw:3});}
  // shelf + prizes
  const pr=Math.round(H*.036),shy=g.hz-H*.035;
  for(let i=0;i<(por?6:10);i++){const n=por?6:10,x=(i+.5)*W/n;const s=prizeSpr(i%5,pr);c.drawImage(s,x-s.width/2,g.hz-H*.07-s.height/2+pr*.1);}
  claySlab(c,-6,shy,W+12,14,5,'#8a5b3a',2.4);c.fillStyle='rgba(10,4,20,.3)';c.fillRect(0,shy+14,W,10);
  // floor (wood boards in perspective)
  const fg=c.createLinearGradient(0,g.hz,0,g.yb);fg.addColorStop(0,'#8a5f72');fg.addColorStop(1,'#d9a874');c.fillStyle=fg;c.fillRect(0,g.hz,W,H-g.hz);
- for(let i=-8;i<=8;i++){const x0=i*.35;const a=P(g,x0,1),b=P(g,x0,-.14);c.fillStyle=(i&1)?'rgba(255,224,190,.07)':'rgba(30,12,30,.07)';c.beginPath();const a2=P(g,x0+.35,1),b2=P(g,x0+.35,-.14);c.moveTo(a.x,a.y);c.lineTo(a2.x,a2.y);c.lineTo(b2.x,b2.y);c.lineTo(b.x,b.y);c.closePath();c.fill();c.strokeStyle='rgba(42,26,44,.38)';c.lineWidth=1.8;c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.stroke();}
- for(let z=0;z<1;z+=.1){const a1=P(g,-9,z),a2=P(g,9,z);c.strokeStyle='rgba(42,26,44,.2)';c.beginPath();c.moveTo(0,a1.y);c.lineTo(W,a2.y);c.stroke();}
+ for(let i=-8;i<=8;i++){const x0=i*.35;const a=P(g,x0,30),b=P(g,x0,-.14);c.fillStyle=(i&1)?'rgba(255,224,190,.07)':'rgba(30,12,30,.07)';c.beginPath();const a2=P(g,x0+.35,30),b2=P(g,x0+.35,-.14);c.moveTo(a.x,a.y);c.lineTo(a2.x,a2.y);c.lineTo(b2.x,b2.y);c.lineTo(b.x,b.y);c.closePath();c.fill();c.strokeStyle='rgba(42,26,44,.38)';c.lineWidth=1.8;c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.stroke();}
+ for(let z=0;z<30;z=z*1.3+.1){const a1=P(g,-9,z),a2=P(g,9,z);c.strokeStyle='rgba(42,26,44,.2)';c.beginPath();c.moveTo(0,a1.y);c.lineTo(W,a2.y);c.stroke();}
  for(let i=0;i<200;i++){const z=R(),q=P(g,(R()-.5)*3,z);c.fillStyle=R()>.5?'rgba(255,240,210,.22)':'rgba(30,12,30,.2)';c.fillRect(q.x,q.y,1.6,1.2);}
  // spotlight pool
  const lp=c.createRadialGradient(W/2,(g.hz+g.yb)/2,10,W/2,(g.hz+g.yb)/2,W*.5);lp.addColorStop(0,'rgba(255,224,170,.28)');lp.addColorStop(1,'rgba(255,224,170,0)');c.fillStyle=lp;c.fillRect(0,g.hz,W,H-g.hz);
@@ -110,8 +108,8 @@ function draw(ctx,a){const p=a.p,g=geom(a),W=g.W,H=g.H;
  // HUD
  const S=STAGES[p.stage];N.chip(ctx,12,H*.13,100,'STAGE',(p.stage+1)+'/3',{color:'#ffe08a'});N.chip(ctx,122,H*.13,130,'GOAL',p.stageScore+' / '+S.need,{color:p.stageScore>=S.need?'#91c9a7':'#fff0d4'});N.chip(ctx,262,H*.13,100,'SCORE',a.score);if(p.streak>1)N.chip(ctx,372,H*.13,110,'STREAK','x'+(1+Math.min(3,p.streak)*.25).toFixed(2),{color:'#ef896d'});
  if(p.wind){const pw=104,px=W-pw-12,py=H*.13+4;ctx.fillStyle='rgba(18,10,28,.62)';N.rr(ctx,px,py,pw,30,15);ctx.fill();ctx.strokeStyle='rgba(228,182,114,.6)';ctx.lineWidth=1.3;ctx.stroke();N.text(ctx,'WIND '+(p.windDir>0?'→':'←')+' '+Math.round(p.wind*100),px+pw/2,py+20,{align:'center',font:'700 13px Fredoka',color:'#bfe4da'});}
- if(p.msgT>0){ctx.save();ctx.globalAlpha=Math.min(1,p.msgT*2);const sc=1+Math.max(0,p.msgT-1)*.3;ctx.translate(W/2,H*.5);ctx.scale(sc,sc);N.text(ctx,p.msg,0,0,{font:'700 '+Math.round(Math.min(W,H)*.06)+'px Fredoka',align:'center',color:'#ffe08a',stroke:'#1a1226',sw:6,glow:'#ff6f91'});ctx.restore();}
- if(!a.running){const w=Math.min(W*.8,380),h=54,x=W/2-w/2,y=H*.79-h/2+4;ctx.fillStyle='rgba(18,8,28,.4)';N.rr(ctx,x+3,y+6,w,h,20);ctx.fill();claySlab(ctx,x,y,w,h,20,'#5a3d62',2.4);N.text(ctx,'COMET RING TOSS',W/2,y+24,{font:'700 19px Fredoka',align:'center',color:'#ffe08a',stroke:'#1a1226'});N.text(ctx,'Hold to aim · release to throw · ring the moving pegs',W/2,y+43,{font:'600 11px Fredoka',align:'center',color:'#fff0d4'});}
+ if(p.msgT>0&&a.running){ctx.save();ctx.globalAlpha=Math.min(1,p.msgT*2);const sc=1+Math.max(0,p.msgT-1)*.3;ctx.translate(W/2,H*.5);ctx.scale(sc,sc);N.text(ctx,p.msg,0,0,{font:'700 '+Math.round(Math.min(W,H)*.06)+'px Fredoka',align:'center',color:'#ffe08a',stroke:'#1a1226',sw:6,glow:'#ff6f91'});ctx.restore();}
+ if(!a.running){const w=Math.min(W*.8,380),h=46,x=W/2-w/2,y=H*.9-h-8;ctx.fillStyle='rgba(18,8,28,.4)';N.rr(ctx,x+3,y+6,w,h,20);ctx.fill();claySlab(ctx,x,y,w,h,20,'#5a3d62',2.4);N.text(ctx,'COMET RING TOSS',W/2,y+21,{font:'700 18px Fredoka',align:'center',color:'#ffe08a',stroke:'#1a1226'});N.text(ctx,'Hold to aim · release to throw · ring the moving pegs',W/2,y+37,{font:'600 11px Fredoka',align:'center',color:'#fff0d4'});}
  N.vignette(ctx,W,H,.3);}
 function aw(){return 1;}
 function mv(x,y,e,a){const g=geom(a),p=a.p;const q=inv(g,x,y);p.aim.x=N.clamp(q.x,-1,1);p.aim.z=N.clamp(q.z,.05,1);}
