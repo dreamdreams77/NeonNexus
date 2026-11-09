@@ -177,17 +177,17 @@ async function runGame(game, kind, mode) {
   const issues = [], info = {}, tag = `${game}-${kind}-${mode}`;
   const seed = null; let P;
   try { P = await newPage(kind); } catch (e) { return { game, kind, mode, issues: [['FAIL', 'page load: ' + e.message.slice(0, 120)]], info }; }
-  const { page, errs } = P;
+  const { page, errs } = P; const T0 = Date.now(); const lap = n => process.env.QA_DEBUG && console.error(`[t ${tag} ${((Date.now() - T0) / 1000).toFixed(1)}s] ${n}`);
   try {
     const io = makeIO(P); io.page = page;
     await page.evaluate(g => window.nexusPlayArcadeGame(g), game);
     await sleep(400);
     const startSave = await getSave(page); const tok0 = Number(startSave?.tokens ?? 250), tix0 = Number(startSave?.tickets || 0);
-    await layoutCheck(P, 'pre-start', issues);
+    lap('opened'); await layoutCheck(P, 'pre-start', issues); lap('layout');
     await clickStart(P); await sleep(500);
     await page.evaluate(() => { const c = document.querySelector('#game3d-stage'); const s = (c && getComputedStyle(c).display !== 'none') ? c : document.querySelector('#stage'); s.scrollIntoView({ block: 'center' }); });
     await sleep(200);
-    const st0 = await getState(page);
+    lap('started'); const st0 = await getState(page);
     if (!st0.running) issues.push(['FAIL', 'start: game not running after START']);
     const L = await layoutCheck(P, 'play', issues);
     if (kind === 'phone' && L.score && (L.score.t < 0 || L.score.b > L.vh)) issues.push(['WARN', 'play: score/time HUD off-screen when canvas centered (phone)']);
@@ -211,7 +211,7 @@ async function runGame(game, kind, mode) {
     await io.releaseAll();
     const scroll1 = await page.evaluate(() => [scrollX, scrollY, document.getElementById('overlay').scrollTop]);
     if (scroll0.join() !== scroll1.join()) issues.push(['FAIL', `page/overlay scrolled during play ${scroll0} -> ${scroll1} (touch-action?)`]);
-    info.driveSecs = ((Date.now() - t0) / 1000).toFixed(0);
+    lap('drove'); info.driveSecs = ((Date.now() - t0) / 1000).toFixed(0);
     info.naturalEnd = ended;
     if (!ended) {
       await page.evaluate(() => { window.__arc.time = 0.3; });
@@ -220,7 +220,7 @@ async function runGame(game, kind, mode) {
       info.forcedEnd = true;
       if (!ended) issues.push(['FAIL', 'HANG: still running 10s after time forced to 0 (score ' + s.score + ')']);
     }
-    await sleep(300);
+    lap('ended'); await sleep(300);
     const sEnd = await getState(page);
     if (nan || !isFinite(sEnd.score)) issues.push(['FAIL', 'score NaN/invalid']);
     { const mt = Math.min(minTime, sEnd.time); if (mt < -0.25) issues.push(['FAIL', 'time went negative (' + mt.toFixed(2) + ')']); else if (mt < -0.05) issues.push(['WARN', 'time dipped slightly negative (' + mt.toFixed(3) + ') at finish']); }
@@ -249,7 +249,7 @@ async function runGame(game, kind, mode) {
         const ui = await page.evaluate(() => [document.getElementById('arcade-tokens')?.textContent, document.getElementById('arcade-tickets')?.textContent]);
         if (String(ui[0]).trim() !== String(sv.tokens) || String(ui[1]).trim() !== String(sv.tickets)) issues.push(['WARN', `wallet UI (${ui}) != save (${sv.tokens}/${sv.tickets}) after finish`]);
         info.save = sv;
-        // reload preservation
+        lap('saved-checked'); // reload preservation
         await page.reload({ waitUntil: 'domcontentloaded' });
         await page.waitForFunction(() => typeof window.nexusPlayArcadeGame === 'function', null, { timeout: 20000, polling: 200 });
         const sv2 = await getSave(page);
@@ -259,7 +259,7 @@ async function runGame(game, kind, mode) {
         await sleep(600);
         const ui2 = await page.evaluate(() => [document.getElementById('arcade-tokens')?.textContent, document.getElementById('arcade-tickets')?.textContent]);
         if (String(ui2[0]).trim() !== String(sv2.tokens)) issues.push(['WARN', `wallet UI after reload (${ui2[0]}) != saved tokens (${sv2.tokens})`]);
-        // restart works
+        lap('reloaded'); // restart works
         if (mode === 'play') {
           await page.evaluate(g => window.nexusPlayArcadeGame(g), game); await sleep(300);
           await clickStart(P); await sleep(600);
