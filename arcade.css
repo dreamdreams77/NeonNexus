@@ -170,3 +170,24 @@ body.intro-open{overflow:hidden}
 .daily-chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border:1px solid rgba(240,200,140,.5);border-radius:999px;font-size:11px;font-weight:600;letter-spacing:.08em;color:#f0d3a2;background:rgba(80,44,70,.55)}
 .daily-chip.done{opacity:.6}
 @media(max-width:900px){.daily-chip{display:none}}
+
+/* ===== Game-module framework: responsive canvas, touch controls, toasts ===== */
+#stage{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;width:min(100%,calc((100dvh - 250px)*var(--cw,900)/var(--ch,520)));min-width:min(100%,260px)}
+body.arcade-playing{overflow:hidden;overscroll-behavior:none}
+.overlay{overscroll-behavior:contain}
+.touch-ui{display:none;justify-content:space-between;align-items:center;gap:12px;margin:10px auto 0;width:min(100%,900px);touch-action:none;-webkit-user-select:none;user-select:none}
+.touch-ui.on.force,body.touch-force .touch-ui.on{display:flex}
+@media(pointer:coarse){.touch-ui.on{display:flex}}
+.tu-group{display:flex;gap:12px;align-items:center}.tu-right{margin-left:auto}
+.tu-btn{min-width:72px;min-height:72px;padding:0 14px;border-radius:50%;border:3px solid #fff7;background:radial-gradient(circle at 35% 30%,#f7b79a,#c76c51 70%);color:#fff7e6;font:700 14px Fredoka,system-ui;letter-spacing:.5px;box-shadow:0 6px 0 #6e3a3a,inset 0 2px 0 #fff6;touch-action:none;-webkit-tap-highlight-color:transparent}
+.tu-btn.big{min-width:92px;min-height:92px;font-size:16px}.tu-btn.alt{background:radial-gradient(circle at 35% 30%,#a5d9cf,#4f9da4 70%);box-shadow:0 6px 0 #2f5d62,inset 0 2px 0 #fff6}
+.tu-btn.down{transform:translateY(4px);box-shadow:0 2px 0 #3a2430,inset 0 2px 0 #fff4;filter:brightness(1.1)}
+.tu-stick{position:relative;width:132px;height:132px;border-radius:50%;background:radial-gradient(circle,#ffffff22,#00000033);border:3px solid #fff5;touch-action:none}
+.tu-stick.axis-x{height:84px;border-radius:44px;width:176px}.tu-stick.axis-y{width:84px;height:150px;border-radius:44px}
+.tu-stick i{position:absolute;left:50%;top:50%;width:52px;height:52px;margin:-26px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff1d0,#d9a36c 75%);box-shadow:0 4px 0 #6e4a3a;pointer-events:none}
+.arcade-toast{position:absolute;left:50%;top:14px;transform:translate(-50%,-30px);opacity:0;padding:9px 16px;border-radius:999px;background:#2b2236ee;border:2px solid #f2ce77;color:#ffe9b8;font:700 13px Fredoka,system-ui;letter-spacing:.6px;pointer-events:none;transition:.25s;z-index:5;white-space:nowrap;max-width:94%;overflow:hidden;text-overflow:ellipsis}
+.arcade-toast.on{opacity:1;transform:translate(-50%,0)}
+.cabinet{position:relative}
+.game-hud-line{margin:6px 0 0;font:600 12px Fredoka,system-ui;letter-spacing:.8px;color:#ffe9b8;text-align:center;min-height:16px}
+@media(pointer:coarse) and (orientation:landscape) and (max-height:520px){.overlay .cabinet-head p,.overlay .game-progression,.overlay .result-quip{display:none}.cabinet-head{padding-block:4px}#stage{width:min(100%,calc((100dvh - 120px)*var(--cw,900)/var(--ch,520)))}}
+@media(pointer:coarse) and (orientation:portrait){.overlay.portrait-game #stage{width:min(100%,calc((100dvh - 330px)*var(--cw,540)/var(--ch,860)))}}
