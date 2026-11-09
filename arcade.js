@@ -509,7 +509,7 @@ if(e.key===' '){e.preventDefault();if(game==='stack')dropStack();if(game==='pinb
 if(game==='moto'&&e.key===' '&&p.y>=330)p.vy=-430;if(game==='moonquest'&&e.key.toLowerCase()==='x')p.shield=!p.shield;
 if(game==='rhythm'){const lanes={d:0,f:1,j:2,k:3};const lane=lanes[e.key.toLowerCase()];if(lane!==undefined)hitRhythm(lane);}
 }
-function keyup(e){keys[e.key]=false;if(mod()){if(running)mod().keyup?.(e,API);return;}if(e.key==='Enter'&&keyboardAim){const rect=canvas.getBoundingClientRect();onUp({clientX:rect.left+mouse.x/W*rect.width,clientY:rect.top+mouse.y/H*rect.height,keyboardCursor:true});keyboardAim=true;}}
+function keyup(e){keys[e.key]=false;if(mod()){if(modKeyBlock(e))e.preventDefault();if(running)mod().keyup?.(e,API);return;}if(e.key==='Enter'&&keyboardAim){const rect=canvas.getBoundingClientRect();onUp({clientX:rect.left+mouse.x/W*rect.width,clientY:rect.top+mouse.y/H*rect.height,keyboardCursor:true});keyboardAim=true;}}
 $('#game-grid')?.addEventListener('click',e=>{const b=e.target.closest('[data-game]');if(b)open(b.dataset.game);});
 function openTableGame(id){if(!['airhockey','billiards'].includes(id))return;activeTableDuel={stake:10,payout:18};open(id);$('#game-help').textContent+='  Match entry: 10 tokens. Win to receive 18 tokens back.';$('#control-hint').textContent='10 TOKEN ENTRY · WIN RETURN 18 · '+(id==='airhockey'?'Move your mallet by touch or mouse':'Drag away from cue ball to shoot · arrows + Enter');}
 window.addEventListener('nexus:table-play',e=>openTableGame(e.detail?.gameId));
@@ -735,7 +735,7 @@ function modStart(){
  const M=mod();if(!M)return false;
  curStick={x:0,y:0};Object.keys(keys).forEach(k=>delete keys[k]);
  time=M.duration!=null?M.duration:60;$('#time').textContent=M.timed===false?'—':String(Math.ceil(time));
- $('#start').textContent='RESTART';
+ $('#start').textContent='RESTART';try{$('#start').blur();canvas.focus({preventScroll:true});}catch(e){}
  try{M.start?.(API);}catch(e){console.error(e);}
  last=performance.now();raf=requestAnimationFrame(loop);return true;
 }
