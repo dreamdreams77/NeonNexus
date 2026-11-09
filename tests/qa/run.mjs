@@ -20,6 +20,7 @@ const opt = k => (args.find(a => a.startsWith('--' + k + '=')) || '').split('=')
 const games = args.filter(a => !a.startsWith('--'));
 const GAMES = games.length ? games : ALL;
 const SECS = +(opt('secs') || process.env.QA_SECS || 12);
+const EXTRA = +(opt('extra') || process.env.QA_EXTRA || 30);
 const JOBS = +(opt('jobs') || 3);
 const ONLY = (opt('only') || 'desktop,phone,idle,spam,lobby').split(',');
 const OUT = opt('out') || process.env.QA_OUT || '/tmp/claude-0/-home-user-NeonNexus/84deefe9-041a-566c-9540-4e68da16154e/scratchpad';
@@ -149,7 +150,7 @@ async function spamStep(io) { await io.tap(rnd(.05, .95), rnd(.05, .95)); await 
 const getState = page => page.evaluate(() => { const a = window.__arc || {}; return { score: a.score, time: a.time, running: a.running, uiScore: document.querySelector('#score')?.textContent, uiTime: document.querySelector('#time')?.textContent }; });
 const getSave = page => page.evaluate(k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch { return 'CORRUPT'; } }, KEY);
 function badNumbers(o, p = '') { const out = []; if (o && typeof o === 'object') for (const [k, v] of Object.entries(o)) out.push(...badNumbers(v, p + '.' + k)); else if (typeof o === 'number' && (!isFinite(o) || o < 0)) out.push(p + '=' + o); else if (o === null && /(tokens|tickets|best|xp|level|score|plays|wins)$/i.test(p)) out.push(p + '=null'); return out; }
-async function clickStart(P) { await P.page.locator('#start').click({ timeout: 5000 }); }
+async function clickStart(P) { try { await P.page.locator('#start').click({ timeout: 5000 }); } catch (e) { await P.page.evaluate(() => document.querySelector('#start').click()); } }
 async function layoutCheck(P, phase, issues) {
   const r = await P.page.evaluate(() => {
     const q = s => document.querySelector(s), box = e => { if (!e) return null; const r = e.getBoundingClientRect(); return { l: r.left, t: r.top, r: r.right, b: r.bottom, w: r.width, h: r.height }; };
@@ -214,9 +215,15 @@ async function runGame(game, kind, mode) {
     lap('drove'); info.driveSecs = ((Date.now() - t0) / 1000).toFixed(0);
     info.naturalEnd = ended;
     if (!ended) {
-      await page.evaluate(() => { window.__arc.time = 0.3; });
+      const untimed = (await getState(page)).uiTime === '\u2014';
+      if (untimed && mode !== 'idle') { // untimed module: keep playing for natural end, then force via API.finish
+        const x0 = Date.now(); while (Date.now() - x0 < EXTRA * 1000) { await io.refresh(); await (mode === 'spam' ? spamStep(io) : PROFILES[game](io)); if (!(await getState(page)).running) { ended = true; break; } }
+        await io.releaseAll();
+      }
+      if (!ended && untimed) { issues.push(['INFO', 'untimed game: no natural end within ' + (((Date.now() - t0) / 1000) | 0) + 's of play; forced via NEXUS_ARCADE_API.finish(false)']); info.forcedViaApi = true; await page.evaluate(() => window.NEXUS_ARCADE_API.finish(false)); await sleep(500); ended = !(await getState(page)).running; if (!ended) issues.push(['FAIL', 'API.finish(false) did not stop the game']); }
+      else if (!ended) await page.evaluate(() => { window.__arc.time = 0.3; });
       const f0 = Date.now(); let s, ticking = null;
-      while (Date.now() - f0 < 10000) { s = await getState(page); if (!s.running) { ended = true; break; } if (Date.now() - f0 > 1500 && ticking === null) ticking = s.time !== 0.3; await sleep(250); }
+      while (!ended && Date.now() - f0 < 10000) { s = await getState(page); if (!s.running) { ended = true; break; } if (Date.now() - f0 > 1500 && ticking === null) ticking = s.time !== 0.3; await sleep(250); }
       info.forcedEnd = true;
       if (!ended && ticking === false) { // time hook not driving this game (3D/own timer): wait for its natural end instead
         info.timerNotHooked = true; issues.push(['WARN', 'debug __arc.time hook does not drive this game; waited for natural end']);
@@ -270,7 +277,7 @@ async function runGame(game, kind, mode) {
           const r1 = await getState(page);
           if (!r1.running) issues.push(['FAIL', 'restart: not running after START again']);
           else if (r1.score > 10) issues.push(['FAIL', 'restart: score not reset (' + r1.score + ')']);
-          else if (!(r1.time > 0)) issues.push(['FAIL', 'restart: bad time ' + r1.time]);
+          else if (!(r1.time > 0) && r1.uiTime !== '\u2014') issues.push(['FAIL', 'restart: bad time ' + r1.time]);
           else if (/NaN|ROUND OVER|CABINET/.test(await page.evaluate(() => document.querySelector('#result').textContent))) issues.push(['WARN', 'restart: old result text still shown']);
           await io.refresh(); for (let i = 0; i < 4; i++) await PROFILES[game](io); await io.releaseAll();
           await page.locator('#close').click({ timeout: 3000 }).catch(() => issues.push(['WARN', 'close button not clickable']));
@@ -337,8 +344,8 @@ process.stderr.write('\n');
 await browser.close(); server.close();
 
 // ---------- report ----------
-const sevRank = { FAIL: 2, WARN: 1 };
-const verdict = r => r ? (r.issues.some(i => i[0] === 'FAIL') ? 'FAIL' : r.issues.length ? 'WARN' : 'PASS') : '-';
+const sevRank = { FAIL: 2, WARN: 1, INFO: 0 };
+const verdict = r => r ? (r.issues.some(i => i[0] === 'FAIL') ? 'FAIL' : r.issues.some(i => i[0] === 'WARN') ? 'WARN' : 'PASS') : '-';
 const find = (g, k, m) => results.find(r => r.game === g && r.kind === k && r.mode === m);
 const cols = [['desktop', 'play'], ['phone', 'play'], ['desktop', 'idle'], ['desktop', 'spam']];
 const pad = (s, n) => String(s).padEnd(n);

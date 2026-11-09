@@ -271,7 +271,7 @@ NEXUS_GAMES.register('rhythm',{
  start(api){newState(api);S.phase='select';},
  update(dt,api){
   S.bgT+=dt;for(let i=0;i<4;i++){if(S.flash[i]>0)S.flash[i]-=dt;if(S.press[i]>0)S.press[i]-=dt*6;}if(S.judge&&S.judge.k>0)S.judge.k-=dt;if(S.wob>0)S.wob-=dt;
-  if(S.phase==='select'){return;}
+  if(S.phase==='select'){S.selT=(S.selT===undefined?14:S.selT)-dt;if(S.selT<=0&&S.unlocked[S.sel])startSong(api,S.sel);return;}
   if(S.endT>=0){S.endT-=dt;if(S.endT<0)finishSong(api);if(S.phase==='fail')return;}
   if(S.phase==='play'||S.phase==='end'){
    S.t+=dt;const k=sc(api),w=winFor(api);
